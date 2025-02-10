@@ -1,0 +1,17 @@
+port: 8089
+base-path: passport
+max-request-body-kb: 50
+redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
+redis-lock: false
+rdb: # rational database connect property
+  name: "mysql" # mysql or postgres
+  username: "root"
+  password: "iis"
+  host: "127.0.0.1"
+  port: 3306
+  database: "smart-passport"
+  parameters: ""
+  pool:
+    max-idle-con: 5
+    max-open-con: 50
+    max-life-time-minute: 10
