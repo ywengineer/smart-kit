@@ -94,6 +94,10 @@ func main() {
 	h.NoMethod(func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 	})
+	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
+		hlog.Info("release resource on shutdown")
+		_ = redisClient.Close()
+	})
 	//
 	register(h)
 	h.Spin()

@@ -54,6 +54,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		}
 	} else if cv == "" { // cache null
 		c.JSON(consts.StatusOK, pkg.ApiResult{Code: consts.StatusNotFound})
+		return // stop
 	} else if err = sonic.UnmarshalString(cv, &bind); err != nil { // cache error
 		c.JSON(consts.StatusOK, pkg.ApiResult{Code: consts.StatusInternalServerError, Message: err.Error()})
 		return // stop
