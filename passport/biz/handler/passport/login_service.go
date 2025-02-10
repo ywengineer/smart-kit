@@ -41,7 +41,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			First(&bind)
 		ex := 5 * 24 * time.Hour
 		if errors.Is(r.Error, gorm.ErrRecordNotFound) { // no data
-			// cache null value one minute
+			// cache null value for one minute
 			cv, ex = "", time.Minute
 		} else { // cache result
 			cv, _ = sonic.MarshalString(bind)
