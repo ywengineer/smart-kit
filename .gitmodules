@@ -1,0 +1,3 @@
+[submodule "smart"]
+	path = smart
+	url = https://gitee.com/ywengineer/smart.git
