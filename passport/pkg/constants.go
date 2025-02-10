@@ -7,3 +7,9 @@ const (
 	ContextKeyApp     = "app"
 	ContextKeyRedLock = "red-lock"
 )
+
+type ApiResult struct {
+	Code    int         `json:"code"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
+}

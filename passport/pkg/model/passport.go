@@ -2,6 +2,8 @@ package model
 
 import (
 	"gorm.io/gorm"
+	"strconv"
+	"strings"
 	"time"
 )
 import "gorm.io/datatypes"
@@ -23,4 +25,8 @@ type PassportPunish struct {
 	BeginTime  time.Time `json:"begin_time" `
 	EndTime    time.Time `json:"end_time" `
 	Reason     string    `json:"reason" gorm:"size:200;comment:原因"`
+}
+
+func GetPassportCacheKey(id uint) string {
+	return strings.Join([]string{"passport", strconv.FormatUint(uint64(id), 10)}, ":")
 }
