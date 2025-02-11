@@ -23,7 +23,7 @@ enum Gender {
 // 游戏登陆: POST http://xxx/login application/json
 // 返回：LoginResp
 struct LoginReq {
-    1: AccountType Type (api.body="type,required", api.vd="$==10||$==11"); // 账号类型, 邮件、手机登陆
+    1: AccountType Type (api.body="type,required", api.vd="$==1||$==10||$==11"); // 账号类型, 邮件、手机登陆
     2: string AppBundleId (api.body="app_bundle_id,required"); // 应用唯一标识符
     3: string Id (api.body="id,required"); // 唯一标志
     4: string AccessToken (api.body="access_token,required"); // 访问Token. 密码/验证码

@@ -49,23 +49,28 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		}
 		// cache error
 		if err = sCtx.Redis.SetNX(ctx, bindKey, cv, ex).Err(); err != nil {
-			c.JSON(consts.StatusOK, pkg.ApiResult{Code: consts.StatusInternalServerError, Message: err.Error()})
+			c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
 			return // stop
 		}
 	} else if cv == "" { // cache null
-		c.JSON(consts.StatusOK, pkg.ApiResult{Code: consts.StatusNotFound})
+		c.JSON(consts.StatusOK, pkg.ApiError("not found"))
 		return // stop
 	} else if err = sonic.UnmarshalString(cv, &bind); err != nil { // cache error
-		c.JSON(consts.StatusOK, pkg.ApiResult{Code: consts.StatusInternalServerError, Message: err.Error()})
+		c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
 		return // stop
 	} else {
 		// obtain binding data success: ignore
 	}
-	//
-	c.JSON(consts.StatusOK, passport.LoginResp{
+	// token match
+	if bind.AccessToken != req.GetAccessToken() {
+		c.JSON(consts.StatusOK, pkg.ApiError("invalid.token"))
+		return
+	}
+	// jwt token
+	c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
 		PassportId: int64(bind.PassportId),
 		Token:      "found",
 		BrandNew:   false,
 		CreateTime: time.Now().Unix(),
-	})
+	}))
 }

@@ -15,3 +15,11 @@ rdb: # rational database connect property
     max-idle-con: 5
     max-open-con: 50
     max-life-time-minute: 10
+#cors: # cors
+#  allow-origins: []
+#  allow-methods: []
+#  allow-headers: []
+#  allow-credentials: false
+#  expose-headers: []
+#  max-age: 0s
+#  allow-wildcard: false

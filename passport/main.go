@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/app/server/binding"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/hertz-contrib/cors"
 	hertzzap "github.com/hertz-contrib/logger/zap"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg"
@@ -83,6 +84,17 @@ func main() {
 		server.WithHandleMethodNotAllowed(true),
 		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB*1024), // KB
 	)
+	if _cors := conf.Cors; _cors != nil {
+		h.Use(cors.New(cors.Config{
+			AllowOrigins:     _cors.AllowOrigins,
+			AllowMethods:     _cors.AllowMethods,
+			AllowHeaders:     _cors.AllowHeaders,
+			AllowCredentials: _cors.AllowCredentials,
+			ExposeHeaders:    _cors.ExposeHeaders,
+			MaxAge:           _cors.MaxAge,
+			AllowWildcard:    _cors.AllowWildcard,
+		}))
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	smartCtx := &pkg.SmartContext{Rdb: db, Redis: redisClient, RedLock: redisLock}
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
