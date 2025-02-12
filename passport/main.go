@@ -14,6 +14,7 @@ import (
 	hertzzap "github.com/hertz-contrib/logger/zap"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg"
+	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
@@ -96,7 +97,12 @@ func main() {
 		}))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
-	smartCtx := &pkg.SmartContext{Rdb: db, Redis: redisClient, RedLock: redisLock}
+	smartCtx := pkg.NewDefaultContext(
+		db,
+		redisClient,
+		redisLock,
+		middleware.NewJwt(*conf.Jwt, nil),
+	)
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
 		ctx.Next(context.WithValue(c, pkg.ContextKeySmart, smartCtx))
 	})

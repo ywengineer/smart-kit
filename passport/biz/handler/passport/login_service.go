@@ -28,14 +28,14 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(*pkg.SmartContext)
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	// query bind cache
-	cv, err := sCtx.Redis.Get(ctx, bindKey).Result()
+	cv, err := sCtx.Redis().Get(ctx, bindKey).Result()
 	var bind model.PassportBinding
 	//
 	if errors.Is(err, redis.Nil) { // query bind db
-		r := sCtx.Rdb.
+		r := sCtx.Rdb().
 			WithContext(ctx).
 			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
 			First(&bind)
@@ -48,7 +48,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			ex += time.Duration(rand.Int64N(60) * int64(time.Minute))
 		}
 		// cache error
-		if err = sCtx.Redis.SetNX(ctx, bindKey, cv, ex).Err(); err != nil {
+		if err = sCtx.Redis().SetNX(ctx, bindKey, cv, ex).Err(); err != nil {
 			c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
 			return // stop
 		}
@@ -64,13 +64,16 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	// token match
 	if bind.AccessToken != req.GetAccessToken() {
 		c.JSON(consts.StatusOK, pkg.ApiError("invalid.token"))
-		return
+	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
+		"id": bind.PassportId,
+	}); err != nil {
+		c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
+	} else {
+		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
+			PassportId: int64(bind.PassportId),
+			Token:      tk,
+			BrandNew:   false,
+			CreateTime: time.Now().Unix(),
+		}))
 	}
-	// jwt token
-	c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
-		PassportId: int64(bind.PassportId),
-		Token:      "found",
-		BrandNew:   false,
-		CreateTime: time.Now().Unix(),
-	}))
 }

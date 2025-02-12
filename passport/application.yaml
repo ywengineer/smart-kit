@@ -23,3 +23,9 @@ rdb: # rational database connect property
 #  expose-headers: []
 #  max-age: 0s
 #  allow-wildcard: false
+jwt:
+  realm: Smart
+  key: 129kdfjiejalkid
+  timeout: 168h
+  max-refresh: 24h
+  identity-key: smart-id
