@@ -95,6 +95,7 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudwego/base64x v0.1.4 h1:jwCgWpFanWmN8xoIUHa2rtzmkd5J2plF/dnLS6Xd/0Y=
 github.com/cloudwego/base64x v0.1.4/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
+github.com/cloudwego/hertz v0.4.2/go.mod h1:K1U0RlU07CDeBINfHNbafH/3j9uSgIW8otbjUys3OPY=
 github.com/cloudwego/hertz v0.6.2/go.mod h1:2em2hGREvCBawsTQcQxyWBGVlCeo+N1pp2q0HkkbwR0=
 github.com/cloudwego/hertz v0.9.5 h1:FXV2YFLrNHRdpwT+OoIvv0wEHUC0Bo68CDPujr6VnWo=
 github.com/cloudwego/hertz v0.9.5/go.mod h1:UUBt8N8hSTStz7NEvLZ5mnALpBSofNL4DoYzIIp8UaY=
@@ -193,6 +194,7 @@ github.com/google/pprof v0.0.0-20200229191704-1ebb73c60ed3/go.mod h1:ZgVRPoUq/hf
 github.com/google/pprof v0.0.0-20200430221834-fc25d7d30c6d/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
@@ -212,6 +214,8 @@ github.com/hertz-contrib/jwt v1.0.2 h1:sAW3wqgBDsbPKr5JWJRObY61jg1NqYkUCg+o8UXLs
 github.com/hertz-contrib/jwt v1.0.2/go.mod h1:3zUSK+44dcw/9z/89JZ+mA0FoyhmVN7Hx+f46ucVV4I=
 github.com/hertz-contrib/logger/zap v1.1.0 h1:4efINiIDJrXEtAFeEdDJvc3Hye0VFxp+0X4BwaZgxNs=
 github.com/hertz-contrib/logger/zap v1.1.0/go.mod h1:D/rJJgsYn+SGaHVfVqWS3vHTbbc7ODAlJO+6smWgTeE=
+github.com/hertz-contrib/requestid v1.1.0 h1:+y1cuNlNX2KUoEC1SnBJ6M55/TlMTx3M9yxkqi0oTkk=
+github.com/hertz-contrib/requestid v1.1.0/go.mod h1:+l5CbZl//cSUoos421fnDFKQ6YYlVHcYc3Ri7AS8DUA=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=

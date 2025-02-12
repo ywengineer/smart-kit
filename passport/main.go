@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hertz-contrib/cors"
 	hertzzap "github.com/hertz-contrib/logger/zap"
+	"github.com/hertz-contrib/requestid"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
@@ -103,6 +104,7 @@ func main() {
 		redisLock,
 		middleware.NewJwt(*conf.Jwt, nil),
 	)
+	h.Use(requestid.New())
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
 		ctx.Next(context.WithValue(c, pkg.ContextKeySmart, smartCtx))
 	})

@@ -61,7 +61,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	} else {
 		// obtain binding data success: ignore
 	}
-	// token match
+	//-------------------------------------- token match --------------------------------------
 	if bind.AccessToken != req.GetAccessToken() {
 		c.JSON(consts.StatusOK, pkg.ApiError("invalid.token"))
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
