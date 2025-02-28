@@ -9,10 +9,10 @@ require (
 	github.com/bsm/redislock v0.9.4
 	github.com/bytedance/sonic v1.12.7
 	github.com/cloudwego/hertz v0.9.5
-	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/hertz-contrib/cors v0.1.0
 	github.com/hertz-contrib/jwt v1.0.2
 	github.com/hertz-contrib/logger/zap v1.1.0
+	github.com/hertz-contrib/requestid v1.1.0
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/stretchr/testify v1.10.0
 	github.com/ywengineer/smart v0.0.0-20250207091719-3545ef716421
@@ -47,11 +47,11 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-gorm/caches/v4 v4.0.5 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
-	github.com/hertz-contrib/requestid v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
