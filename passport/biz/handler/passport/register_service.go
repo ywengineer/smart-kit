@@ -13,13 +13,13 @@ import (
 // Register .
 // @router /register [GET]
 func Register(ctx context.Context, c *app.RequestContext) {
-	var err error
 	var req passport.RegisterReq
-	err = c.BindAndValidate(&req)
+	err := c.BindAndValidate(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
+	// exists type and id?
 
 	resp := new(passport.LoginResp)
 

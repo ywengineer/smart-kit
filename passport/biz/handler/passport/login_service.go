@@ -5,15 +5,15 @@ package passport
 import (
 	"context"
 	"errors"
-	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/model"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"math/rand/v2"
 	"time"
 )
 
@@ -31,7 +31,8 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	// query bind cache
-	cv, err := sCtx.Redis().Get(ctx, bindKey).Result()
+	bkv := sCtx.Redis().HGetAll(ctx, bindKey)
+	_, err = bkv.Result()
 	var bind model.PassportBinding
 	//
 	if errors.Is(err, redis.Nil) { // query bind db
@@ -39,27 +40,29 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			WithContext(ctx).
 			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
 			First(&bind)
-		ex := 5 * 24 * time.Hour
 		if errors.Is(r.Error, gorm.ErrRecordNotFound) { // no data
 			// cache null value for one minute
-			cv, ex = "", time.Minute
-		} else { // cache result
-			cv, _ = sonic.MarshalString(bind)
-			ex += time.Duration(rand.Int64N(60) * int64(time.Minute))
+			bind.CreatedAt = time.Now()
 		}
 		// cache error
-		if err = sCtx.Redis().SetNX(ctx, bindKey, cv, ex).Err(); err != nil {
-			c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
+		if err = sCtx.Redis().HSet(ctx, bindKey, bind).Err(); err != nil {
+			hlog.Error("[login] cache rdb object failed", zap.Error(err))
+			c.JSON(consts.StatusOK, pkg.ApiError("cw"))
 			return // stop
 		}
-	} else if cv == "" { // cache null
-		c.JSON(consts.StatusOK, pkg.ApiError("not found"))
+	} else if err != nil {
+		hlog.Error("[login] unreachable cache", zap.Error(err))
+		c.JSON(consts.StatusOK, pkg.ApiError("unreachable c"))
 		return // stop
-	} else if err = sonic.UnmarshalString(cv, &bind); err != nil { // cache error
-		c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
+	} else if err = bkv.Scan(&bind); err != nil { // cache error
+		hlog.Error("[login] broken cache schema", zap.Error(err))
+		c.JSON(consts.StatusOK, pkg.ApiError("broken schema"))
 		return // stop
-	} else {
-		// obtain binding data success: ignore
+	}
+	//-------------------------------------- cache null
+	if bind.ID <= 0 && time.Until(bind.CreatedAt) <= time.Minute {
+		c.JSON(consts.StatusOK, pkg.ApiError("nice try!!!asshole"))
+		return // stop
 	}
 	//-------------------------------------- token match --------------------------------------
 	if bind.AccessToken != req.GetAccessToken() {
