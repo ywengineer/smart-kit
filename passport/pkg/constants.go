@@ -17,6 +17,17 @@ type ApiResult struct {
 type ResultCode int
 
 const (
+	DeviceId    string = "device_id"    // DeviceId
+	DeviceModel string = "device_model" // DeviceModel 机型 (deviceModel)
+	GameVersion string = "ver"          // GameVersion 游戏版本 (v)
+	Os          string = "os"           // Os
+	OsVersion   string = "os_ver"       // OsVersion 系统版本	(operationSystem)
+	NetType     string = "net_type"     // NetType 连接网络 (netType)
+	Language    string = "lang"         // Language 语言 (language)
+	Locale      string = "locale"       // Locale 地区(locale)
+)
+
+const (
 	Fail                ResultCode = 0
 	Ok                             = 200
 	InternalServerError            = 503

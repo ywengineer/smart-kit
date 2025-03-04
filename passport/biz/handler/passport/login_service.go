@@ -5,6 +5,7 @@ package passport
 import (
 	"context"
 	"errors"
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -31,36 +32,45 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	// query bind cache
-	bkv := sCtx.Redis().HGetAll(ctx, bindKey)
-	_, err = bkv.Result()
+	bkv, err := sCtx.Redis().JSONGet(ctx, bindKey).Result()
 	var bind model.PassportBinding
 	//
-	if errors.Is(err, redis.Nil) { // query bind db
+	if errors.Is(err, redis.Nil) || len(bkv) == 0 { // query bind db
 		r := sCtx.Rdb().
 			WithContext(ctx).
 			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
 			First(&bind)
+		expire := 0
 		if errors.Is(r.Error, gorm.ErrRecordNotFound) { // no data
 			// cache null value for one minute
 			bind.CreatedAt = time.Now()
+			expire = 15 - bind.CreatedAt.Second()%10
+		} else if r.Error != nil {
+			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "login_service"))
+			c.JSON(consts.StatusOK, pkg.ApiError("rdb error"))
+			return
 		}
-		// cache error
-		if err = sCtx.Redis().HSet(ctx, bindKey, bind).Err(); err != nil {
-			hlog.Error("[login] cache rdb object failed", zap.Error(err))
+		if bs, err := sonic.Marshal(bind); err != nil { // json error
+			c.JSON(consts.StatusOK, pkg.ApiError("c2c error"))
+			return // stop
+		} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
+			hlog.Error("cache rdb object failed", zap.String("err", err.Error()), zap.String("tag", "login_service"))
 			c.JSON(consts.StatusOK, pkg.ApiError("cw"))
 			return // stop
+		} else if expire > 0 {
+			sCtx.Redis().Expire(ctx, bindKey, time.Duration(expire)*time.Second)
 		}
 	} else if err != nil {
-		hlog.Error("[login] unreachable cache", zap.Error(err))
+		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "login_service"))
 		c.JSON(consts.StatusOK, pkg.ApiError("unreachable c"))
 		return // stop
-	} else if err = bkv.Scan(&bind); err != nil { // cache error
-		hlog.Error("[login] broken cache schema", zap.Error(err))
+	} else if err = sonic.UnmarshalString(bkv, &bind); err != nil { // cache error
+		hlog.Error("broken cache schema", zap.String("err", err.Error()), zap.String("tag", "login_service"))
 		c.JSON(consts.StatusOK, pkg.ApiError("broken schema"))
 		return // stop
 	}
 	//-------------------------------------- cache null
-	if bind.ID <= 0 && time.Until(bind.CreatedAt) <= time.Minute {
+	if bind.ID <= 0 {
 		c.JSON(consts.StatusOK, pkg.ApiError("nice try!!!asshole"))
 		return // stop
 	}

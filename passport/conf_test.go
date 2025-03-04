@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/bytedance/sonic"
+	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"github.com/ywengineer/smart/utility"
 	"gopkg.in/yaml.v3"
 	"testing"
@@ -12,4 +14,6 @@ func TestYamlConf(t *testing.T) {
 		Cors: &Cors{},
 	})
 	t.Log(string(ym))
+	//
+	t.Log(sonic.MarshalString(model.PassportBinding{}))
 }

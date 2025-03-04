@@ -40,9 +40,9 @@ struct LoginReq {
 // 注册: http://xxx/reg
 // 返回：LoginResp
 struct RegisterReq {
-    1: AccountType Type (api.body="type,required", api.vd="$>=1&&$<=11"); // 账号类型
-    2: string AppBundleId (api.body="app_bundle_id,required"); // 应用唯一标识符
-    3: map<string, string> DeviceInfo (api.body="device,required"); // 客户端信息[JSON]. 必须包括但不限于
+    1: AccountType Type (api.body="type,required", api.vd="$>=1 && $<=11"); // 账号类型
+    2: string AppBundleId (api.body="app_bundle_id,required" api.vd="len($) <= 50"); // 应用唯一标识符
+    3: map<string, string> DeviceInfo (api.body="device,required", api.vd="len($) >= 6 && len($) < 15"); // 客户端信息[JSON]. 必须包括但不限于
     // 机型 (deviceModel)
     // 游戏版本 (v)
     // 系统版本	(operationSystem)
@@ -51,12 +51,14 @@ struct RegisterReq {
     // 地区(locale)
     // 扩展1 (e1) 扩展2 (e2) 扩展3 (e3) 扩展4 (e4) 扩展5 (e5)
 
-    4: string Id (api.body="id");       // 第三方平台产生的唯一标志
+    4: string Id (api.body="id,required", api.vd="len($) > 5 && len($) <= 50");       // 第三方平台产生的唯一标志
     5: string AccessToken (api.body="access_token");  // 第三方平台API访问Token
     6: string RefreshToken (api.body="refresh_token"); // 第三方平台访问Token
-    7: string Name (api.body="name");         // 第三方平台昵称
+    7: string Name (api.body="name", api.vd="len($) <= 20");         // 第三方平台昵称
     8: Gender Gender (api.body="gender");       // 第三方平台性别
-    9: string IconUrl (api.body="icon_url");      // 第三方平台头像
+    9: string IconUrl (api.body="icon_url", api.vd="len($) <= 200");      // 第三方平台头像
+    10: string DeviceId (api.body="device_id,required", api.vd="regexp('[A-Z0-9]{10,32}')") // 设备ID
+    11: string Adid (api.body="adid,required", api.vd="len($) > 0 && len($) <= 50") // 设备广告ID
 }
 
 // 绑定游戏账号: http://xxx/bin  返回成功失败 LoginResp  只有code

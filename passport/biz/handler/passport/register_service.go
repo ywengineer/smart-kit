@@ -4,10 +4,19 @@ package passport
 
 import (
 	"context"
-
+	"github.com/bsm/redislock"
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/google/uuid"
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
+	"github.com/ywengineer/smart-kit/passport/pkg"
+	"github.com/ywengineer/smart-kit/passport/pkg/model"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+	"strings"
+	"time"
 )
 
 // Register .
@@ -19,9 +28,131 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, err.Error())
 		return
 	}
-	// exists type and id?
-
-	resp := new(passport.LoginResp)
-
-	c.JSON(consts.StatusOK, resp)
+	// ano
+	switch req.Type {
+	case passport.AccountType_EMail, passport.AccountType_Mobile:
+		c.String(consts.StatusNotImplemented, "todo feature")
+		return
+	default:
+	}
+	//
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	//----------------------------------------------- device lock -----------------------------------------------
+	lock, err := sCtx.DistributeLock().Obtain(ctx, "lock:"+req.DeviceId, time.Minute, &redislock.Options{
+		Metadata:      "register_service",
+		RetryStrategy: redislock.NoRetry(),
+	})
+	if err != nil {
+		hlog.Error("get lock err", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.String(consts.StatusLocked, "busy")
+		return
+	}
+	defer lock.Release(ctx)
+	cntKey := "register:" + req.DeviceId
+	//----------------------------------------------- max per device -----------------------------------------------
+	cntNow, err := sCtx.Redis().IncrBy(ctx, cntKey, 0).Result()
+	if err != nil {
+		hlog.Error("get incr 0 err", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.String(consts.StatusInternalServerError, "err")
+		return
+	} else if cntNow >= 3 {
+		hlog.Info("reach max per device", zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.JSON(consts.StatusOK, pkg.ApiOk("reach max"))
+		return
+	}
+	//----------------------------------------------- exists type and id? -----------------------------------------------
+	if req.Type == passport.AccountType_Anonymous { // gen random id
+		req.Id = strings.ToLower(strings.ReplaceAll(uuid.New().String(), "-", ""))
+	}
+	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
+	var bind model.PassportBinding
+	if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
+		hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.String(consts.StatusInternalServerError, "err")
+		return
+	} else if exists > 0 {
+		c.JSON(consts.StatusOK, pkg.ApiError("register.bound")) // already bind to other passport
+		return
+	} else { // load from db
+		r := sCtx.Rdb().
+			WithContext(ctx).
+			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
+			First(&bind)
+		// rdb error
+		if r.Error != nil {
+			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "register_service"))
+			c.JSON(consts.StatusOK, pkg.ApiError("rdb error"))
+			return
+		}
+		if bind.PassportId > 0 { // already bound
+			//  cache
+			if bs, err := sonic.Marshal(bind); err != nil { // json error
+				c.JSON(consts.StatusOK, pkg.ApiError("c2c error"))
+				return // stop
+			} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
+				hlog.Error("cache rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
+				c.JSON(consts.StatusOK, pkg.ApiError("cw"))
+				return // stop
+			} else {
+				c.JSON(consts.StatusOK, pkg.ApiError("register.bound"))
+				return // stop
+			}
+		}
+	}
+	//----------------------------------------------- insert passport and binding -----------------------------------------------
+	deviceBytes, _ := sonic.Marshal(req.GetDeviceInfo())
+	pst := model.Passport{
+		DeviceId:   req.GetDeviceId(),
+		Adid:       req.GetAdid(),
+		SystemType: req.GetDeviceInfo()[pkg.Os],
+		Locale:     req.GetDeviceInfo()[pkg.Locale],
+		Extra:      deviceBytes,
+	}
+	if err = sCtx.Rdb().Transaction(func(pstBind *model.PassportBinding) func(tx *gorm.DB) error {
+		return func(tx *gorm.DB) error {
+			if err := tx.Create(&pst).Error; err != nil { // return any error will roll back
+				return err
+			}
+			*pstBind = model.PassportBinding{
+				PassportId:   pst.ID,
+				BindType:     req.GetType().String(),
+				BindId:       req.GetId(),
+				AccessToken:  req.GetAccessToken(),
+				RefreshToken: req.GetRefreshToken(),
+				SocialName:   req.GetName(),
+				Gender:       uint(req.GetGender()),
+				IconUrl:      req.GetIconUrl(),
+			}
+			if err := tx.Create(pstBind).Error; err != nil {
+				return err
+			}
+			return nil
+		}
+	}(&bind)); err != nil {
+		hlog.Error("save rdb error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.String(consts.StatusInternalServerError, "register.rdb.error.save")
+		return
+	}
+	//
+	sCtx.Redis().Incr(ctx, cntKey)
+	//----------------------------------------------- finish -----------------------------------------------
+	//  cache
+	if bs, err := sonic.Marshal(bind); err != nil { // json error
+		c.JSON(consts.StatusOK, pkg.ApiError("c2c error"))
+	} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
+		hlog.Error("cache new rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
+		c.JSON(consts.StatusOK, pkg.ApiError("cw"))
+	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
+		"id": pst.ID,
+	}); err != nil {
+		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+		c.JSON(consts.StatusOK, pkg.ApiError("register.token_err"))
+	} else {
+		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
+			PassportId: int64(pst.ID),
+			Token:      tk,
+			BrandNew:   true,
+			CreateTime: pst.CreatedAt.Unix(),
+		}))
+	}
 }

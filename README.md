@@ -3,6 +3,11 @@
 Smart game server side development kit
 
 
+## Based On
+
+- redis-stack
+- MySQL
+
 ## Build Tags
 
 ### submodule smart
