@@ -25,7 +25,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	var req passport.LoginReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, validateErr(err))
 		return
 	}
 	//
@@ -47,40 +47,40 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			expire = 15 - bind.CreatedAt.Second()%10
 		} else if r.Error != nil {
 			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "login_service"))
-			c.JSON(consts.StatusOK, pkg.ApiError("rdb error"))
+			c.JSON(consts.StatusOK, ErrRdb)
 			return
 		}
 		if bs, err := sonic.Marshal(bind); err != nil { // json error
-			c.JSON(consts.StatusOK, pkg.ApiError("c2c error"))
+			c.JSON(consts.StatusOK, ErrJsonMarshal)
 			return // stop
 		} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
 			hlog.Error("cache rdb object failed", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-			c.JSON(consts.StatusOK, pkg.ApiError("cw"))
+			c.JSON(consts.StatusOK, ErrCache)
 			return // stop
 		} else if expire > 0 {
 			sCtx.Redis().Expire(ctx, bindKey, time.Duration(expire)*time.Second)
 		}
 	} else if err != nil {
 		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-		c.JSON(consts.StatusOK, pkg.ApiError("unreachable c"))
+		c.JSON(consts.StatusOK, ErrCache)
 		return // stop
 	} else if err = sonic.UnmarshalString(bkv, &bind); err != nil { // cache error
 		hlog.Error("broken cache schema", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-		c.JSON(consts.StatusOK, pkg.ApiError("broken schema"))
+		c.JSON(consts.StatusOK, ErrJsonUnmarshal)
 		return // stop
 	}
 	//-------------------------------------- cache null
 	if bind.ID <= 0 {
-		c.JSON(consts.StatusOK, pkg.ApiError("nice try!!!asshole"))
+		c.JSON(consts.StatusOK, ErrLoginTry)
 		return // stop
 	}
 	//-------------------------------------- token match --------------------------------------
 	if bind.AccessToken != req.GetAccessToken() {
-		c.JSON(consts.StatusOK, pkg.ApiError("invalid.token"))
+		c.JSON(consts.StatusOK, ErrInvalidToken)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
 		"id": bind.PassportId,
 	}); err != nil {
-		c.JSON(consts.StatusOK, pkg.ApiError(err.Error()))
+		c.JSON(consts.StatusOK, ErrGenToken)
 	} else {
 		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
 			PassportId: int64(bind.PassportId),
