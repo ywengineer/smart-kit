@@ -17,7 +17,7 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 	var req passport.BindReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, validateErr(err))
 		return
 	}
 

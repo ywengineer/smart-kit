@@ -27,14 +27,7 @@ struct LoginReq {
     2: string AppBundleId (api.body="app_bundle_id,required"); // 应用唯一标识符
     3: string Id (api.body="id,required"); // 唯一标志
     4: string AccessToken (api.body="access_token,required"); // 访问Token. 密码/验证码
-    5: map<string, string> DeviceInfo (api.body="device,required"); // 客户端信息[JSON]. 必须包括但不限于
-    // 机型 (deviceModel)
-    // 游戏版本 (v)
-    // 系统版本	(operationSystem)
-    // 连接网络 (netType)
-    // 语言 (language)
-    // 地区(locale)
-    // 扩展1 (e1) 扩展2 (e2) 扩展3 (e3) 扩展4 (e4) 扩展5 (e5)
+    5: map<string, string> DeviceInfo (api.body="device,required", api.vd="len($) < 15 && every($, 'device_model', 'ver', 'os', 'os_ver', 'net_type', 'lang', 'locale')"); // 客户端信息[JSON]. 必须包括但不限于
 }
 
 // 注册: http://xxx/reg
@@ -42,14 +35,7 @@ struct LoginReq {
 struct RegisterReq {
     1: AccountType Type (api.body="type,required", api.vd="$>=1 && $<=11"); // 账号类型
     2: string AppBundleId (api.body="app_bundle_id,required" api.vd="len($) <= 50"); // 应用唯一标识符
-    3: map<string, string> DeviceInfo (api.body="device,required", api.vd="len($) >= 6 && len($) < 15"); // 客户端信息[JSON]. 必须包括但不限于
-    // 机型 (deviceModel)
-    // 游戏版本 (v)
-    // 系统版本	(operationSystem)
-    // 连接网络 (netType)
-    // 语言 (language)
-    // 地区(locale)
-    // 扩展1 (e1) 扩展2 (e2) 扩展3 (e3) 扩展4 (e4) 扩展5 (e5)
+    3: map<string, string> DeviceInfo (api.body="device,required", api.vd="len($) < 15 && every($, 'device_model', 'ver', 'os', 'os_ver', 'net_type', 'lang', 'locale')"); // 客户端信息[JSON]. 必须包括但不限于
 
     4: string Id (api.body="id,required", api.vd="len($) > 5 && len($) <= 50");       // 第三方平台产生的唯一标志
     5: string AccessToken (api.body="access_token");  // 第三方平台API访问Token

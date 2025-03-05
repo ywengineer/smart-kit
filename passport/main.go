@@ -17,6 +17,7 @@ import (
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/passport/pkg/model"
+	"github.com/ywengineer/smart-kit/passport/pkg/validator"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -79,12 +80,17 @@ func main() {
 	bindConfig := binding.NewBindConfig()
 	// 默认 false，当前 Hertz Engine 下生效，多份 engine 实例之间不会冲突
 	bindConfig.LooseZeroMode = true
+	//////////////////////////////////////////////////////////////////////////////////////////
+	validateConfig := binding.NewValidateConfig()
+	validateConfig.MustRegValidateFunc("every", validator.Every)
+	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(
 		server.WithBindConfig(bindConfig),
 		server.WithHostPorts(fmt.Sprintf(":%d", conf.Port)),
 		server.WithBasePath(conf.BasePath),
 		server.WithHandleMethodNotAllowed(true),
 		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB*1024), // KB
+		server.WithValidateConfig(validateConfig),
 	)
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{

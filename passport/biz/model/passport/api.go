@@ -158,7 +158,7 @@ type LoginReq struct {
 	// 访问Token. 密码/验证码
 	AccessToken string `thrift:"AccessToken,4" form:"access_token,required" json:"access_token,required"`
 	// 客户端信息[JSON]. 必须包括但不限于
-	DeviceInfo map[string]string `thrift:"DeviceInfo,5" form:"device,required" json:"device,required"`
+	DeviceInfo map[string]string `thrift:"DeviceInfo,5" form:"device,required" json:"device,required" vd:"len($) < 15 && every($, 'device_model', 'ver', 'os', 'os_ver', 'net_type', 'lang', 'locale')"`
 }
 
 func NewLoginReq() *LoginReq {
@@ -515,14 +515,8 @@ type RegisterReq struct {
 	// 应用唯一标识符
 	AppBundleId string `thrift:"AppBundleId,2" form:"app_bundle_id,required" json:"app_bundle_id,required" vd:"len($) <= 50"`
 	// 客户端信息[JSON]. 必须包括但不限于
-	DeviceInfo map[string]string `thrift:"DeviceInfo,3" form:"device,required" json:"device,required" vd:"len($) >= 6 && len($) < 15"`
-	// 机型 (deviceModel)
-	// 游戏版本 (v)
-	// 系统版本	(operationSystem)
-	// 连接网络 (netType)
-	// 语言 (language)
-	// 地区(locale)
-	// 扩展1 (e1) 扩展2 (e2) 扩展3 (e3) 扩展4 (e4) 扩展5 (e5)
+	DeviceInfo map[string]string `thrift:"DeviceInfo,3" form:"device,required" json:"device,required" vd:"len($) < 15 && every($, 'device_model', 'ver', 'os', 'os_ver', 'net_type', 'lang', 'locale')"`
+	// 第三方平台产生的唯一标志
 	Id string `thrift:"Id,4" form:"id,required" json:"id,required" vd:"len($) > 5 && len($) <= 50"`
 	// 第三方平台API访问Token
 	AccessToken string `thrift:"AccessToken,5" form:"access_token" json:"access_token"`
