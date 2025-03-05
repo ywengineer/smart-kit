@@ -78,7 +78,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	if bind.AccessToken != req.GetAccessToken() {
 		c.JSON(consts.StatusOK, ErrInvalidToken)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		"id": bind.PassportId,
+		sCtx.Jwt().IdentityKey: bind.PassportId,
 	}); err != nil {
 		c.JSON(consts.StatusOK, ErrGenToken)
 	} else {

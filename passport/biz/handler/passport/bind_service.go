@@ -4,6 +4,7 @@ package passport
 
 import (
 	"context"
+	"github.com/ywengineer/smart-kit/passport/pkg"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -20,7 +21,16 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, validateErr(err))
 		return
 	}
-
+	// ano
+	switch req.Type {
+	case passport.AccountType_EMail, passport.AccountType_Mobile:
+		c.JSON(consts.StatusNotImplemented, ErrTodo)
+		return
+	default:
+	}
+	//
+	_ = ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	//
 	resp := new(passport.LoginResp)
 
 	c.JSON(consts.StatusOK, resp)

@@ -143,7 +143,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		hlog.Error("cache new rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, ErrCache)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		"id": pst.ID,
+		sCtx.Jwt().IdentityKey: pst.ID,
 	}); err != nil {
 		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, ErrGenToken)
