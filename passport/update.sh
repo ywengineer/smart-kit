@@ -10,6 +10,7 @@ mod="github.com/ywengineer/smart-kit/passport"
 if ! command -v "$hzcmd" &> /dev/null; then
     echo "$hzcmd 未找到，开始使用 go install 安装..."
     # 这里假设命令对应的 Go 包路径，你需要根据实际情况修改
+    go install github.com/cloudwego/thriftgo@latest
     go install "$repo"
     if [ $? -eq 0 ]; then
         echo "$hzcmd 安装成功。"
