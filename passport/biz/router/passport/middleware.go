@@ -19,7 +19,7 @@ func _bindMw() []app.HandlerFunc {
 		v := c.Value(pkg.ContextKeySmart)
 		if v == nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
-		} else if sCtx, ok := c.Value(pkg.ContextKeySmart).(pkg.SmartContext); !ok {
+		} else if sCtx, ok := v.(pkg.SmartContext); !ok {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 		} else {
 			sCtx.TokenInterceptor()(c, ctx)
