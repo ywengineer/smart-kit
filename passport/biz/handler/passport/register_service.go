@@ -4,6 +4,7 @@ package passport
 
 import (
 	"context"
+	"errors"
 	"github.com/bsm/redislock"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -79,9 +80,9 @@ func Register(ctx context.Context, c *app.RequestContext) {
 			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
 			First(&bind)
 		// rdb error
-		if r.Error != nil {
+		if r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
 			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "register_service"))
-			c.JSON(consts.StatusOK, ErrCache)
+			c.JSON(consts.StatusOK, ErrRdb)
 			return
 		}
 		if bind.PassportId > 0 { // already bound
@@ -152,6 +153,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 			PassportId: int64(pst.ID),
 			Token:      tk,
 			BrandNew:   true,
+			Bounds:     []passport.AccountType{req.Type},
 			CreateTime: pst.CreatedAt.Unix(),
 		}))
 	}
