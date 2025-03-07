@@ -38,7 +38,8 @@ func NewJwt(cfg JwtConfig, auth Authentication) *jwt.HertzJWTMiddleware {
 			return jwt.MapClaims{}
 		},
 		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
-			c.JSON(code, pkg.ApiError(message))
+			hlog.Infof("auth failed: %s", message)
+			c.JSON(code, pkg.ApiError("common.err.invalid_token"))
 		},
 	})
 	if err != nil {
