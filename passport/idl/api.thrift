@@ -51,7 +51,6 @@ struct RegisterReq {
 // 当绑定账号类型为第三方平台，且返回成功。需要将本地保存的randomID替换为第三方平台的唯一标志uid
 struct BindReq {
     1: AccountType Type (api.body="type,required", api.vd="$>=2&&$<=11");    // 账号类型
-    2: string Token (api.body="token,required");        // 凭据
     3: string BindId (api.body="bind_id,required");       // 第三方平台产生的唯一标志
     4: string AccessToken (api.body="access_token,required");  // 第三方平台API访问Token
     5: string RefreshToken (api.body="refresh_token"); // 第三方平台访问Token
