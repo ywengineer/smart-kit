@@ -1138,19 +1138,19 @@ type BindReq struct {
 	// 账号类型
 	Type AccountType `thrift:"Type,1" form:"type,required" json:"type,required" vd:"$>=2&&$<=11"`
 	// 第三方平台产生的唯一标志
-	BindId string `thrift:"BindId,3" form:"bind_id,required" json:"bind_id,required"`
+	BindId string `thrift:"BindId,3" form:"bind_id,required" json:"bind_id,required" vd:"len($) < 32"`
 	// 第三方平台API访问Token
-	AccessToken string `thrift:"AccessToken,4" form:"access_token,required" json:"access_token,required"`
+	AccessToken string `thrift:"AccessToken,4" form:"access_token,required" json:"access_token,required" vd:"len($) < 255"`
 	// 第三方平台访问Token
-	RefreshToken string `thrift:"RefreshToken,5" form:"refresh_token" json:"refresh_token"`
+	RefreshToken string `thrift:"RefreshToken,5" form:"refresh_token" json:"refresh_token" vd:"len($) < 255"`
 	// 第三方平台昵称
-	Name string `thrift:"Name,6" form:"name" json:"name"`
+	Name string `thrift:"Name,6" form:"name" json:"name" vd:"len($) < 32"`
 	// 第三方平台性别
 	Gender Gender `thrift:"Gender,7" form:"gender,required" json:"gender,required" vd:"$>=1&&$<=3"`
 	// 第三方平台头像
-	IconUrl string `thrift:"IconUrl,8" form:"icon_url" json:"icon_url"`
+	IconUrl string `thrift:"IconUrl,8" form:"icon_url" json:"icon_url" vd:"len($) < 255"`
 	// 应用唯一标识符
-	AppBundleId string `thrift:"AppBundleId,9" form:"app_bundle_id,required" json:"app_bundle_id,required"`
+	AppBundleId string `thrift:"AppBundleId,9" form:"app_bundle_id,required" json:"app_bundle_id,required" vd:"len($) < 100"`
 }
 
 func NewBindReq() *BindReq {
@@ -2032,7 +2032,7 @@ func (p *RegisterServiceClient) Register(ctx context.Context, req *RegisterReq) 
 
 // 绑定
 type BindService interface {
-	Bind(ctx context.Context, req *BindReq) (r *LoginResp, err error)
+	Bind(ctx context.Context, req *BindReq) (r []string, err error)
 }
 
 type BindServiceClient struct {
@@ -2061,7 +2061,7 @@ func (p *BindServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *BindServiceClient) Bind(ctx context.Context, req *BindReq) (r *LoginResp, err error) {
+func (p *BindServiceClient) Bind(ctx context.Context, req *BindReq) (r []string, err error) {
 	var _args BindServiceBindArgs
 	_args.Req = req
 	var _result BindServiceBindResult
@@ -2893,7 +2893,7 @@ func (p *bindServiceProcessorBind) Process(ctx context.Context, seqId int32, ipr
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := BindServiceBindResult{}
-	var retval *LoginResp
+	var retval []string
 	if retval, err2 = p.handler.Bind(ctx, args.Req); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Bind: "+err2.Error())
 		oprot.WriteMessageBegin("Bind", thrift.EXCEPTION, seqId)
@@ -3068,7 +3068,7 @@ func (p *BindServiceBindArgs) String() string {
 }
 
 type BindServiceBindResult struct {
-	Success *LoginResp `thrift:"success,0,optional"`
+	Success []string `thrift:"success,0,optional"`
 }
 
 func NewBindServiceBindResult() *BindServiceBindResult {
@@ -3078,9 +3078,9 @@ func NewBindServiceBindResult() *BindServiceBindResult {
 func (p *BindServiceBindResult) InitDefault() {
 }
 
-var BindServiceBindResult_Success_DEFAULT *LoginResp
+var BindServiceBindResult_Success_DEFAULT []string
 
-func (p *BindServiceBindResult) GetSuccess() (v *LoginResp) {
+func (p *BindServiceBindResult) GetSuccess() (v []string) {
 	if !p.IsSetSuccess() {
 		return BindServiceBindResult_Success_DEFAULT
 	}
@@ -3114,7 +3114,7 @@ func (p *BindServiceBindResult) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 0:
-			if fieldTypeId == thrift.STRUCT {
+			if fieldTypeId == thrift.SET {
 				if err = p.ReadField0(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3151,8 +3151,23 @@ ReadStructEndError:
 }
 
 func (p *BindServiceBindResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewLoginResp()
-	if err := _field.Read(iprot); err != nil {
+	_, size, err := iprot.ReadSetBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadSetEnd(); err != nil {
 		return err
 	}
 	p.Success = _field
@@ -3189,10 +3204,25 @@ WriteStructEndError:
 
 func (p *BindServiceBindResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+		if err = oprot.WriteFieldBegin("success", thrift.SET, 0); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := p.Success.Write(oprot); err != nil {
+		if err := oprot.WriteSetBegin(thrift.STRING, len(p.Success)); err != nil {
+			return err
+		}
+		for i := 0; i < len(p.Success); i++ {
+			for j := i + 1; j < len(p.Success); j++ {
+				if reflect.DeepEqual(p.Success[i], p.Success[j]) {
+					return thrift.PrependError("", fmt.Errorf("%T error writing set field: slice is not unique", p.Success[i]))
+				}
+			}
+		}
+		for _, v := range p.Success {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteSetEnd(); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

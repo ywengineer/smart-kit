@@ -10,11 +10,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/redis/go-redis/v9"
+	"github.com/samber/lo"
 	"github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -81,12 +83,32 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		sCtx.Jwt().IdentityKey: bind.PassportId,
 	}); err != nil {
 		c.JSON(consts.StatusOK, ErrGenToken)
+	} else if bindTypes, err := sCtx.Redis().Get(ctx, cacheKeyBoundTypes(bind.PassportId)).Result(); err != nil {
+		c.JSON(consts.StatusOK, ErrCache)
 	} else {
+		//
+		pst := &model.Passport{}
+		if pstJson, err := sCtx.Redis().JSONGet(ctx, cacheKeyPassport(bind.PassportId), "$").Result(); errors.Is(err, redis.Nil) || len(pstJson) <= 0 {
+			// load from rdb
+			pst.ID = bind.PassportId
+			sCtx.Rdb().WithContext(ctx).Where(pst).First(pst)
+		} else if err != nil {
+			hlog.Error("get passport data from redis", zap.String("err", err.Error()), zap.String("tag", "login_service"))
+			c.JSON(consts.StatusOK, ErrCache)
+			return
+		} else {
+			_ = sonic.UnmarshalString(pstJson, pst)
+		}
+		//
 		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
 			PassportId: int64(bind.PassportId),
 			Token:      tk,
 			BrandNew:   false,
-			CreateTime: time.Now().Unix(),
+			Bounds: lo.Map(strings.Split(bindTypes, ","), func(item string, index int) passport.AccountType {
+				ri, _ := passport.AccountTypeFromString(item)
+				return ri
+			}),
+			CreateTime: pst.CreatedAt.Unix(),
 		}))
 	}
 }

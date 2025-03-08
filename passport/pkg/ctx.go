@@ -6,6 +6,7 @@ import (
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type SmartContext interface {
@@ -14,6 +15,8 @@ type SmartContext interface {
 	DistributeLock() *redislock.Client
 	Jwt() *jwt.HertzJWTMiddleware
 	TokenInterceptor() app.HandlerFunc
+	GetDeviceLockKey(deviceId string) string
+	GetPassportLockKey(passportId uint) string
 }
 
 type defaultContext struct {
@@ -22,6 +25,14 @@ type defaultContext struct {
 	redLock *redislock.Client
 	_jwt    *jwt.HertzJWTMiddleware
 	jwtMw   app.HandlerFunc
+}
+
+func (d *defaultContext) GetDeviceLockKey(deviceId string) string {
+	return "lock:device:" + deviceId
+}
+
+func (d *defaultContext) GetPassportLockKey(passportId uint) string {
+	return "lock:passport:" + strconv.FormatUint(uint64(passportId), 10)
 }
 
 func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, redLock *redislock.Client, jwt *jwt.HertzJWTMiddleware) SmartContext {

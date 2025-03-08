@@ -39,7 +39,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	//----------------------------------------------- device lock -----------------------------------------------
-	lock, err := sCtx.DistributeLock().Obtain(ctx, "lock:"+req.DeviceId, time.Minute, &redislock.Options{
+	lock, err := sCtx.DistributeLock().Obtain(ctx, sCtx.GetDeviceLockKey(req.GetDeviceId()), time.Minute, &redislock.Options{
 		Metadata:      "register_service",
 		RetryStrategy: redislock.NoRetry(),
 	})
@@ -137,11 +137,19 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	//
 	sCtx.Redis().Incr(ctx, cntKey)
 	//----------------------------------------------- finish -----------------------------------------------
-	//  cache
-	if bs, err := sonic.Marshal(bind); err != nil { // json error
+	// cache
+	if _, err := sCtx.Redis().Set(ctx, cacheKeyBoundTypes(pst.ID), req.GetType().String(), 0).Result(); err != nil {
+		hlog.Error("cache bind types failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
+		c.JSON(consts.StatusOK, ErrCache)
+	} else if bs, err := sonic.Marshal(bind); err != nil { // json error
 		c.JSON(consts.StatusOK, ErrJsonMarshal)
 	} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
 		hlog.Error("cache new rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
+		c.JSON(consts.StatusOK, ErrCache)
+	} else if pstJsonStr, err := sonic.Marshal(pst); err != nil { // json error
+		c.JSON(consts.StatusOK, ErrJsonMarshal)
+	} else if err = sCtx.Redis().JSONSet(ctx, cacheKeyPassport(pst.ID), "$", pstJsonStr).Err(); err != nil { // cache error
+		hlog.Error("cache passport json object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, ErrCache)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
 		sCtx.Jwt().IdentityKey: pst.ID,

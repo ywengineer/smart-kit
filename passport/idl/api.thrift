@@ -51,13 +51,13 @@ struct RegisterReq {
 // 当绑定账号类型为第三方平台，且返回成功。需要将本地保存的randomID替换为第三方平台的唯一标志uid
 struct BindReq {
     1: AccountType Type (api.body="type,required", api.vd="$>=2&&$<=11");    // 账号类型
-    3: string BindId (api.body="bind_id,required");       // 第三方平台产生的唯一标志
-    4: string AccessToken (api.body="access_token,required");  // 第三方平台API访问Token
-    5: string RefreshToken (api.body="refresh_token"); // 第三方平台访问Token
-    6: string Name (api.body="name");         // 第三方平台昵称
+    3: string BindId (api.body="bind_id,required", api.vd="len($) < 32");       // 第三方平台产生的唯一标志
+    4: string AccessToken (api.body="access_token,required", api.vd="len($) < 255");  // 第三方平台API访问Token
+    5: string RefreshToken (api.body="refresh_token", api.vd="len($) < 255"); // 第三方平台访问Token
+    6: string Name (api.body="name", api.vd="len($) < 32");         // 第三方平台昵称
     7: Gender Gender (api.body="gender,required" api.vd="$>=1&&$<=3");       // 第三方平台性别
-    8: string IconUrl (api.body="icon_url");      // 第三方平台头像
-    9: string AppBundleId (api.body="app_bundle_id,required");  // 应用唯一标识符
+    8: string IconUrl (api.body="icon_url", api.vd="len($) < 255");      // 第三方平台头像
+    9: string AppBundleId (api.body="app_bundle_id,required", api.vd="len($) < 100");  // 应用唯一标识符
 }
 
 // 账号登陆/注册返回结果
@@ -79,5 +79,5 @@ service RegisterService {
 }
 // 绑定
 service BindService {
-    LoginResp Bind(1: BindReq req) (api.post="/bind")
+    set<string> Bind(1: BindReq req) (api.post="/bind")
 }
