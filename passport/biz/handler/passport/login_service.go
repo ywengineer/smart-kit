@@ -5,6 +5,7 @@ package passport
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -30,9 +31,14 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, validateErr(err))
 		return
 	}
-	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
-	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
+	//
+	c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), req.GetId(), req.GetAccessToken(), ""))
+}
+
+func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.AccountType, actId, token, refreshToken string) *pkg.ApiResult {
+	//
+	bindKey := model.GetBindCacheKey(actType.String(), actId)
 	// query bind cache
 	bkv, err := sCtx.Redis().JSONGet(ctx, bindKey).Result()
 	var bind model.PassportBinding
@@ -40,7 +46,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 	if errors.Is(err, redis.Nil) || len(bkv) == 0 { // query bind db
 		r := sCtx.Rdb().
 			WithContext(ctx).
-			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
+			Where(&model.PassportBinding{BindType: actType.String(), BindId: actId}).
 			First(&bind)
 		expire := 0
 		if errors.Is(r.Error, gorm.ErrRecordNotFound) { // no data
@@ -49,42 +55,48 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			expire = 15 - bind.CreatedAt.Second()%10
 		} else if r.Error != nil {
 			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "login_service"))
-			c.JSON(consts.StatusOK, ErrRdb)
-			return
+			return &ErrRdb
 		}
 		if bs, err := sonic.Marshal(bind); err != nil { // json error
-			c.JSON(consts.StatusOK, ErrJsonMarshal)
-			return // stop
+			return &ErrJsonMarshal // stop
 		} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
 			hlog.Error("cache rdb object failed", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-			c.JSON(consts.StatusOK, ErrCache)
-			return // stop
+			return &ErrCache // stop
 		} else if expire > 0 {
 			sCtx.Redis().Expire(ctx, bindKey, time.Duration(expire)*time.Second)
 		}
 	} else if err != nil {
 		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-		c.JSON(consts.StatusOK, ErrCache)
-		return // stop
+		return &ErrCache // stop
 	} else if err = sonic.UnmarshalString(bkv, &bind); err != nil { // cache error
 		hlog.Error("broken cache schema", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-		c.JSON(consts.StatusOK, ErrJsonUnmarshal)
-		return // stop
+		return &ErrJsonUnmarshal // stop
 	}
-	//-------------------------------------- cache null
+	//-------------------------------------- cache null --------------------------------------
 	if bind.ID <= 0 {
-		c.JSON(consts.StatusOK, ErrLoginTry)
-		return // stop
+		return &ErrLoginTry // stop
 	}
-	//-------------------------------------- token match --------------------------------------
-	if bind.AccessToken != req.GetAccessToken() {
-		c.JSON(consts.StatusOK, ErrInvalidToken)
-	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
+	//-------------------------------------- token match [Anonymous/EMail/Mobile] --------------------------------------
+	if (actType == passport.AccountType_Anonymous || actType == passport.AccountType_Mobile || actType == passport.AccountType_EMail) && bind.AccessToken != token {
+		return &ErrInvalidToken
+	} else { // update third platform token
+		bind.AccessToken, bind.RefreshToken = token, refreshToken
+		if ur := sCtx.Rdb().
+			WithContext(ctx).
+			Model(&bind).
+			Select("AccessToken", "RefreshToken").Updates(model.PassportBinding{AccessToken: token, RefreshToken: refreshToken}); ur.Error != nil || ur.RowsAffected == 0 {
+			return &ErrInvalidToken
+		} else {
+			_ = sCtx.Redis().JSONMerge(ctx, bindKey, "$", fmt.Sprintf(`{"access_token":"%s","refresh_token":"%s"}`, token, refreshToken))
+		}
+	}
+	//-------------------------------------- after all process --------------------------------------
+	if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
 		sCtx.Jwt().IdentityKey: bind.PassportId,
 	}); err != nil {
-		c.JSON(consts.StatusOK, ErrGenToken)
+		return &ErrGenToken
 	} else if bindTypes, err := sCtx.Redis().Get(ctx, cacheKeyBoundTypes(bind.PassportId)).Result(); err != nil {
-		c.JSON(consts.StatusOK, ErrCache)
+		return &ErrCache
 	} else {
 		//
 		pst := &model.Passport{}
@@ -94,13 +106,12 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			sCtx.Rdb().WithContext(ctx).Where(pst).First(pst)
 		} else if err != nil {
 			hlog.Error("get passport data from redis", zap.String("err", err.Error()), zap.String("tag", "login_service"))
-			c.JSON(consts.StatusOK, ErrCache)
-			return
+			return &ErrCache
 		} else {
 			_ = sonic.UnmarshalString(pstJson, pst)
 		}
 		//
-		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
+		ok := pkg.ApiOk(passport.LoginResp{
 			PassportId: int64(bind.PassportId),
 			Token:      tk,
 			BrandNew:   false,
@@ -109,6 +120,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 				return ri
 			}),
 			CreateTime: pst.CreatedAt.Unix(),
-		}))
+		})
+		return &ok
 	}
 }

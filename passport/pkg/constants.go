@@ -14,6 +14,10 @@ type ApiResult struct {
 	Message string      `json:"message"`
 }
 
+func (ar *ApiResult) Ok() bool {
+	return ar.Code == Ok
+}
+
 type ResultCode int
 
 const (

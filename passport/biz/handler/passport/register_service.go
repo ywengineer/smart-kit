@@ -29,15 +29,27 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, validateErr(err))
 		return
 	}
+	//
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	// ano
 	switch req.Type {
 	case passport.AccountType_EMail, passport.AccountType_Mobile:
 		c.JSON(consts.StatusNotImplemented, ErrTodo)
 		return
-	default:
+	case passport.AccountType_Anonymous:
+		// continue
+	default: // other platform
+		// exists
+		if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
+			hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
+			c.JSON(consts.StatusInternalServerError, ErrCache)
+			return
+		} else if exists > 0 { // already bind to passport, go to log in service
+			c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), req.GetId(), req.GetAccessToken(), req.GetRefreshToken()))
+			return
+		}
 	}
-	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	//----------------------------------------------- device lock -----------------------------------------------
 	lock, err := sCtx.DistributeLock().Obtain(ctx, sCtx.GetDeviceLockKey(req.GetDeviceId()), time.Minute, &redislock.Options{
 		Metadata:      "register_service",
@@ -62,10 +74,11 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//----------------------------------------------- exists type and id? -----------------------------------------------
-	if req.Type == passport.AccountType_Anonymous { // gen random id
+	if req.Type == passport.AccountType_Anonymous { // gen random id and reset bind cache key
 		req.Id = strings.ToLower(strings.ReplaceAll(uuid.New().String(), "-", ""))
+		req.AccessToken = uuid.New().String()
+		bindKey = model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	}
-	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
 	var bind model.PassportBinding
 	if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 		hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
