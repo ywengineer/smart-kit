@@ -100,10 +100,12 @@ func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.Account
 	} else {
 		//
 		pst := &model.Passport{}
-		if pstJson, err := sCtx.Redis().JSONGet(ctx, cacheKeyPassport(bind.PassportId), "$").Result(); errors.Is(err, redis.Nil) || len(pstJson) <= 0 {
+		if pstJson, err := sCtx.Redis().JSONGet(ctx, cacheKeyPassport(bind.PassportId)).Result(); errors.Is(err, redis.Nil) || len(pstJson) <= 0 {
 			// load from rdb
 			pst.ID = bind.PassportId
 			sCtx.Rdb().WithContext(ctx).Where(pst).First(pst)
+			pstJson, _ = sonic.MarshalString(pst)
+			_ = sCtx.Redis().JSONSet(ctx, cacheKeyPassport(bind.PassportId), "$", pstJson)
 		} else if err != nil {
 			hlog.Error("get passport data from redis", zap.String("err", err.Error()), zap.String("tag", "login_service"))
 			return &ErrCache
