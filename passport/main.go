@@ -43,13 +43,25 @@ func main() {
 			zap.AddStacktrace(zapcore.ErrorLevel),
 		),
 	)
-	logger.SetLevel(hlog.LevelDebug)
 	hlog.SetLogger(logger)
+	hlog.SetLevel(hlog.LevelDebug)
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, RedisLock: true}
-	if err := loader.NewLocalLoader("./application.yaml").Load(conf); err != nil {
+	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, RedisLock: true, LogLevel: zap.DebugLevel}
+	_loader := loader.NewLocalLoader("./application.yaml")
+	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
+	}
+	hlog.SetLevel(hlog.Level(conf.LogLevel + 1))
+	//
+	if err := _loader.Watch(context.Background(), func(data string) error {
+		if err := _loader.Unmarshal([]byte(data), conf); err != nil {
+			return err
+		}
+		hlog.SetLevel(hlog.Level(conf.LogLevel + 1))
+		return nil
+	}); err != nil {
+		hlog.Fatalf("failed to watch app configuration: %v", err)
 	}
 	conf.Port = utility.MinInt(utility.MaxInt(conf.Port, 1), 65535)
 	// redis

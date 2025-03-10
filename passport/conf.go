@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart/utility"
+	"go.uber.org/zap/zapcore"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type Configuration struct {
 	MaxRequestBodyKB int                   `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`
 	Cors             *Cors                 `json:"cors,omitempty" yaml:"cors,omitempty"`
 	Jwt              *middleware.JwtConfig `json:"jwt,omitempty" yaml:"jwt,omitempty"`
+	LogLevel         zapcore.Level         `json:"log_level" yaml:"log-level"`
 }
 
 type Cors struct {
