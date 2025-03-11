@@ -51,7 +51,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		}
 	}
 	//----------------------------------------------- device lock -----------------------------------------------
-	lock, err := sCtx.DistributeLock().Obtain(ctx, sCtx.GetDeviceLockKey(req.GetDeviceId()), time.Minute, &redislock.Options{
+	lock, err := sCtx.LockMgr().Obtain(ctx, sCtx.GetDeviceLockKey(req.GetDeviceId()), time.Minute, &redislock.Options{
 		Metadata:      "register_service",
 		RetryStrategy: redislock.NoRetry(),
 	})

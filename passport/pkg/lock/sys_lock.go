@@ -4,35 +4,75 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"github.com/bsm/redislock"
-	"github.com/dgraph-io/ristretto/v2"
+	"github.com/ywengineer/smart/utility"
 	"io"
-	"strconv"
 	"sync"
 	"time"
 )
 
+var ErrNotObtained = errors.New("failed to obtain lock")
+var ErrExpired = errors.New("expired lock")
+
 type sysLockMgr struct {
-	tmpMu sync.Mutex
-	tmp   []byte
-	ch    *ristretto.Cache[string, string]
+	tmpMu    sync.Mutex
+	tmp      []byte
+	ch       map[string]*sysLock
+	lockPool *sync.Pool
+}
+
+type sysLock struct {
+	key      string
+	tk       string
+	meta     string
+	expireAt int64
+	_mgr     *sysLockMgr
+}
+
+func (s *sysLock) Key() string {
+	return s.key
+}
+
+func (s *sysLock) Token() string {
+	return s.tk
+}
+
+func (s *sysLock) Metadata() string {
+	return s.meta
+}
+
+func (s *sysLock) TTL(ctx context.Context) (time.Duration, error) {
+	return time.Duration(utility.MaxInt64(s.expireAt-time.Now().Unix(), 0)) * time.Second, nil
+}
+
+func (s *sysLock) Refresh(ctx context.Context, ttl time.Duration, opt *redislock.Options) error {
+	if dur, err := s.TTL(ctx); err != nil {
+		return err
+	} else if dur <= 0 {
+		return ErrExpired
+	} else {
+		s.expireAt += ttl.Milliseconds()
+		return nil
+	}
+}
+
+func (s *sysLock) Release(ctx context.Context) error {
+	if s._mgr != nil {
+		s._mgr.lockPool.Put(s)
+		s._mgr = nil
+	}
+	return nil
 }
 
 func NewSystemLockManager() Manager {
-	cache, _ := ristretto.NewCache(&ristretto.Config[string, string]{
-		NumCounters: 1e7,     // number of keys to track frequency of (10M).
-		MaxCost:     1 << 30, // maximum cost of cache (1GB).
-		BufferItems: 64,      // number of keys per Get buffer.
-		ShouldUpdate: func(cur, prev string) bool {
-			return cur == prev
-		},
-	})
-	return &sysLockMgr{ch: cache}
+	return &sysLockMgr{ch: make(map[string]*sysLock, 50), lockPool: &sync.Pool{New: func() interface{} {
+		return &sysLock{}
+	}}}
 }
 
 func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, opt *redislock.Options) (Lock, error) {
 	token := opt.Token
-
 	// Create a random token
 	if token == "" {
 		var err error
@@ -41,8 +81,6 @@ func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, 
 		}
 	}
 
-	value := token + opt.Metadata
-	ttlVal := strconv.FormatInt(int64(ttl/time.Millisecond), 10)
 	retry := opt.RetryStrategy
 
 	// make sure we don't retry forever
@@ -53,26 +91,28 @@ func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, 
 	}
 
 	var ticker *time.Ticker
-	for {
-		ok, err := r.obtain(ctx, key, value, len(token), ttlVal)
-		if err != nil {
-			return nil, err
-		} else if ok {
-			return nil, nil // &Lock{Client: c, key: key, value: value, tokenLen: len(token)}, nil
+	defer func() {
+		if ticker != nil {
+			ticker.Stop()
 		}
-
+	}()
+	//
+	for {
+		if l, _ := r.obtain(key, token, opt.Metadata, ttl); l != nil {
+			return l, nil
+		}
+		//
 		backoff := retry.NextBackoff()
 		if backoff < 1 {
-			return nil, redislock.ErrNotObtained
+			return nil, ErrNotObtained
 		}
-
+		//
 		if ticker == nil {
 			ticker = time.NewTicker(backoff)
-			defer ticker.Stop()
 		} else {
 			ticker.Reset(backoff)
 		}
-
+		//
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -81,11 +121,22 @@ func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, 
 	}
 }
 
-func (r *sysLockMgr) obtain(ctx context.Context, key, value string, tokenLen int, ttlVal string) (bool, error) {
+func (r *sysLockMgr) obtain(key, token, meta string, ttlVal time.Duration) (Lock, error) {
 	r.tmpMu.Lock()
 	defer r.tmpMu.Unlock()
-
-	return true, nil
+	now := time.Now().UnixMilli()
+	if l, ok := r.ch[key]; !ok {
+		l = r.lockPool.Get().(*sysLock)
+		l._mgr = r
+		l.tk, l.meta, l.expireAt, l.key = token, meta, now+ttlVal.Milliseconds(), key
+		r.ch[key] = l
+		return l, nil
+	} else if l.Token() == token && l.Metadata() == meta && l.expireAt > now {
+		l.expireAt += ttlVal.Milliseconds()
+		return l, nil
+	} else {
+		return nil, ErrNotObtained
+	}
 }
 
 func (r *sysLockMgr) randomToken() (string, error) {

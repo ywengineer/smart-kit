@@ -48,7 +48,7 @@ func main() {
 	hlog.SetLevel(hlog.LevelDebug)
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, RedisLock: true, LogLevel: zap.DebugLevel}
+	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: zap.DebugLevel}
 	_loader := loader.NewLocalLoader("./application.yaml")
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
@@ -67,13 +67,16 @@ func main() {
 	conf.Port = utility.MinInt(utility.MaxInt(conf.Port, 1), 65535)
 	// redis
 	var redisClient redis.UniversalClient
-	var redisLock lock.Lock
+	var lockMgr lock.Manager
 	if len(conf.Redis) > 0 {
 		redisClient = utility.NewRedis(conf.Redis)
-		//
-		if conf.RedisLock {
-			redisLock = redislock.New(redisClient)
-		}
+	}
+	if !conf.DistributeLock {
+		lockMgr = lock.NewSystemLockManager()
+	} else if redisClient == nil {
+		panic("can not create distribute lock, because of redis client is nil")
+	} else {
+		lockMgr = lock.NewRedisLockManager(redislock.New(redisClient))
 	}
 	// rational database
 	db, err := utility.NewRDB(conf.RDB)
@@ -120,7 +123,7 @@ func main() {
 	smartCtx := pkg.NewDefaultContext(
 		db,
 		redisClient,
-		redisLock,
+		lockMgr,
 		middleware.NewJwt(*conf.Jwt, nil),
 	)
 	h.Use(requestid.New())

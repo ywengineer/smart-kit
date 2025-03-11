@@ -42,7 +42,7 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	passportId := uint(c.GetFloat64(sCtx.Jwt().IdentityKey))
 	//----------------------------------------------- passport bind lock -----------------------------------------------
-	lock, err := sCtx.DistributeLock().Obtain(ctx, sCtx.GetPassportLockKey(passportId), time.Minute, &redislock.Options{
+	lock, err := sCtx.LockMgr().Obtain(ctx, sCtx.GetPassportLockKey(passportId), time.Minute, &redislock.Options{
 		Metadata:      "bind_service",
 		RetryStrategy: redislock.NoRetry(),
 	})
