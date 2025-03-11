@@ -15,6 +15,7 @@ import (
 	"github.com/hertz-contrib/requestid"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg"
+	"github.com/ywengineer/smart-kit/passport/pkg/lock"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"github.com/ywengineer/smart-kit/passport/pkg/validator"
@@ -66,7 +67,7 @@ func main() {
 	conf.Port = utility.MinInt(utility.MaxInt(conf.Port, 1), 65535)
 	// redis
 	var redisClient redis.UniversalClient
-	var redisLock *redislock.Client
+	var redisLock lock.Lock
 	if len(conf.Redis) > 0 {
 		redisClient = utility.NewRedis(conf.Redis)
 		//
