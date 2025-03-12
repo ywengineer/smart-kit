@@ -13,8 +13,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 	"github.com/ywengineer/smart-kit/passport/biz/model/passport"
+	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
-	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
@@ -38,15 +38,15 @@ func Login(ctx context.Context, c *app.RequestContext) {
 
 func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.AccountType, actId, token, refreshToken string) *pkg.ApiResult {
 	//
-	bindKey := model.GetBindCacheKey(actType.String(), actId)
+	bindKey := model2.GetBindCacheKey(actType.String(), actId)
 	// query bind cache
 	bkv, err := sCtx.Redis().JSONGet(ctx, bindKey).Result()
-	var bind model.PassportBinding
+	var bind model2.PassportBinding
 	//
 	if errors.Is(err, redis.Nil) || len(bkv) == 0 { // query bind db
 		r := sCtx.Rdb().
 			WithContext(ctx).
-			Where(&model.PassportBinding{BindType: actType.String(), BindId: actId}).
+			Where(&model2.PassportBinding{BindType: actType.String(), BindId: actId}).
 			First(&bind)
 		expire := 0
 		if errors.Is(r.Error, gorm.ErrRecordNotFound) { // no data
@@ -84,7 +84,7 @@ func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.Account
 		if ur := sCtx.Rdb().
 			WithContext(ctx).
 			Model(&bind).
-			Select("AccessToken", "RefreshToken").Updates(model.PassportBinding{AccessToken: token, RefreshToken: refreshToken}); ur.Error != nil || ur.RowsAffected == 0 {
+			Select("AccessToken", "RefreshToken").Updates(model2.PassportBinding{AccessToken: token, RefreshToken: refreshToken}); ur.Error != nil || ur.RowsAffected == 0 {
 			return &ErrInvalidToken
 		} else {
 			_ = sCtx.Redis().JSONMerge(ctx, bindKey, "$", fmt.Sprintf(`{"access_token":"%s","refresh_token":"%s"}`, token, refreshToken))
@@ -99,7 +99,7 @@ func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.Account
 		return &ErrCache
 	} else {
 		//
-		pst := &model.Passport{}
+		pst := &model2.Passport{}
 		if pstJson, err := sCtx.Redis().JSONGet(ctx, cacheKeyPassport(bind.PassportId)).Result(); errors.Is(err, redis.Nil) || len(pstJson) <= 0 {
 			// load from rdb
 			pst.ID = bind.PassportId

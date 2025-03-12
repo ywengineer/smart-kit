@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/bytedance/sonic"
-	"github.com/ywengineer/smart-kit/passport/pkg/model"
+	"github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart/utility"
 	"gopkg.in/yaml.v3"
 	"testing"

@@ -14,10 +14,10 @@ import (
 	hertzzap "github.com/hertz-contrib/logger/zap"
 	"github.com/hertz-contrib/requestid"
 	"github.com/redis/go-redis/v9"
+	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/lock"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
-	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"github.com/ywengineer/smart-kit/passport/pkg/validator"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
@@ -84,10 +84,10 @@ func main() {
 		hlog.Fatalf("failed to create rdb instance: %v", err)
 	}
 	err = db.AutoMigrate(
-		&model.Passport{},
-		&model.PassportPunish{},
-		&model.PassportBinding{},
-		&model.WhiteList{},
+		&model2.Passport{},
+		&model2.PassportPunish{},
+		&model2.PassportBinding{},
+		&model2.WhiteList{},
 	)
 	if err != nil {
 		hlog.Fatalf("failed to start orm migrate: %v", err)

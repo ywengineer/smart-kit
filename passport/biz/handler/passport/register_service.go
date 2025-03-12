@@ -12,8 +12,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/google/uuid"
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
+	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
-	"github.com/ywengineer/smart-kit/passport/pkg/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
@@ -31,7 +31,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	}
 	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
-	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetId())
+	bindKey := model2.GetBindCacheKey(req.GetType().String(), req.GetId())
 	// ano
 	switch req.Type {
 	case passport.AccountType_EMail, passport.AccountType_Mobile:
@@ -77,9 +77,9 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	if req.Type == passport.AccountType_Anonymous { // gen random id and reset bind cache key
 		req.Id = strings.ToLower(strings.ReplaceAll(uuid.New().String(), "-", ""))
 		req.AccessToken = uuid.New().String()
-		bindKey = model.GetBindCacheKey(req.GetType().String(), req.GetId())
+		bindKey = model2.GetBindCacheKey(req.GetType().String(), req.GetId())
 	}
-	var bind model.PassportBinding
+	var bind model2.PassportBinding
 	if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 		hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusInternalServerError, ErrCache)
@@ -90,7 +90,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	} else { // load from db
 		r := sCtx.Rdb().
 			WithContext(ctx).
-			Where(&model.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
+			Where(&model2.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
 			First(&bind)
 		// rdb error
 		if r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
@@ -115,19 +115,19 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	}
 	//----------------------------------------------- insert passport and binding -----------------------------------------------
 	deviceBytes, _ := sonic.Marshal(req.GetDeviceInfo())
-	pst := model.Passport{
+	pst := model2.Passport{
 		DeviceId:   req.GetDeviceId(),
 		Adid:       req.GetAdid(),
 		SystemType: req.GetDeviceInfo()[pkg.Os],
 		Locale:     req.GetDeviceInfo()[pkg.Locale],
 		Extra:      deviceBytes,
 	}
-	if err = sCtx.Rdb().Transaction(func(pstBind *model.PassportBinding) func(tx *gorm.DB) error {
+	if err = sCtx.Rdb().Transaction(func(pstBind *model2.PassportBinding) func(tx *gorm.DB) error {
 		return func(tx *gorm.DB) error {
 			if err := tx.Create(&pst).Error; err != nil { // return any error will roll back
 				return err
 			}
-			*pstBind = model.PassportBinding{
+			*pstBind = model2.PassportBinding{
 				PassportId:   pst.ID,
 				BindType:     req.GetType().String(),
 				BindId:       req.GetId(),
