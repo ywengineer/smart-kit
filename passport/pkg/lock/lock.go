@@ -3,6 +3,7 @@ package lock
 import (
 	"context"
 	"github.com/bsm/redislock"
+	"github.com/cespare/xxhash/v2"
 	"time"
 )
 
@@ -26,4 +27,34 @@ type Lock interface {
 	// Release manually releases the lock.
 	// May return ErrLockNotHeld.
 	Release(ctx context.Context) error
+}
+
+func XXHash(data string) uint64 {
+	// 创建 xxHash64 对象
+	h := xxhash.New()
+	// 写入数据
+	_, _ = h.Write([]byte(data))
+	// 计算哈希值
+	return h.Sum64()
+}
+
+const MaximumPowerOfTwo32 = 1 << 30
+
+// NextPowerOfTwo 函数用于计算大于等于 num 的最小 2 的 N 次幂
+func NextPowerOfTwo(num uint64) uint64 {
+	if num <= 0 {
+		return 1
+	}
+	num--
+	num |= num >> 1
+	num |= num >> 2
+	num |= num >> 4
+	num |= num >> 8
+	num |= num >> 16
+	num |= num >> 32
+	if num >= MaximumPowerOfTwo32 {
+		return MaximumPowerOfTwo32
+	} else {
+		return num + 1
+	}
 }

@@ -16,10 +16,10 @@ var ErrNotObtained = errors.New("failed to obtain lock")
 var ErrExpired = errors.New("expired lock")
 
 type sysLockMgr struct {
-	tmpMu    sync.Mutex
-	tmp      []byte
-	ch       map[string]*sysLock
-	lockPool *sync.Pool
+	tmpMu   sync.Mutex
+	tmp     []byte
+	buckets []*sysLockBucket
+	cap     int
 }
 
 type sysLock struct {
@@ -27,7 +27,7 @@ type sysLock struct {
 	tk       string
 	meta     string
 	expireAt int64
-	_mgr     *sysLockMgr
+	_bucket  *sysLockBucket
 }
 
 func (s *sysLock) Key() string {
@@ -58,17 +58,23 @@ func (s *sysLock) Refresh(ctx context.Context, ttl time.Duration, opt *redislock
 }
 
 func (s *sysLock) Release(ctx context.Context) error {
-	if s._mgr != nil {
-		s._mgr.lockPool.Put(s)
-		s._mgr = nil
+	if s._bucket != nil {
+		delete(s._bucket.ch, s.key)
+		s._bucket.lockPool.Put(s)
+		s._bucket = nil
 	}
 	return nil
 }
 
 func NewSystemLockManager() Manager {
-	return &sysLockMgr{ch: make(map[string]*sysLock, 50), lockPool: &sync.Pool{New: func() interface{} {
-		return &sysLock{}
-	}}}
+	lm := &sysLockMgr{buckets: []*sysLockBucket{}, cap: 16}
+	// default 16 buckets
+	for range lm.cap {
+		lm.buckets = append(lm.buckets, &sysLockBucket{ch: make(map[string]*sysLock, 10), lockPool: &sync.Pool{New: func() interface{} {
+			return &sysLock{}
+		}}})
+	}
+	return lm
 }
 
 func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, opt *redislock.Options) (Lock, error) {
@@ -97,8 +103,9 @@ func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, 
 		}
 	}()
 	//
+	bucket := r.buckets[XXHash(key)&uint64(r.cap-1)]
 	for {
-		if l, _ := r.obtain(key, token, opt.Metadata, ttl); l != nil {
+		if l, _ := bucket.obtain(key, token, opt.Metadata, ttl); l != nil {
 			return l, nil
 		}
 		//
@@ -121,24 +128,6 @@ func (r *sysLockMgr) Obtain(ctx context.Context, key string, ttl time.Duration, 
 	}
 }
 
-func (r *sysLockMgr) obtain(key, token, meta string, ttlVal time.Duration) (Lock, error) {
-	r.tmpMu.Lock()
-	defer r.tmpMu.Unlock()
-	now := time.Now().UnixMilli()
-	if l, ok := r.ch[key]; !ok {
-		l = r.lockPool.Get().(*sysLock)
-		l._mgr = r
-		l.tk, l.meta, l.expireAt, l.key = token, meta, now+ttlVal.Milliseconds(), key
-		r.ch[key] = l
-		return l, nil
-	} else if l.Token() == token && l.Metadata() == meta && l.expireAt > now {
-		l.expireAt += ttlVal.Milliseconds()
-		return l, nil
-	} else {
-		return nil, ErrNotObtained
-	}
-}
-
 func (r *sysLockMgr) randomToken() (string, error) {
 	r.tmpMu.Lock()
 	defer r.tmpMu.Unlock()
@@ -154,4 +143,28 @@ func (r *sysLockMgr) randomToken() (string, error) {
 }
 
 func (r *sysLockMgr) Close() {
+}
+
+type sysLockBucket struct {
+	sync.Mutex
+	ch       map[string]*sysLock
+	lockPool *sync.Pool
+}
+
+func (r *sysLockBucket) obtain(key, token, meta string, ttlVal time.Duration) (Lock, error) {
+	r.Lock()
+	defer r.Unlock()
+	now := time.Now().UnixMilli()
+	if l, ok := r.ch[key]; !ok {
+		l = r.lockPool.Get().(*sysLock)
+		l._bucket = r
+		l.tk, l.meta, l.expireAt, l.key = token, meta, now+ttlVal.Milliseconds(), key
+		r.ch[key] = l
+		return l, nil
+	} else if l.Token() == token && l.Metadata() == meta && l.expireAt > now {
+		l.expireAt += ttlVal.Milliseconds()
+		return l, nil
+	} else {
+		return nil, ErrNotObtained
+	}
 }
