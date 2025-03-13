@@ -67,7 +67,7 @@ func (s *sysLock) Release(ctx context.Context) error {
 }
 
 func NewSystemLockManager() Manager {
-	lm := &sysLockMgr{buckets: []*sysLockBucket{}, cap: 16}
+	lm := &sysLockMgr{buckets: []*sysLockBucket{}, cap: 32}
 	// default 16 buckets
 	for range lm.cap {
 		lm.buckets = append(lm.buckets, &sysLockBucket{ch: make(map[string]*sysLock, 10), lockPool: &sync.Pool{New: func() interface{} {
