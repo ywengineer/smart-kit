@@ -88,6 +88,7 @@ func main() {
 		&model2.PassportPunish{},
 		&model2.PassportBinding{},
 		&model2.WhiteList{},
+		&model2.MgrUser{},
 	)
 	if err != nil {
 		hlog.Fatalf("failed to start orm migrate: %v", err)

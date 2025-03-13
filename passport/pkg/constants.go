@@ -53,8 +53,8 @@ func ApiFail(msg string, data ...interface{}) ApiResult {
 	}
 }
 
-func ApiOk(data interface{}) ApiResult {
-	return ApiResult{
+func ApiOk(data interface{}) *ApiResult {
+	return &ApiResult{
 		Code:    Ok,
 		Data:    data,
 		Message: "ok",

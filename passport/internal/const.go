@@ -1,4 +1,4 @@
-package passport
+package internal
 
 import (
 	"github.com/ywengineer/smart-kit/passport/pkg"
@@ -16,6 +16,8 @@ var (
 	ErrGenToken      = pkg.ApiError("common.err.gen_token")
 	ErrInvalidToken  = pkg.ApiError("common.err.invalid_token")
 	ErrBoundOther    = pkg.ApiError("common.err.bound_other")
+	ErrPassword      = pkg.ApiError("common.err.passwd")
+	ErrUserNotFound  = pkg.ApiError("common.err.user_not_found")
 	// ErrMaxPerDevice error for register service
 	ErrMaxPerDevice = pkg.ApiError("register.err.max.account")
 	ErrRegisterFail = pkg.ApiError("register.error.rdb")
@@ -25,17 +27,17 @@ var (
 	ErrSameBound = pkg.ApiError("bind.err.bound_type")
 )
 
-func validateErr(err error) pkg.ApiResult {
+func ValidateErr(err error) pkg.ApiResult {
 	if err == nil {
 		return pkg.ApiError("validation.err", "ignore")
 	}
 	return pkg.ApiError("validation.err", err.Error())
 }
 
-func cacheKeyBoundTypes(passportId uint) string {
+func CacheKeyBoundTypes(passportId uint) string {
 	return "bounds:" + strconv.FormatUint(uint64(passportId), 10)
 }
 
-func cacheKeyPassport(passportId uint) string {
+func CacheKeyPassport(passportId uint) string {
 	return "passport:" + strconv.FormatUint(uint64(passportId), 10)
 }

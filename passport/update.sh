@@ -23,7 +23,7 @@ else
 fi
 
 echo "开始更新服务定义: hz update --idl $(pwd)/idl/api.thrift --mod $mod"
-hz update --idl "$(pwd)/idl/api.thrift" --mod $mod
+hz update --snake_tag --idl "$(pwd)/idl/api.thrift" --mod $mod
 
 if [ $? -eq 0 ]; then
   echo "更新完成"

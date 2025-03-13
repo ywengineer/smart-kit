@@ -12,6 +12,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/google/uuid"
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
+	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"go.uber.org/zap"
@@ -26,7 +27,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	var req passport.RegisterReq
 	err := c.BindAndValidate(&req)
 	if err != nil {
-		c.JSON(consts.StatusBadRequest, validateErr(err))
+		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
 	//
@@ -35,7 +36,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	// ano
 	switch req.Type {
 	case passport.AccountType_EMail, passport.AccountType_Mobile:
-		c.JSON(consts.StatusNotImplemented, ErrTodo)
+		c.JSON(consts.StatusNotImplemented, internal.ErrTodo)
 		return
 	case passport.AccountType_Anonymous:
 		// continue
@@ -43,7 +44,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		// exists
 		if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 			hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-			c.JSON(consts.StatusInternalServerError, ErrCache)
+			c.JSON(consts.StatusInternalServerError, internal.ErrCache)
 			return
 		} else if exists > 0 { // already bind to passport, go to log in service
 			c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), req.GetId(), req.GetAccessToken(), req.GetRefreshToken()))
@@ -57,7 +58,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	})
 	if err != nil {
 		hlog.Error("get lock err", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusLocked, ErrDisLock)
+		c.JSON(consts.StatusLocked, internal.ErrDisLock)
 		return
 	}
 	defer lock.Release(ctx)
@@ -66,11 +67,11 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	cntNow, err := sCtx.Redis().IncrBy(ctx, cntKey, 0).Result()
 	if err != nil {
 		hlog.Error("get incr 0 err", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusInternalServerError, ErrCache)
+		c.JSON(consts.StatusInternalServerError, internal.ErrCache)
 		return
 	} else if cntNow >= 3 {
 		hlog.Info("reach max per device", zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrMaxPerDevice)
+		c.JSON(consts.StatusOK, internal.ErrMaxPerDevice)
 		return
 	}
 	//----------------------------------------------- exists type and id? -----------------------------------------------
@@ -82,10 +83,10 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	var bind model2.PassportBinding
 	if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 		hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusInternalServerError, ErrCache)
+		c.JSON(consts.StatusInternalServerError, internal.ErrCache)
 		return
 	} else if exists > 0 {
-		c.JSON(consts.StatusOK, ErrBoundOther) // already bind to other passport
+		c.JSON(consts.StatusOK, internal.ErrBoundOther) // already bind to other passport
 		return
 	} else { // load from db
 		r := sCtx.Rdb().
@@ -95,20 +96,20 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		// rdb error
 		if r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
 			hlog.Error("get data from rdb", zap.String("err", r.Error.Error()), zap.String("tag", "register_service"))
-			c.JSON(consts.StatusOK, ErrRdb)
+			c.JSON(consts.StatusOK, internal.ErrRdb)
 			return
 		}
 		if bind.PassportId > 0 { // already bound
 			//  cache
 			if bs, err := sonic.Marshal(bind); err != nil { // json error
-				c.JSON(consts.StatusOK, ErrJsonMarshal)
+				c.JSON(consts.StatusOK, internal.ErrJsonMarshal)
 				return // stop
 			} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
 				hlog.Error("cache rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
-				c.JSON(consts.StatusOK, ErrCache)
+				c.JSON(consts.StatusOK, internal.ErrCache)
 				return // stop
 			} else {
-				c.JSON(consts.StatusOK, ErrBoundOther)
+				c.JSON(consts.StatusOK, internal.ErrBoundOther)
 				return // stop
 			}
 		}
@@ -144,31 +145,31 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		}
 	}(&bind)); err != nil {
 		hlog.Error("save rdb error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrRegisterFail)
+		c.JSON(consts.StatusOK, internal.ErrRegisterFail)
 		return
 	}
 	//
 	sCtx.Redis().Incr(ctx, cntKey)
 	//----------------------------------------------- finish -----------------------------------------------
 	// cache
-	if _, err := sCtx.Redis().Set(ctx, cacheKeyBoundTypes(pst.ID), req.GetType().String(), 0).Result(); err != nil {
+	if _, err := sCtx.Redis().Set(ctx, internal.CacheKeyBoundTypes(pst.ID), req.GetType().String(), 0).Result(); err != nil {
 		hlog.Error("cache bind types failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrCache)
+		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else if bs, err := sonic.Marshal(bind); err != nil { // json error
-		c.JSON(consts.StatusOK, ErrJsonMarshal)
+		c.JSON(consts.StatusOK, internal.ErrJsonMarshal)
 	} else if err = sCtx.Redis().JSONSet(ctx, bindKey, "$", bs).Err(); err != nil { // cache error
 		hlog.Error("cache new rdb object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrCache)
+		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else if pstJsonStr, err := sonic.Marshal(pst); err != nil { // json error
-		c.JSON(consts.StatusOK, ErrJsonMarshal)
-	} else if err = sCtx.Redis().JSONSet(ctx, cacheKeyPassport(pst.ID), "$", pstJsonStr).Err(); err != nil { // cache error
+		c.JSON(consts.StatusOK, internal.ErrJsonMarshal)
+	} else if err = sCtx.Redis().JSONSet(ctx, internal.CacheKeyPassport(pst.ID), "$", pstJsonStr).Err(); err != nil { // cache error
 		hlog.Error("cache passport json object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrCache)
+		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
 		sCtx.Jwt().IdentityKey: pst.ID,
 	}); err != nil {
 		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusOK, ErrGenToken)
+		c.JSON(consts.StatusOK, internal.ErrGenToken)
 	} else {
 		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
 			PassportId: int64(pst.ID),
