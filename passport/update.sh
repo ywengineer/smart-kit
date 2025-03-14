@@ -22,8 +22,10 @@ else
     echo "$hzcmd 已安装。"
 fi
 
-echo "开始更新服务定义: hz update --idl $(pwd)/idl/api.thrift --mod $mod"
-hz update --snake_tag --idl "$(pwd)/idl/api.thrift" --mod $mod
+for i in $(pwd)/idl/*.thrift ; do
+  echo "开始更新服务定义: hz update --idl $i"
+  hz update --snake_tag --idl "$i" --mod $mod
+done
 
 if [ $? -eq 0 ]; then
   echo "更新完成"
