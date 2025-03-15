@@ -35,3 +35,8 @@ func _removeMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _pageMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

@@ -23,6 +23,7 @@ func Register(r *server.Hertz) {
 		{
 			_white_list := _mgr.Group("/white-list", _white_listMw()...)
 			_white_list.GET("/add", append(_addMw(), mgr.Add)...)
+			_white_list.GET("/page", append(_pageMw(), mgr.Page)...)
 			_white_list.GET("/rm", append(_removeMw(), mgr.Remove)...)
 		}
 	}
