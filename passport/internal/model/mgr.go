@@ -1,5 +1,7 @@
 package model
 
+import "strconv"
+
 type MgrUser struct {
 	Model
 	Account  string `json:"account" redis:"account" gorm:"index:idx_account;not null;comment:账号"`
@@ -11,4 +13,8 @@ type MgrUser struct {
 
 func GetMgrCacheKey(account string) string {
 	return "mgr:" + account
+}
+
+func GetWhiteListCacheKey(id int64) string {
+	return "white-list:" + strconv.FormatInt(id, 10)
 }

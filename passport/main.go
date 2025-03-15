@@ -24,6 +24,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"net/http"
 	"os"
 )
@@ -127,6 +129,9 @@ func main() {
 		lockMgr,
 		middleware.NewJwt(*conf.Jwt, nil),
 	)
+	//
+	sqlRunner(db)
+	//
 	h.Use(requestid.New())
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
 		ctx.Next(context.WithValue(c, pkg.ContextKeySmart, smartCtx))
@@ -144,4 +149,13 @@ func main() {
 	//
 	register(h)
 	h.Spin()
+}
+
+func sqlRunner(db *gorm.DB) {
+	utility.DefaultLogger().Info(db.ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.WithContext(context.Background()).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "passport"}},                            // 冲突字段（唯一索引）
+			DoUpdates: clause.AssignmentColumns([]string{"updated_at", "deleted_at"}), // 更新字段
+		}).Create(&model2.WhiteList{Passport: 100})
+	}))
 }

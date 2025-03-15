@@ -4,39 +4,89 @@ package mgr
 
 import (
 	"context"
-
+	"errors"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/redis/go-redis/v9"
+	"github.com/ywengineer/smart-kit/passport/biz/model/mgr"
+	"github.com/ywengineer/smart-kit/passport/internal"
+	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
+	"github.com/ywengineer/smart-kit/passport/pkg"
+	"go.uber.org/zap"
+	"gorm.io/gorm/clause"
+	"time"
 )
 
 // Add .
 // @router /mgr/white-list/add [GET]
 func Add(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req int64
+	var req mgr.WhiteListReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
-
-	resp := new(bool)
-
-	c.JSON(consts.StatusOK, resp)
+	//
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	//
+	wKey := model2.GetWhiteListCacheKey(req.GetID())
+	//
+	e, err := sCtx.Redis().Exists(ctx, wKey).Result()
+	var wl model2.WhiteList
+	//
+	if errors.Is(err, redis.Nil) || e == 0 {
+		// insert or update. 使用 OnConflict 实现 INSERT ON DUPLICATE KEY UPDATE
+		wl = model2.WhiteList{Passport: uint(req.GetID())}
+		if r := sCtx.Rdb().WithContext(ctx).Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "passport"}},                            // 冲突字段（唯一索引）
+			DoUpdates: clause.AssignmentColumns([]string{"updated_at", "deleted_at"}), // 更新字段
+		}).Create(&wl); r.Error != nil {
+			hlog.Error("insert or update white list", zap.String("err", r.Error.Error()), zap.String("tag", "white_list_add_service"))
+			c.JSON(consts.StatusOK, internal.ErrRdb)
+		} else {
+			sCtx.Redis().Set(ctx, wKey, wl.ID, 0)
+			c.JSON(consts.StatusOK, pkg.ApiOk(true))
+		}
+	} else if err != nil {
+		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "white_list_add_service"))
+		c.JSON(consts.StatusOK, internal.ErrCache)
+	} else {
+		c.JSON(consts.StatusOK, pkg.ApiOk(true))
+	}
 }
 
 // Remove .
 // @router /mgr/white-list/rm [GET]
 func Remove(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req int64
+	var req mgr.WhiteListReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
-
-	resp := new(bool)
-
-	c.JSON(consts.StatusOK, resp)
+	//
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	//
+	wKey := model2.GetWhiteListCacheKey(req.GetID())
+	//
+	id, err := sCtx.Redis().GetDel(ctx, wKey).Uint64()
+	//
+	if id > 0 {
+		// delete
+		if r := sCtx.Rdb().WithContext(ctx).Delete(&model2.WhiteList{}, id); r.Error != nil {
+			hlog.Error("rm white list", zap.String("err", r.Error.Error()), zap.Uint64("id", id), zap.String("tag", "white_list_add_service"))
+			c.JSON(consts.StatusOK, internal.ErrRdb)
+		} else {
+			sCtx.Redis().Set(ctx, wKey, id, time.Second)
+			c.JSON(consts.StatusOK, pkg.ApiOk(true))
+		}
+	} else if !errors.Is(err, redis.Nil) {
+		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "white_list_add_service"))
+		c.JSON(consts.StatusOK, internal.ErrCache)
+	} else {
+		c.JSON(consts.StatusOK, pkg.ApiOk(true))
+	}
 }

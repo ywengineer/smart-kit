@@ -8,32 +8,32 @@ import (
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
-type MgrUser struct {
+type MgrSignReq struct {
 	Account  string `thrift:"Account,1" form:"account,required" json:"account,required" vd:"len($) <= 20"`
 	Password string `thrift:"Password,2" form:"password,required" json:"password,required" vd:"len($) <= 20"`
 }
 
-func NewMgrUser() *MgrUser {
-	return &MgrUser{}
+func NewMgrSignReq() *MgrSignReq {
+	return &MgrSignReq{}
 }
 
-func (p *MgrUser) InitDefault() {
+func (p *MgrSignReq) InitDefault() {
 }
 
-func (p *MgrUser) GetAccount() (v string) {
+func (p *MgrSignReq) GetAccount() (v string) {
 	return p.Account
 }
 
-func (p *MgrUser) GetPassword() (v string) {
+func (p *MgrSignReq) GetPassword() (v string) {
 	return p.Password
 }
 
-var fieldIDToName_MgrUser = map[int16]string{
+var fieldIDToName_MgrSignReq = map[int16]string{
 	1: "Account",
 	2: "Password",
 }
 
-func (p *MgrUser) Read(iprot thrift.TProtocol) (err error) {
+func (p *MgrSignReq) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
 
@@ -86,7 +86,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_MgrUser[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_MgrSignReq[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -96,7 +96,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *MgrUser) ReadField1(iprot thrift.TProtocol) error {
+func (p *MgrSignReq) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -107,7 +107,7 @@ func (p *MgrUser) ReadField1(iprot thrift.TProtocol) error {
 	p.Account = _field
 	return nil
 }
-func (p *MgrUser) ReadField2(iprot thrift.TProtocol) error {
+func (p *MgrSignReq) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -119,9 +119,9 @@ func (p *MgrUser) ReadField2(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *MgrUser) Write(oprot thrift.TProtocol) (err error) {
+func (p *MgrSignReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("MgrUser"); err != nil {
+	if err = oprot.WriteStructBegin("MgrSignReq"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -151,7 +151,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *MgrUser) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *MgrSignReq) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("Account", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -167,7 +167,7 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
-func (p *MgrUser) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *MgrSignReq) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("Password", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -184,11 +184,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
-func (p *MgrUser) String() string {
+func (p *MgrSignReq) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("MgrUser(%+v)", *p)
+	return fmt.Sprintf("MgrSignReq(%+v)", *p)
 
 }
 
@@ -556,8 +556,147 @@ func (p *MgrSignRes) String() string {
 
 }
 
+type WhiteListReq struct {
+	ID int64 `thrift:"id,1" json:"id" query:"id,required" vd:"$ > 0"`
+}
+
+func NewWhiteListReq() *WhiteListReq {
+	return &WhiteListReq{}
+}
+
+func (p *WhiteListReq) InitDefault() {
+}
+
+func (p *WhiteListReq) GetID() (v int64) {
+	return p.ID
+}
+
+var fieldIDToName_WhiteListReq = map[int16]string{
+	1: "id",
+}
+
+func (p *WhiteListReq) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WhiteListReq[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *WhiteListReq) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+
+func (p *WhiteListReq) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("WhiteListReq"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *WhiteListReq) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *WhiteListReq) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("WhiteListReq(%+v)", *p)
+
+}
+
 type MgrSignService interface {
-	Sign(ctx context.Context, user *MgrUser) (r *MgrSignRes, err error)
+	Sign(ctx context.Context, user *MgrSignReq) (r *MgrSignRes, err error)
 }
 
 type MgrSignServiceClient struct {
@@ -586,7 +725,7 @@ func (p *MgrSignServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *MgrSignServiceClient) Sign(ctx context.Context, user *MgrUser) (r *MgrSignRes, err error) {
+func (p *MgrSignServiceClient) Sign(ctx context.Context, user *MgrSignReq) (r *MgrSignRes, err error) {
 	var _args MgrSignServiceSignArgs
 	_args.User = user
 	var _result MgrSignServiceSignResult
@@ -597,9 +736,9 @@ func (p *MgrSignServiceClient) Sign(ctx context.Context, user *MgrUser) (r *MgrS
 }
 
 type MgrWhiteListService interface {
-	Add(ctx context.Context, iD int64) (r bool, err error)
+	Add(ctx context.Context, iD *WhiteListReq) (r bool, err error)
 
-	Remove(ctx context.Context, iD int64) (r bool, err error)
+	Remove(ctx context.Context, iD *WhiteListReq) (r bool, err error)
 }
 
 type MgrWhiteListServiceClient struct {
@@ -628,7 +767,7 @@ func (p *MgrWhiteListServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *MgrWhiteListServiceClient) Add(ctx context.Context, iD int64) (r bool, err error) {
+func (p *MgrWhiteListServiceClient) Add(ctx context.Context, iD *WhiteListReq) (r bool, err error) {
 	var _args MgrWhiteListServiceAddArgs
 	_args.ID = iD
 	var _result MgrWhiteListServiceAddResult
@@ -637,7 +776,7 @@ func (p *MgrWhiteListServiceClient) Add(ctx context.Context, iD int64) (r bool, 
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *MgrWhiteListServiceClient) Remove(ctx context.Context, iD int64) (r bool, err error) {
+func (p *MgrWhiteListServiceClient) Remove(ctx context.Context, iD *WhiteListReq) (r bool, err error) {
 	var _args MgrWhiteListServiceRemoveArgs
 	_args.ID = iD
 	var _result MgrWhiteListServiceRemoveResult
@@ -737,7 +876,7 @@ func (p *mgrSignServiceProcessorSign) Process(ctx context.Context, seqId int32, 
 }
 
 type MgrSignServiceSignArgs struct {
-	User *MgrUser `thrift:"user,1"`
+	User *MgrSignReq `thrift:"user,1"`
 }
 
 func NewMgrSignServiceSignArgs() *MgrSignServiceSignArgs {
@@ -747,9 +886,9 @@ func NewMgrSignServiceSignArgs() *MgrSignServiceSignArgs {
 func (p *MgrSignServiceSignArgs) InitDefault() {
 }
 
-var MgrSignServiceSignArgs_User_DEFAULT *MgrUser
+var MgrSignServiceSignArgs_User_DEFAULT *MgrSignReq
 
-func (p *MgrSignServiceSignArgs) GetUser() (v *MgrUser) {
+func (p *MgrSignServiceSignArgs) GetUser() (v *MgrSignReq) {
 	if !p.IsSetUser() {
 		return MgrSignServiceSignArgs_User_DEFAULT
 	}
@@ -820,7 +959,7 @@ ReadStructEndError:
 }
 
 func (p *MgrSignServiceSignArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewMgrUser()
+	_field := NewMgrSignReq()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -1167,7 +1306,7 @@ func (p *mgrWhiteListServiceProcessorRemove) Process(ctx context.Context, seqId 
 }
 
 type MgrWhiteListServiceAddArgs struct {
-	ID int64 `thrift:"id,1"`
+	ID *WhiteListReq `thrift:"id,1"`
 }
 
 func NewMgrWhiteListServiceAddArgs() *MgrWhiteListServiceAddArgs {
@@ -1177,12 +1316,21 @@ func NewMgrWhiteListServiceAddArgs() *MgrWhiteListServiceAddArgs {
 func (p *MgrWhiteListServiceAddArgs) InitDefault() {
 }
 
-func (p *MgrWhiteListServiceAddArgs) GetID() (v int64) {
+var MgrWhiteListServiceAddArgs_ID_DEFAULT *WhiteListReq
+
+func (p *MgrWhiteListServiceAddArgs) GetID() (v *WhiteListReq) {
+	if !p.IsSetID() {
+		return MgrWhiteListServiceAddArgs_ID_DEFAULT
+	}
 	return p.ID
 }
 
 var fieldIDToName_MgrWhiteListServiceAddArgs = map[int16]string{
 	1: "id",
+}
+
+func (p *MgrWhiteListServiceAddArgs) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *MgrWhiteListServiceAddArgs) Read(iprot thrift.TProtocol) (err error) {
@@ -1204,7 +1352,7 @@ func (p *MgrWhiteListServiceAddArgs) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1241,12 +1389,9 @@ ReadStructEndError:
 }
 
 func (p *MgrWhiteListServiceAddArgs) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	_field := NewWhiteListReq()
+	if err := _field.Read(iprot); err != nil {
 		return err
-	} else {
-		_field = v
 	}
 	p.ID = _field
 	return nil
@@ -1281,10 +1426,10 @@ WriteStructEndError:
 }
 
 func (p *MgrWhiteListServiceAddArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.ID); err != nil {
+	if err := p.ID.Write(oprot); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1456,7 +1601,7 @@ func (p *MgrWhiteListServiceAddResult) String() string {
 }
 
 type MgrWhiteListServiceRemoveArgs struct {
-	ID int64 `thrift:"id,1"`
+	ID *WhiteListReq `thrift:"id,1"`
 }
 
 func NewMgrWhiteListServiceRemoveArgs() *MgrWhiteListServiceRemoveArgs {
@@ -1466,12 +1611,21 @@ func NewMgrWhiteListServiceRemoveArgs() *MgrWhiteListServiceRemoveArgs {
 func (p *MgrWhiteListServiceRemoveArgs) InitDefault() {
 }
 
-func (p *MgrWhiteListServiceRemoveArgs) GetID() (v int64) {
+var MgrWhiteListServiceRemoveArgs_ID_DEFAULT *WhiteListReq
+
+func (p *MgrWhiteListServiceRemoveArgs) GetID() (v *WhiteListReq) {
+	if !p.IsSetID() {
+		return MgrWhiteListServiceRemoveArgs_ID_DEFAULT
+	}
 	return p.ID
 }
 
 var fieldIDToName_MgrWhiteListServiceRemoveArgs = map[int16]string{
 	1: "id",
+}
+
+func (p *MgrWhiteListServiceRemoveArgs) IsSetID() bool {
+	return p.ID != nil
 }
 
 func (p *MgrWhiteListServiceRemoveArgs) Read(iprot thrift.TProtocol) (err error) {
@@ -1493,7 +1647,7 @@ func (p *MgrWhiteListServiceRemoveArgs) Read(iprot thrift.TProtocol) (err error)
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1530,12 +1684,9 @@ ReadStructEndError:
 }
 
 func (p *MgrWhiteListServiceRemoveArgs) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	_field := NewWhiteListReq()
+	if err := _field.Read(iprot); err != nil {
 		return err
-	} else {
-		_field = v
 	}
 	p.ID = _field
 	return nil
@@ -1570,10 +1721,10 @@ WriteStructEndError:
 }
 
 func (p *MgrWhiteListServiceRemoveArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("id", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.ID); err != nil {
+	if err := p.ID.Write(oprot); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

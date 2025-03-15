@@ -24,7 +24,7 @@ import (
 // @router /mgr/sign [POST]
 func Sign(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req mgr.MgrUser
+	var req mgr.MgrSignReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
@@ -33,7 +33,7 @@ func Sign(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, mgrSign(ctx, c, &req))
 }
 
-func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrUser) *pkg.ApiResult {
+func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrSignReq) *pkg.ApiResult {
 	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
 	//
