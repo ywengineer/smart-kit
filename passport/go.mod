@@ -15,10 +15,11 @@ require (
 	github.com/hertz-contrib/jwt v1.0.2
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/hertz-contrib/requestid v1.1.0
+	github.com/pilagod/gorm-cursor-paginator/v2 v2.6.1
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
-	github.com/ywengineer/smart v0.0.0-20250312092332-c1593d5b6471
+	github.com/ywengineer/smart v0.0.0-20250315160549-ab90c87576e9
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -48,7 +49,7 @@ require (
 	github.com/alibabacloud-go/tea-utils v1.4.4 // indirect
 	github.com/alibabacloud-go/tea-utils/v2 v2.0.7 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.3 // indirect
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.92 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.94 // indirect
 	github.com/aliyun/alibabacloud-dkms-gcs-go-sdk v0.5.1 // indirect
 	github.com/aliyun/alibabacloud-dkms-transfer-go-sdk v0.1.8 // indirect
 	github.com/aliyun/aliyun-secretsmanager-client-go v1.1.5 // indirect

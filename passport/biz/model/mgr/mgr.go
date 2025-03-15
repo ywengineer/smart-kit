@@ -1015,8 +1015,8 @@ func (p *WhiteListData) String() string {
 }
 
 type WhiteListPageReq struct {
-	PageNo   int64 `thrift:"PageNo,1" json:"page_no" query:"page,required" vd:"$ > 0"`
-	PageSize int64 `thrift:"PageSize,2" json:"page_size" query:"page_size,required" vd:"$ >= 50 && $ <= 100"`
+	PageNo   int32 `thrift:"PageNo,1" json:"page_no" query:"page,required" vd:"$ > 0"`
+	PageSize int32 `thrift:"PageSize,2" json:"page_size" query:"page_size,required" vd:"$ >= 50 && $ <= 100"`
 }
 
 func NewWhiteListPageReq() *WhiteListPageReq {
@@ -1026,11 +1026,11 @@ func NewWhiteListPageReq() *WhiteListPageReq {
 func (p *WhiteListPageReq) InitDefault() {
 }
 
-func (p *WhiteListPageReq) GetPageNo() (v int64) {
+func (p *WhiteListPageReq) GetPageNo() (v int32) {
 	return p.PageNo
 }
 
-func (p *WhiteListPageReq) GetPageSize() (v int64) {
+func (p *WhiteListPageReq) GetPageSize() (v int32) {
 	return p.PageSize
 }
 
@@ -1058,7 +1058,7 @@ func (p *WhiteListPageReq) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1066,7 +1066,7 @@ func (p *WhiteListPageReq) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1104,8 +1104,8 @@ ReadStructEndError:
 
 func (p *WhiteListPageReq) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1115,8 +1115,8 @@ func (p *WhiteListPageReq) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *WhiteListPageReq) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1158,10 +1158,10 @@ WriteStructEndError:
 }
 
 func (p *WhiteListPageReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PageNo", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("PageNo", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.PageNo); err != nil {
+	if err := oprot.WriteI32(p.PageNo); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1174,10 +1174,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WhiteListPageReq) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PageSize", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("PageSize", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.PageSize); err != nil {
+	if err := oprot.WriteI32(p.PageSize); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1199,9 +1199,11 @@ func (p *WhiteListPageReq) String() string {
 }
 
 type WhiteListPageRes struct {
-	Page     int64            `thrift:"Page,1" form:"page" json:"page" query:"page"`
-	PageSize int64            `thrift:"PageSize,2" form:"page_size" json:"page_size" query:"page_size"`
+	Page     int32            `thrift:"Page,1" form:"page" json:"page" query:"page"`
+	PageSize int32            `thrift:"PageSize,2" form:"page_size" json:"page_size" query:"page_size"`
 	Data     []*WhiteListData `thrift:"Data,3" form:"data" json:"data" query:"data"`
+	Total    int64            `thrift:"Total,4" form:"total" json:"total" query:"total"`
+	MaxPage  int32            `thrift:"MaxPage,5" form:"max_page" json:"max_page" query:"max_page"`
 }
 
 func NewWhiteListPageRes() *WhiteListPageRes {
@@ -1211,11 +1213,11 @@ func NewWhiteListPageRes() *WhiteListPageRes {
 func (p *WhiteListPageRes) InitDefault() {
 }
 
-func (p *WhiteListPageRes) GetPage() (v int64) {
+func (p *WhiteListPageRes) GetPage() (v int32) {
 	return p.Page
 }
 
-func (p *WhiteListPageRes) GetPageSize() (v int64) {
+func (p *WhiteListPageRes) GetPageSize() (v int32) {
 	return p.PageSize
 }
 
@@ -1223,10 +1225,20 @@ func (p *WhiteListPageRes) GetData() (v []*WhiteListData) {
 	return p.Data
 }
 
+func (p *WhiteListPageRes) GetTotal() (v int64) {
+	return p.Total
+}
+
+func (p *WhiteListPageRes) GetMaxPage() (v int32) {
+	return p.MaxPage
+}
+
 var fieldIDToName_WhiteListPageRes = map[int16]string{
 	1: "Page",
 	2: "PageSize",
 	3: "Data",
+	4: "Total",
+	5: "MaxPage",
 }
 
 func (p *WhiteListPageRes) Read(iprot thrift.TProtocol) (err error) {
@@ -1248,7 +1260,7 @@ func (p *WhiteListPageRes) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1256,7 +1268,7 @@ func (p *WhiteListPageRes) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1266,6 +1278,22 @@ func (p *WhiteListPageRes) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1302,8 +1330,8 @@ ReadStructEndError:
 
 func (p *WhiteListPageRes) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1313,8 +1341,8 @@ func (p *WhiteListPageRes) ReadField1(iprot thrift.TProtocol) error {
 }
 func (p *WhiteListPageRes) ReadField2(iprot thrift.TProtocol) error {
 
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
 		return err
 	} else {
 		_field = v
@@ -1345,6 +1373,28 @@ func (p *WhiteListPageRes) ReadField3(iprot thrift.TProtocol) error {
 	p.Data = _field
 	return nil
 }
+func (p *WhiteListPageRes) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Total = _field
+	return nil
+}
+func (p *WhiteListPageRes) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MaxPage = _field
+	return nil
+}
 
 func (p *WhiteListPageRes) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1362,6 +1412,14 @@ func (p *WhiteListPageRes) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 	}
@@ -1383,10 +1441,10 @@ WriteStructEndError:
 }
 
 func (p *WhiteListPageRes) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Page", thrift.I64, 1); err != nil {
+	if err = oprot.WriteFieldBegin("Page", thrift.I32, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.Page); err != nil {
+	if err := oprot.WriteI32(p.Page); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1399,10 +1457,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *WhiteListPageRes) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("PageSize", thrift.I64, 2); err != nil {
+	if err = oprot.WriteFieldBegin("PageSize", thrift.I32, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.PageSize); err != nil {
+	if err := oprot.WriteI32(p.PageSize); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1437,6 +1495,38 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *WhiteListPageRes) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Total", thrift.I64, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Total); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *WhiteListPageRes) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("MaxPage", thrift.I32, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.MaxPage); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *WhiteListPageRes) String() string {

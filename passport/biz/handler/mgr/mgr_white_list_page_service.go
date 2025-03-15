@@ -4,6 +4,12 @@ package mgr
 
 import (
 	"context"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/ywengineer/smart-kit/passport/internal"
+	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
+	"github.com/ywengineer/smart-kit/passport/pkg"
+	"github.com/ywengineer/smart-kit/passport/pkg/sql"
+	"go.uber.org/zap"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -17,11 +23,33 @@ func Page(ctx context.Context, c *app.RequestContext) {
 	var req mgr.WhiteListPageReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
-
-	resp := new(mgr.WhiteListPageRes)
-
-	c.JSON(consts.StatusOK, resp)
+	//
+	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	var users []model2.WhiteList
+	// extend query before paginating
+	stmt := sCtx.Rdb().WithContext(ctx).Model(&users)
+	// with pagination
+	if p, err := sql.Paginate[model2.WhiteList](ctx, stmt, req.GetPageNo(), req.GetPageSize(), &users, func(i model2.WhiteList) *mgr.WhiteListData {
+		return &mgr.WhiteListData{
+			Id:         int64(i.ID),
+			CreateAt:   i.CreatedAt.Unix(),
+			UpdateAt:   i.UpdatedAt.Unix(),
+			DeleteAt:   i.DeletedAt.Unix(),
+			PassportId: int64(i.Passport),
+		}
+	}); err != nil {
+		hlog.Error("paginator error", zap.Any("data", req), zap.String("err", err.Error()), zap.String("tag", "white_list_page_service"))
+		c.JSON(consts.StatusOK, internal.ErrRdb)
+	} else {
+		c.JSON(consts.StatusOK, pkg.ApiOk(&mgr.WhiteListPageRes{
+			Page:     req.GetPageNo(),
+			PageSize: req.GetPageSize(),
+			Total:    p.Total,
+			MaxPage:  p.MaxPage,
+			Data:     p.Data,
+		}))
+	}
 }

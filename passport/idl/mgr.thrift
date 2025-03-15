@@ -31,14 +31,16 @@ struct WhiteListData {
 }
 
 struct WhiteListPageReq {
-    1: i64 PageNo (api.query="page,required", api.vd="$ > 0")
-    2: i64 PageSize (api.query="page_size,required", api.vd="$ >= 50 && $ <= 100")
+    1: i32 PageNo (api.query="page,required", api.vd="$ > 0")
+    2: i32 PageSize (api.query="page_size,required", api.vd="$ >= 50 && $ <= 100")
 }
 
 struct WhiteListPageRes {
-    1: i64 Page
-    2: i64 PageSize
+    1: i32 Page
+    2: i32 PageSize
     3: list<WhiteListData> Data
+    4: i64 Total
+    5: i32 MaxPage
 }
 
 service MgrWhiteListService {
