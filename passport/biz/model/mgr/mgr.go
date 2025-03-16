@@ -1015,8 +1015,9 @@ func (p *WhiteListData) String() string {
 }
 
 type WhiteListPageReq struct {
-	PageNo   int32 `thrift:"PageNo,1" json:"page_no" query:"page,required" vd:"$ > 0"`
-	PageSize int32 `thrift:"PageSize,2" json:"page_size" query:"page_size,required" vd:"$ >= 50 && $ <= 100"`
+	PageNo     int32 `thrift:"PageNo,1" json:"page_no" query:"page,required" vd:"$ > 0"`
+	PageSize   int32 `thrift:"PageSize,2" json:"page_size" query:"page_size,required" vd:"$ >= 50 && $ <= 100"`
+	PassportId int64 `thrift:"PassportId,3" json:"passport_id" query:"passport_id"`
 }
 
 func NewWhiteListPageReq() *WhiteListPageReq {
@@ -1034,9 +1035,14 @@ func (p *WhiteListPageReq) GetPageSize() (v int32) {
 	return p.PageSize
 }
 
+func (p *WhiteListPageReq) GetPassportId() (v int64) {
+	return p.PassportId
+}
+
 var fieldIDToName_WhiteListPageReq = map[int16]string{
 	1: "PageNo",
 	2: "PageSize",
+	3: "PassportId",
 }
 
 func (p *WhiteListPageReq) Read(iprot thrift.TProtocol) (err error) {
@@ -1068,6 +1074,14 @@ func (p *WhiteListPageReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1124,6 +1138,17 @@ func (p *WhiteListPageReq) ReadField2(iprot thrift.TProtocol) error {
 	p.PageSize = _field
 	return nil
 }
+func (p *WhiteListPageReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.PassportId = _field
+	return nil
+}
 
 func (p *WhiteListPageReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1137,6 +1162,10 @@ func (p *WhiteListPageReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -1188,6 +1217,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *WhiteListPageReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("PassportId", thrift.I64, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.PassportId); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *WhiteListPageReq) String() string {

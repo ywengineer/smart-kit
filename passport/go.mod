@@ -19,7 +19,7 @@ require (
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
-	github.com/ywengineer/smart v0.0.0-20250315160549-ab90c87576e9
+	github.com/ywengineer/smart v0.0.0-20250316051218-f62a2163d99c
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1

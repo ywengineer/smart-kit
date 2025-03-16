@@ -33,6 +33,7 @@ struct WhiteListData {
 struct WhiteListPageReq {
     1: i32 PageNo (api.query="page,required", api.vd="$ > 0")
     2: i32 PageSize (api.query="page_size,required", api.vd="$ >= 50 && $ <= 100")
+    3: i64 PassportId (api.query="passport_id")
 }
 
 struct WhiteListPageRes {

@@ -11,6 +11,7 @@ rdb: # rational database connect property
   port: 3306
   database: "smart-passport"
   parameters: ""
+  debug-mode: true
   pool:
     max-idle-con: 5
     max-open-con: 50
