@@ -23,6 +23,7 @@ struct PassportData {
     7: string SystemType
     8: string Locale
     9: list<PassportBindData> Bounds
+    10: string Extra
 }
 
 struct MgrPassportDetailReq {

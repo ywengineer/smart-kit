@@ -562,6 +562,7 @@ type PassportData struct {
 	SystemType string              `thrift:"SystemType,7" form:"system_type" json:"system_type" query:"system_type"`
 	Locale     string              `thrift:"Locale,8" form:"locale" json:"locale" query:"locale"`
 	Bounds     []*PassportBindData `thrift:"Bounds,9" form:"bounds" json:"bounds" query:"bounds"`
+	Extra      string              `thrift:"Extra,10" form:"extra" json:"extra" query:"extra"`
 }
 
 func NewPassportData() *PassportData {
@@ -607,16 +608,21 @@ func (p *PassportData) GetBounds() (v []*PassportBindData) {
 	return p.Bounds
 }
 
+func (p *PassportData) GetExtra() (v string) {
+	return p.Extra
+}
+
 var fieldIDToName_PassportData = map[int16]string{
-	1: "Id",
-	2: "CreateAt",
-	3: "UpdateAt",
-	4: "DeleteAt",
-	5: "DeviceId",
-	6: "Adid",
-	7: "SystemType",
-	8: "Locale",
-	9: "Bounds",
+	1:  "Id",
+	2:  "CreateAt",
+	3:  "UpdateAt",
+	4:  "DeleteAt",
+	5:  "DeviceId",
+	6:  "Adid",
+	7:  "SystemType",
+	8:  "Locale",
+	9:  "Bounds",
+	10: "Extra",
 }
 
 func (p *PassportData) Read(iprot thrift.TProtocol) (err error) {
@@ -704,6 +710,14 @@ func (p *PassportData) Read(iprot thrift.TProtocol) (err error) {
 		case 9:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -849,6 +863,17 @@ func (p *PassportData) ReadField9(iprot thrift.TProtocol) error {
 	p.Bounds = _field
 	return nil
 }
+func (p *PassportData) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Extra = _field
+	return nil
+}
 
 func (p *PassportData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -890,6 +915,10 @@ func (p *PassportData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField9(oprot); err != nil {
 			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -1061,6 +1090,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+func (p *PassportData) writeField10(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Extra", thrift.STRING, 10); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Extra); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 
 func (p *PassportData) String() string {
