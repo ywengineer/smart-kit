@@ -37,6 +37,7 @@ func Detail(ctx context.Context, c *app.RequestContext) {
 		if len(pstJson) == 0 {
 			if r := sCtx.Rdb().
 				WithContext(ctx).
+				Unscoped().
 				Where("id = ?", req.GetId()).
 				First(&pstModel); r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
 				hlog.Error("failed to find passport", zap.String("err", r.Error.Error()), zap.Uint("data", pstModel.ID), zap.String("tag", "mgr_passport_info_service"))
@@ -55,6 +56,7 @@ func Detail(ctx context.Context, c *app.RequestContext) {
 		var bounds []model2.PassportBinding
 		if r := sCtx.Rdb().
 			WithContext(ctx).
+			Unscoped().
 			Where(&model2.PassportBinding{PassportId: pstModel.ID}).
 			Find(&bounds); r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
 			hlog.Error("failed to find bounds data for passport", zap.String("err", r.Error.Error()), zap.Uint("data", pstModel.ID), zap.String("tag", "mgr_passport_info_service"))
