@@ -7,7 +7,7 @@ import (
 )
 
 func ConvertPassport(pstModel *model2.Passport, bounds *[]model2.PassportBinding) *pst.PassportData {
-	return &pst.PassportData{
+	pd := &pst.PassportData{
 		Id:         int64(pstModel.ID),
 		CreateAt:   pstModel.CreatedAt.Unix(),
 		UpdateAt:   pstModel.UpdatedAt.Unix(),
@@ -17,8 +17,9 @@ func ConvertPassport(pstModel *model2.Passport, bounds *[]model2.PassportBinding
 		SystemType: pstModel.SystemType,
 		Locale:     pstModel.Locale,
 		Extra:      pstModel.Extra.String(),
-		//
-		Bounds: lo.Map(*bounds, func(item model2.PassportBinding, index int) *pst.PassportBindData {
+	}
+	if bounds != nil && len(*bounds) > 0 {
+		pd.Bounds = lo.Map(*bounds, func(item model2.PassportBinding, index int) *pst.PassportBindData {
 			return &pst.PassportBindData{
 				Id:         int64(item.ID),
 				CreateAt:   item.CreatedAt.Unix(),
@@ -31,6 +32,7 @@ func ConvertPassport(pstModel *model2.Passport, bounds *[]model2.PassportBinding
 				Gender:     int64(item.Gender),
 				IconUrl:    item.IconUrl,
 			}
-		}),
+		})
 	}
+	return pd
 }

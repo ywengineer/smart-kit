@@ -30,6 +30,24 @@ struct MgrPassportDetailReq {
     1: i64 Id (api.query="id,required", api.vd="$ > 0")
 }
 
+struct MgrPassportPageReq {
+    1: i32 PageNo (api.query="page,required", api.vd="$ > 0")
+    2: i32 PageSize (api.query="page_size,required", api.vd="$ >= 50 && $ <= 100")
+    3: i64 PassportId (api.query="passport_id")
+}
+
+struct MgrPassportPageRes {
+    1: i32 Page
+    2: i32 PageSize
+    3: list<PassportData> Data
+    4: i64 Total
+    5: i32 MaxPage
+}
+
 service MgrPassportInfoService {
     PassportData Detail(1:MgrPassportDetailReq req) (api.get="/mgr/passport/detail")
+}
+
+service MgrPassportPageService {
+    MgrPassportPageRes Page(1: MgrPassportPageReq req) (api.get="/mgr/passport/page")
 }

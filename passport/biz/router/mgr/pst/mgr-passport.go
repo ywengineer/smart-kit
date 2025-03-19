@@ -22,6 +22,7 @@ func Register(r *server.Hertz) {
 		{
 			_passport := _mgr.Group("/passport", _passportMw()...)
 			_passport.GET("/detail", append(_detailMw(), pst.Detail)...)
+			_passport.GET("/page", append(_pageMw(), pst.Page)...)
 		}
 	}
 }
