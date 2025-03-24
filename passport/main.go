@@ -66,6 +66,11 @@ func main() {
 	}); err != nil {
 		hlog.Fatalf("failed to watch app configuration: %v", err)
 	}
+	//
+	if (conf.RegistryEnable || conf.DiscoveryEnable) && conf.Nacos == nil {
+		hlog.Fatalf("enable service registry or discovery. but not found nacos configuration")
+		return
+	}
 	conf.Port = utility.MinInt(utility.MaxInt(conf.Port, 1), 65535)
 	// redis
 	var redisClient redis.UniversalClient
@@ -122,6 +127,24 @@ func main() {
 			AllowWildcard:    _cors.AllowWildcard,
 		}))
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//var nnc naming_client.INamingClient
+	//if conf.Nacos != nil {
+	//	if nnc, err = loader.NewNacosClient(conf.Nacos.Ip, conf.Nacos.Port, conf.Nacos.ContextPath, conf.Nacos.TimeoutMs, conf.Nacos.Namespace, conf.Nacos.User, conf.Nacos.Password, conf.LogLevel.String()); err != nil {
+	//		hlog.Fatalf("failed to create nacos client: %v", err)
+	//		return
+	//	}
+	//}
+	//// ...
+	//r := nacos.NewNacosRegistry(ncc)
+	//h := server.Default(
+	//	server.WithHostPorts(addr),
+	//	server.WithRegistry(r, &registry.Info{
+	//		ServiceName: "hertz.test.demo",
+	//		Addr:        utils.NewNetAddr("tcp", addr),
+	//		Weight:      10,
+	//		Tags:        nil,
+	//	}))
 	//////////////////////////////////////////////////////////////////////////////////////////
 	smartCtx := pkg.NewDefaultContext(
 		db,

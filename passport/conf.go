@@ -17,6 +17,9 @@ type Configuration struct {
 	Cors             *Cors                 `json:"cors,omitempty" yaml:"cors,omitempty"`
 	Jwt              *middleware.JwtConfig `json:"jwt,omitempty" yaml:"jwt,omitempty"`
 	LogLevel         zapcore.Level         `json:"log_level" yaml:"log-level"`
+	Nacos            *Nacos                `json:"nacos,omitempty" yaml:"nacos,omitempty"`
+	RegistryEnable   bool                  `json:"registry_enable" yaml:"registry-enable"`
+	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
 }
 
 type Cors struct {
@@ -27,4 +30,14 @@ type Cors struct {
 	ExposeHeaders    []string      `json:"expose_headers" yaml:"expose-headers"`
 	MaxAge           time.Duration `json:"max_age" yaml:"max-age"`
 	AllowWildcard    bool          `json:"allow_wildcard" yaml:"allow-wildcard"`
+}
+
+type Nacos struct {
+	Ip          string `json:"ip" yaml:"ip"`
+	Port        uint64 `json:"port" yaml:"port"`
+	ContextPath string `json:"context_path" yaml:"context-path"`
+	TimeoutMs   uint64 `json:"timeout_ms" yaml:"timeout-ms"`
+	Namespace   string `json:"namespace" yaml:"namespace"`
+	User        string `json:"user" yaml:"user"`
+	Password    string `json:"password" yaml:"password"`
 }
