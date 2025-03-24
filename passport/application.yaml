@@ -6,7 +6,7 @@ distribute-lock: false
 log-level: debug
 registry-info:
   service-name: smart-passport
-  addr: local
+  addr: 127.0.0.1
   weight: 10
   tags:
     region: cn

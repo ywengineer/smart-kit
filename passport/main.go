@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/bsm/redislock"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/app/client"
+	"github.com/cloudwego/hertz/pkg/app/middlewares/client/sd"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/app/server/binding"
 	"github.com/cloudwego/hertz/pkg/app/server/registry"
@@ -25,6 +27,8 @@ import (
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/passport/pkg/validator"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
+	"github.com/ywengineer/smart-kit/pkg/nets"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -34,6 +38,7 @@ import (
 	"gorm.io/gorm/clause"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -131,9 +136,13 @@ func main() {
 		}
 	}
 	if conf.RegistryInfo != nil {
+		addr := conf.RegistryInfo.Addr
+		if len(addr) == 0 {
+			addr = nets.GetDefaultIpv4() + ":" + strconv.Itoa(conf.Port)
+		}
 		sOption = append(sOption, server.WithRegistry(nacos_hertz.NewNacosRegistry(nnc), &registry.Info{
 			ServiceName: conf.RegistryInfo.ServiceName,
-			Addr:        utils.NewNetAddr("tcp", ""),
+			Addr:        utils.NewNetAddr("tcp", addr),
 			Weight:      utility.MaxInt(1, conf.RegistryInfo.Weight),
 			Tags:        conf.RegistryInfo.Tags,
 		}))
@@ -152,11 +161,24 @@ func main() {
 		}))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
+	var cli *client.Client
+	if conf.DiscoveryEnable {
+		if cli, err = client.NewClient(
+			client.WithMaxConnsPerHost(50),
+			client.WithName(utilk.DefaultIfNil(conf.RegistryInfo, ServiceInfo{ServiceName: "smart-passport"}).ServiceName),
+		); err != nil {
+			hlog.Fatalf("failed to create discovery client: %v", err)
+			return
+		}
+		cli.Use(sd.Discovery(nacos_hertz.NewNacosResolver(nnc)))
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////
 	smartCtx := pkg.NewDefaultContext(
 		db,
 		redisClient,
 		lockMgr,
 		middleware.NewJwt(*conf.Jwt, nil),
+		cli,
 	)
 	//
 	sqlRunner(db)
@@ -174,6 +196,9 @@ func main() {
 	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
 		hlog.Info("release resource on shutdown")
 		_ = redisClient.Close()
+		if nnc != nil {
+			nnc.CloseClient()
+		}
 	})
 	//
 	register(h)
