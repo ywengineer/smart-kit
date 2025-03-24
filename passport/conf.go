@@ -18,7 +18,7 @@ type Configuration struct {
 	Jwt              *middleware.JwtConfig `json:"jwt,omitempty" yaml:"jwt,omitempty"`
 	LogLevel         zapcore.Level         `json:"log_level" yaml:"log-level"`
 	Nacos            *Nacos                `json:"nacos,omitempty" yaml:"nacos,omitempty"`
-	RegistryEnable   bool                  `json:"registry_enable" yaml:"registry-enable"`
+	RegistryInfo     *ServiceInfo          `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
 }
 
@@ -40,4 +40,14 @@ type Nacos struct {
 	Namespace   string `json:"namespace" yaml:"namespace"`
 	User        string `json:"user" yaml:"user"`
 	Password    string `json:"password" yaml:"password"`
+}
+type ServiceInfo struct {
+	// ServiceName will be set in hertz by default
+	ServiceName string `json:"service_name" yaml:"service-name"`
+	// Addr will be set in hertz by default
+	Addr string `json:"addr" yaml:"addr"`
+	// Weight will be set in hertz by default
+	Weight int `json:"weight" yaml:"weight"`
+	// extend other infos with Tags.
+	Tags map[string]string `json:"tags" yaml:"tags"`
 }

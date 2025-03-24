@@ -4,7 +4,12 @@ max-request-body-kb: 50
 redis: "redis://192.168.44.129:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
 log-level: debug
-registry-enable: false
+registry-info:
+  service-name: smart-passport
+  addr: local
+  weight: 10
+  tags:
+    region: cn
 discovery-enable: false
 rdb: # rational database connect property
   name: "mysql" # mysql or postgres

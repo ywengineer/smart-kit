@@ -9,16 +9,22 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/app/server/binding"
+	"github.com/cloudwego/hertz/pkg/app/server/registry"
+	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/cors"
 	hertzzap "github.com/hertz-contrib/logger/zap"
+	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/redis/go-redis/v9"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"github.com/ywengineer/smart-kit/passport/pkg/lock"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/passport/pkg/validator"
+	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -67,7 +73,7 @@ func main() {
 		hlog.Fatalf("failed to watch app configuration: %v", err)
 	}
 	//
-	if (conf.RegistryEnable || conf.DiscoveryEnable) && conf.Nacos == nil {
+	if (conf.RegistryInfo != nil || conf.DiscoveryEnable) && conf.Nacos == nil {
 		hlog.Fatalf("enable service registry or discovery. but not found nacos configuration")
 		return
 	}
@@ -108,14 +114,32 @@ func main() {
 	validateConfig := binding.NewValidateConfig()
 	validateConfig.MustRegValidateFunc("every", validator.Every)
 	//////////////////////////////////////////////////////////////////////////////////////////
-	h := server.Default(
+	sOption := []config.Option{
 		server.WithBindConfig(bindConfig),
 		server.WithHostPorts(fmt.Sprintf(":%d", conf.Port)),
 		server.WithBasePath(conf.BasePath),
 		server.WithHandleMethodNotAllowed(true),
-		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB*1024), // KB
+		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB * 1024), // KB
 		server.WithValidateConfig(validateConfig),
-	)
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////
+	var nnc naming_client.INamingClient
+	if conf.Nacos != nil {
+		if nnc, err = nacos.NewNacosNamingClient(conf.Nacos.Ip, conf.Nacos.Port, conf.Nacos.ContextPath, conf.Nacos.TimeoutMs, conf.Nacos.Namespace, conf.Nacos.User, conf.Nacos.Password, conf.LogLevel.String()); err != nil {
+			hlog.Fatalf("failed to create nacos client: %v", err)
+			return
+		}
+	}
+	if conf.RegistryInfo != nil {
+		sOption = append(sOption, server.WithRegistry(nacos_hertz.NewNacosRegistry(nnc), &registry.Info{
+			ServiceName: conf.RegistryInfo.ServiceName,
+			Addr:        utils.NewNetAddr("tcp", ""),
+			Weight:      utility.MaxInt(1, conf.RegistryInfo.Weight),
+			Tags:        conf.RegistryInfo.Tags,
+		}))
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////
+	h := server.Default(sOption...)
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{
 			AllowOrigins:     _cors.AllowOrigins,
@@ -127,24 +151,6 @@ func main() {
 			AllowWildcard:    _cors.AllowWildcard,
 		}))
 	}
-	//////////////////////////////////////////////////////////////////////////////////////////
-	//var nnc naming_client.INamingClient
-	//if conf.Nacos != nil {
-	//	if nnc, err = loader.NewNacosClient(conf.Nacos.Ip, conf.Nacos.Port, conf.Nacos.ContextPath, conf.Nacos.TimeoutMs, conf.Nacos.Namespace, conf.Nacos.User, conf.Nacos.Password, conf.LogLevel.String()); err != nil {
-	//		hlog.Fatalf("failed to create nacos client: %v", err)
-	//		return
-	//	}
-	//}
-	//// ...
-	//r := nacos.NewNacosRegistry(ncc)
-	//h := server.Default(
-	//	server.WithHostPorts(addr),
-	//	server.WithRegistry(r, &registry.Info{
-	//		ServiceName: "hertz.test.demo",
-	//		Addr:        utils.NewNetAddr("tcp", addr),
-	//		Weight:      10,
-	//		Tags:        nil,
-	//	}))
 	//////////////////////////////////////////////////////////////////////////////////////////
 	smartCtx := pkg.NewDefaultContext(
 		db,

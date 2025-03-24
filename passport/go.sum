@@ -91,8 +91,8 @@ github.com/alibabacloud-go/tea-xml v1.1.3 h1:7LYnm+JbOq2B+T/B0fHC4Ies4/FofC4zHzY
 github.com/alibabacloud-go/tea-xml v1.1.3/go.mod h1:Rq08vgCcCAjHyRi/M7xlHKUykZCEtyBy9+DPF6GgEu8=
 github.com/aliyun/alibaba-cloud-sdk-go v1.61.1704/go.mod h1:RcDobYh8k5VP6TNybz9m++gL3ijVI5wueVr0EM10VsU=
 github.com/aliyun/alibaba-cloud-sdk-go v1.61.1800/go.mod h1:RcDobYh8k5VP6TNybz9m++gL3ijVI5wueVr0EM10VsU=
-github.com/aliyun/alibaba-cloud-sdk-go v1.63.94 h1:fBZRpV93KchtzGe4QnNgXqhXQJ9PQEe5chHY/QSvPm4=
-github.com/aliyun/alibaba-cloud-sdk-go v1.63.94/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.100 h1:yUkCbrSM1cWtgBfRVKMQtdt22KhDvKY7g4V+92eG9wA=
+github.com/aliyun/alibaba-cloud-sdk-go v1.63.100/go.mod h1:SOSDHfe1kX91v3W5QiBsWSLqeLxImobbMX1mxrFHsVQ=
 github.com/aliyun/alibabacloud-dkms-gcs-go-sdk v0.5.1 h1:nJYyoFP+aqGKgPs9JeZgS1rWQ4NndNR0Zfhh161ZltU=
 github.com/aliyun/alibabacloud-dkms-gcs-go-sdk v0.5.1/go.mod h1:WzGOmFFTlUzXM03CJnHWMQ85UN6QGpOXZocCjwkiyOg=
 github.com/aliyun/alibabacloud-dkms-transfer-go-sdk v0.1.8 h1:QeUdR7JF7iNCvO/81EhxEr3wDwxk4YBoYZOq6E0AjHI=
@@ -528,6 +528,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/ywengineer/smart v0.0.0-20250316051218-f62a2163d99c h1:5p6CRTArthH0yrIHKpnoZAuxcr1glL5eBVT3aBgFGVM=
 github.com/ywengineer/smart v0.0.0-20250316051218-f62a2163d99c/go.mod h1:02fA1xRPypFs3JpoOsHZ4USa8hK2ZIgvzJsXkZNnZjA=
+github.com/ywengineer/smart-kit v0.0.0-20250324073711-e9b4169335cb h1:i1INV2H9YCR2Ywr4rkk2yQj7zeDxEGm296HhqVceHWE=
+github.com/ywengineer/smart-kit v0.0.0-20250324073711-e9b4169335cb/go.mod h1:ERTdLdT2RqmZ/HMvnzmD1u0YHXvzKEokBFbLJzIcmWs=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
