@@ -2,7 +2,11 @@ module github.com/ywengineer/smart-kit/passport
 
 go 1.23.6
 
-replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
+replace (
+	github.com/apache/thrift => github.com/apache/thrift v0.13.0
+	github.com/ywengineer/smart v0.0.0 => ../smart
+	github.com/ywengineer/smart-kit v0.0.0 => ../
+)
 
 require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
@@ -21,8 +25,8 @@ require (
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
-	github.com/ywengineer/smart v0.0.0-20250316051218-f62a2163d99c
-	github.com/ywengineer/smart-kit v0.0.0-20250324073711-e9b4169335cb
+	github.com/ywengineer/smart v0.0.0
+	github.com/ywengineer/smart-kit v0.0.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v3 v3.0.1
