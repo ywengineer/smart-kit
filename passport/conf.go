@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
+	"github.com/ywengineer/smart-kit/pkg/oauths"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap/zapcore"
@@ -23,6 +24,7 @@ type Configuration struct {
 	RegistryInfo     *ServiceInfo          `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
 	RpcClientInfo    rpcs.RpcClientInfo    `json:"rpc_client_info" yaml:"rpc-client-info"`
+	OAuth            oauths.Oauth          `json:"oauth" yaml:"oauth"`
 }
 
 type Cors struct {

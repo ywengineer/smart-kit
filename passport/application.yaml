@@ -57,3 +57,8 @@ jwt:
 #  namespace: local
 #  user: user
 #  password: password
+oauth:
+  app-id:
+    type: wx
+    app-id: app-id
+    app-secret: app-secret
