@@ -41,6 +41,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	case passport.AccountType_Anonymous:
 		// continue
 	default: // other platform
+
 		// exists
 		if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 			hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))

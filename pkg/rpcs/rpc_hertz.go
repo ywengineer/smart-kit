@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/client/retry"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/client/sd"
 	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	client_http "github.com/cloudwego/hertz/pkg/protocol/client"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -38,6 +39,15 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 	if resolver != nil {
 		cli.Use(sd.Discovery(resolver))
 	}
+	cli.Use(func(next client.Endpoint) client.Endpoint {
+		return func(ctx context.Context, req *protocol.Request, resp *protocol.Response) (err error) {
+			ts := time.Now().Unix()
+			n := next(ctx, req, resp)
+			hlog.Debugf("[RPC][%s] [cost %dms] invoke target: %s ", info.ClientName, time.Now().Unix()-ts, req.RequestURI())
+			return n
+		}
+	})
+	//
 	return &hertzRPC{cli: cli, cluster: config.WithSD(resolver != nil)}, nil
 }
 
