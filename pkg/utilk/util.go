@@ -16,3 +16,10 @@ func DefaultIfNil[T any](ptr *T, def T) T {
 	}
 	return *ptr
 }
+
+func MaxInt[T int | int32 | int64 | uint](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
+}

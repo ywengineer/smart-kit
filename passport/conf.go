@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
+	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap/zapcore"
 	"time"
@@ -20,6 +22,7 @@ type Configuration struct {
 	Nacos            *Nacos                `json:"nacos,omitempty" yaml:"nacos,omitempty"`
 	RegistryInfo     *ServiceInfo          `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
+	RpcClientInfo    rpcs.RpcClientInfo    `json:"rpc_client_info" yaml:"rpc-client-info"`
 }
 
 type Cors struct {
@@ -50,4 +53,8 @@ type ServiceInfo struct {
 	Weight int `json:"weight" yaml:"weight"`
 	// extend other infos with Tags.
 	Tags map[string]string `json:"tags" yaml:"tags"`
+}
+
+func (s *ServiceInfo) String() string {
+	return fmt.Sprintf("%s(%s)[%d]", s.ServiceName, s.Addr, s.Weight)
 }

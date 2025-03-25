@@ -4,14 +4,22 @@ max-request-body-kb: 50
 redis: "redis://192.168.44.129:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
 log-level: debug
-registry-info:
-  service-name: smart-passport
-  addr: 127.0.0.1
-  weight: 10
-  tags:
-    region: cn
+# service registry info
+#registry-info:
+#  service-name: smart-passport
+#  addr: 127.0.0.1
+#  weight: 10
+#  tags:
+#    region: cn
+# enable rpc client service discovery
 discovery-enable: false
-rdb: # rational database connect property
+# Rpc client info
+rpc-client-info:
+  max-retry: 1
+  max-conn-per-host: 256
+  retry-delay: 50ms
+# rational database connect property
+rdb:
   name: "mysql" # mysql or postgres
   username: "root"
   password: "iis"
@@ -24,6 +32,7 @@ rdb: # rational database connect property
     max-idle-con: 5
     max-open-con: 50
     max-life-time-minute: 10
+# cross domain configuration
 #cors: # cors
 #  allow-origins: []
 #  allow-methods: []
@@ -32,17 +41,19 @@ rdb: # rational database connect property
 #  expose-headers: []
 #  max-age: 0s
 #  allow-wildcard: false
+# JWT token
 jwt:
   realm: Smart
   key: 129kdfjiejalkid
   timeout: 168h
   max-refresh: 24h
   identity-key: smart-id
-nacos:
-  ip: 127.0.0.1
-  port: 8848
-  context-path: /nacos
-  timeout-ms: 10000
-  namespace: local
-  user: user
-  password: password
+# Nacos server info
+#nacos:
+#  ip: 127.0.0.1
+#  port: 8848
+#  context-path: /nacos
+#  timeout-ms: 10000
+#  namespace: local
+#  user: user
+#  password: password

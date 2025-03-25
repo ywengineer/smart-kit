@@ -2,10 +2,10 @@ package pkg
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg/lock"
+	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -18,7 +18,7 @@ type SmartContext interface {
 	TokenInterceptor() app.HandlerFunc
 	GetDeviceLockKey(deviceId string) string
 	GetPassportLockKey(passportId uint) string
-	GetMicroClient() *client.Client
+	Rpc() rpcs.Rpc
 }
 
 type defaultContext struct {
@@ -27,10 +27,10 @@ type defaultContext struct {
 	lm      lock.Manager
 	_jwt    *jwt.HertzJWTMiddleware
 	jwtMw   app.HandlerFunc
-	mClient *client.Client
+	mClient rpcs.Rpc
 }
 
-func (d *defaultContext) GetMicroClient() *client.Client {
+func (d *defaultContext) Rpc() rpcs.Rpc {
 	return d.mClient
 }
 
@@ -42,14 +42,14 @@ func (d *defaultContext) GetPassportLockKey(passportId uint) string {
 	return "lock:passport:" + strconv.FormatUint(uint64(passportId), 10)
 }
 
-func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, mClient *client.Client) SmartContext {
+func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc) SmartContext {
 	return &defaultContext{
 		rdb:     rdb,
 		redis:   redis,
 		lm:      lm,
 		_jwt:    jwt,
 		jwtMw:   jwt.MiddlewareFunc(),
-		mClient: mClient,
+		mClient: rpcClient,
 	}
 }
 
