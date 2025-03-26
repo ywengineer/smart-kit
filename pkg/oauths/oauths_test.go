@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestOauth(t *testing.T) {
+func TestOauth1(t *testing.T) {
 	o := Oauth(map[string]map[string]string{
 		"wx-id-1":    {"app-id": "app-id", "app-secret": "app-secret", "type": "wx"},
 		"wx-id-2":    {"app_id": "app-id", "app-secret": "app-secret", "type": "wx"},

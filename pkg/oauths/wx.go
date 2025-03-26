@@ -7,7 +7,6 @@ import (
 	"github.com/ywengineer/smart-kit/pkg/nets"
 	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"net/url"
-	"path"
 	"strconv"
 )
 
@@ -34,7 +33,7 @@ func (w *wxAuth) GetToken(code string) (*AccessToken, error) {
 	p.Set("secret", w.appSecret)
 	p.Set("code", code)
 	p.Set("grant_type", "authorization_code")
-	sc, body, err := cli.Get(context.Background(), path.Join(w.baseUrl, "sns/oauth2/access_token?"+p.Encode()))
+	sc, body, err := cli.Get(context.Background(), w.baseUrl+"/sns/oauth2/access_token?"+p.Encode())
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {
@@ -56,7 +55,7 @@ func (w *wxAuth) RefreshToken(refreshToken string) (*RefreshToken, error) {
 	p.Set("appid", w.appId)
 	p.Set("refresh_token", refreshToken)
 	p.Set("grant_type", "refresh_token")
-	sc, body, err := cli.Get(context.Background(), path.Join(w.baseUrl, "sns/oauth2/refresh_token?"+p.Encode()))
+	sc, body, err := cli.Get(context.Background(), w.baseUrl+"/sns/oauth2/refresh_token?"+p.Encode())
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {
@@ -76,7 +75,7 @@ func (w *wxAuth) GetUserInfo(openid string, accessToken string) (*UserInfo, erro
 	p := url.Values{}
 	p.Set("openid", openid)
 	p.Set("access_token", accessToken)
-	sc, body, err := cli.Get(context.Background(), path.Join(w.baseUrl, "sns/userinfo?"+p.Encode()))
+	sc, body, err := cli.Get(context.Background(), w.baseUrl+"/sns/userinfo?"+p.Encode())
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {
