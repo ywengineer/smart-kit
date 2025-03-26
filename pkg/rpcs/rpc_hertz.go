@@ -2,12 +2,14 @@ package rpcs
 
 import (
 	"context"
+	"crypto/tls"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/client/discovery"
 	"github.com/cloudwego/hertz/pkg/app/client/retry"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/client/sd"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/hertz/pkg/network/standard"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	client_http "github.com/cloudwego/hertz/pkg/protocol/client"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -32,6 +34,8 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 		client.WithMaxConnsPerHost(info.MaxConnPerHost),
 		client.WithName(info.ClientName),
 		client.WithClientReadTimeout(info.ReadTimeout),
+		client.WithTLSConfig(&tls.Config{InsecureSkipVerify: true}),
+		client.WithDialer(standard.NewDialer()),
 		client.WithRetryConfig(retry.WithMaxAttemptTimes(info.MaxRetry), retry.WithDelayPolicy(retry.BackOffDelayPolicy)),
 	); err != nil {
 		return nil, err

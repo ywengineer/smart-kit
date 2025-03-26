@@ -7,11 +7,11 @@ import (
 
 func TestOauth(t *testing.T) {
 	o := Oauth(map[string]map[string]string{
-		"wx-id-1":    {"app-id": "app-id", "app-secret": "app-secret"},
-		"wx-id-2":    {"app_id": "app-id", "app-secret": "app-secret"},
-		"qq-id-1":    {"app-id": "app-id", "app-secret": "app-secret"},
-		"qq-id-2":    {"app-id": "app-id", "app-secret": "app-secret"},
-		"weibo-id-2": {"app-id": "app-id", "app-secret": "app-secret"},
+		"wx-id-1":    {"app-id": "app-id", "app-secret": "app-secret", "type": "wx"},
+		"wx-id-2":    {"app_id": "app-id", "app-secret": "app-secret", "type": "wx"},
+		"qq-id-1":    {"app-id": "app-id", "app-secret": "app-secret", "type": "qq"},
+		"qq-id-2":    {"app-id": "app-id", "app-secret": "app-secret", "type": "qq"},
+		"weibo-id-2": {"app-id": "app-id", "app-secret": "app-secret", "type": "weibo"},
 	})
 	//
 	af, err := o.Get("wx-id-2")
