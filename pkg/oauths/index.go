@@ -7,10 +7,10 @@ import (
 
 var facadeMap = make(map[string]AuthFacade)
 
-var cli, _ = rpcs.NewDefaultRpc(rpcs.RpcClientInfo{
+var cli, _ = rpcs.NewHertzRpc(nil, rpcs.RpcClientInfo{
 	ClientName:     "smart-oauth-client",
 	MaxRetry:       2,
-	Delay:          time.Second,
+	Delay:          time.Millisecond * 100,
 	MaxConnPerHost: 512,
 })
 

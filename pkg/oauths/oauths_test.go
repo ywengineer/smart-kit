@@ -16,9 +16,13 @@ func TestOauth1(t *testing.T) {
 	//
 	af, err := o.Get("wx-id-2")
 	assert.NotNil(t, err)
+	t.Logf("%v", err)
 	af, err = o.Get("wx-id-1")
 	assert.Nil(t, err)
 	_, err = af.GetToken("weibo-id-2")
+	assert.NotNil(t, err)
+	t.Logf("%v", err)
+	af, err = o.Get("weibo-id-2")
 	assert.NotNil(t, err)
 	t.Logf("%v", err)
 }

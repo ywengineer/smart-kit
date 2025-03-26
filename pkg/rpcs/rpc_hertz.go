@@ -20,14 +20,21 @@ import (
 
 const defaultMaxRedirectsCount = 16
 
-func NewDefaultRpc(info RpcClientInfo) (rpc Rpc, err error) {
+var defaultRpc, _ = newDefaultRpc(RpcClientInfo{ClientName: "default-smart-rpc-client"})
+
+// GetDefaultRpc retry = 1, delay = 50ms, read_timout = 100ms, max_retry = 1, max_conn_per_host = 100
+func GetDefaultRpc() Rpc {
+	return defaultRpc
+}
+
+func newDefaultRpc(info RpcClientInfo) (rpc Rpc, err error) {
 	return NewHertzRpc(nil, info)
 }
 
 func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err error) {
 	var cli *client.Client
 	info.MaxRetry = utilk.Max(1, info.MaxRetry)
-	info.MaxConnPerHost = utilk.Max(50, info.MaxConnPerHost)
+	info.MaxConnPerHost = utilk.Max(100, info.MaxConnPerHost)
 	info.Delay = utilk.Max(info.Delay, time.Millisecond*50)
 	info.ReadTimeout = utilk.Max(info.ReadTimeout, time.Millisecond*100)
 	if cli, err = client.NewClient(
