@@ -49,30 +49,40 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 		}
 	})
 	//
-	return &hertzRPC{cli: cli, cluster: config.WithSD(resolver != nil)}, nil
+	return (&hertzRPC{cli: cli, cluster: config.WithSD(resolver != nil)}).init(), nil
+}
+
+type asyncRpc struct {
+	t Rpc
+}
+
+func (h *asyncRpc) GetAsync(ctx context.Context, url string, callback RpcCallback) {
+	rpcPool.CtxGo(ctx, func() {
+		callback(h.t.Get(ctx, url))
+	})
+}
+
+func (h *asyncRpc) GetTimeoutAsync(ctx context.Context, url string, timeout time.Duration, callback RpcCallback) {
+	rpcPool.CtxGo(ctx, func() {
+		callback(h.t.GetTimeout(ctx, url, timeout))
+	})
+}
+
+func (h *asyncRpc) PostAsync(ctx context.Context, contentType string, url string, reqBody io.WriterTo, callback RpcCallback) {
+	rpcPool.CtxGo(ctx, func() {
+		callback(h.t.Post(ctx, contentType, url, reqBody))
+	})
 }
 
 type hertzRPC struct {
+	*asyncRpc
 	cli     *client.Client
 	cluster config.RequestOption
 }
 
-func (h *hertzRPC) GetAsync(ctx context.Context, url string, callback RpcCallback) {
-	rpcPool.CtxGo(ctx, func() {
-		callback(h.Get(ctx, url))
-	})
-}
-
-func (h *hertzRPC) GetTimeoutAsync(ctx context.Context, url string, timeout time.Duration, callback RpcCallback) {
-	rpcPool.CtxGo(ctx, func() {
-		callback(h.GetTimeout(ctx, url, timeout))
-	})
-}
-
-func (h *hertzRPC) PostAsync(ctx context.Context, contentType string, url string, reqBody io.WriterTo, callback RpcCallback) {
-	rpcPool.CtxGo(ctx, func() {
-		callback(h.Post(ctx, contentType, url, reqBody))
-	})
+func (h *hertzRPC) init() Rpc {
+	h.asyncRpc = &asyncRpc{t: h}
+	return h
 }
 
 func (h *hertzRPC) Get(ctx context.Context, url string) (statusCode int, body []byte, err error) {
