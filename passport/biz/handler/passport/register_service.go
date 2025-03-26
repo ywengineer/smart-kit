@@ -10,14 +10,12 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"github.com/google/uuid"
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/passport/pkg"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"strings"
 	"time"
 )
 
@@ -30,25 +28,50 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
+	authKey := c.GetHeader(pkg.HeaderSmartOauthKey)
+	if len(authKey) == 0 {
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ValidateErr(errors.New("authKey is empty")))
+		return
+	}
+	_authKey := string(authKey)
 	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
-	bindKey := model2.GetBindCacheKey(req.GetType().String(), req.GetId())
+	id, accessToken, refreshToken, bindKey := "", "", "", ""
+	socialName, gender, headImg := "", 0, ""
 	// ano
 	switch req.Type {
 	case passport.AccountType_EMail, passport.AccountType_Mobile:
 		c.JSON(consts.StatusNotImplemented, internal.ErrTodo)
 		return
-	case passport.AccountType_Anonymous:
-		// continue
 	default: // other platform
-
+		auth, err := sCtx.GetAuth(_authKey)
+		if err != nil {
+			c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+			return
+		}
+		tk, err := auth.GetToken(req.GetAuthCode())
+		if err != nil {
+			hlog.Error("failed to get access token", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "register_service"))
+			c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+			return
+		}
+		usr, err := auth.GetUserInfo(tk.Openid, tk.AccessToken)
+		if err != nil {
+			hlog.Error("failed to get user info", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "register_service"))
+			c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+			return
+		}
+		// reset bind key
+		id, accessToken, refreshToken = usr.UniqueId(), tk.AccessToken, tk.RefreshToken
+		socialName, gender, headImg = usr.Nickname, usr.Sex, usr.HeadImgUrl
+		bindKey = model2.GetBindCacheKey(req.GetType().String(), id)
 		// exists
 		if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
 			hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
 			c.JSON(consts.StatusInternalServerError, internal.ErrCache)
 			return
-		} else if exists > 0 { // already bind to passport, go to log in service
-			c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), req.GetId(), req.GetAccessToken(), req.GetRefreshToken()))
+		} else if exists > 0 && req.GetType() != passport.AccountType_Anonymous { // no anonymous already bind to passport, go to log in service
+			c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), id, accessToken, refreshToken))
 			return
 		}
 	}
@@ -76,23 +99,13 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//----------------------------------------------- exists type and id? -----------------------------------------------
-	if req.Type == passport.AccountType_Anonymous { // gen random id and reset bind cache key
-		req.Id = strings.ToLower(strings.ReplaceAll(uuid.New().String(), "-", ""))
-		req.AccessToken = uuid.New().String()
-		bindKey = model2.GetBindCacheKey(req.GetType().String(), req.GetId())
-	}
 	var bind model2.PassportBinding
-	if exists, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil {
-		hlog.Error("exists check", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
-		c.JSON(consts.StatusInternalServerError, internal.ErrCache)
-		return
-	} else if exists > 0 {
-		c.JSON(consts.StatusOK, internal.ErrBoundOther) // already bind to other passport
-		return
-	} else { // load from db
+	// check bind when register from xxx
+	if req.GetType() != passport.AccountType_Anonymous {
+		// load from db
 		r := sCtx.Rdb().
 			WithContext(ctx).
-			Where(&model2.PassportBinding{BindType: req.GetType().String(), BindId: req.GetId()}).
+			Where(&model2.PassportBinding{BindType: req.GetType().String(), BindId: id}).
 			First(&bind)
 		// rdb error
 		if r.Error != nil && !errors.Is(r.Error, gorm.ErrRecordNotFound) {
@@ -132,12 +145,12 @@ func Register(ctx context.Context, c *app.RequestContext) {
 			*pstBind = model2.PassportBinding{
 				PassportId:   pst.ID,
 				BindType:     req.GetType().String(),
-				BindId:       req.GetId(),
-				AccessToken:  req.GetAccessToken(),
-				RefreshToken: req.GetRefreshToken(),
-				SocialName:   req.GetName(),
-				Gender:       uint(req.GetGender()),
-				IconUrl:      req.GetIconUrl(),
+				BindId:       id,
+				AccessToken:  accessToken,
+				RefreshToken: refreshToken,
+				SocialName:   socialName,
+				Gender:       uint(gender),
+				IconUrl:      headImg,
 			}
 			if err := tx.Create(pstBind).Error; err != nil {
 				return err

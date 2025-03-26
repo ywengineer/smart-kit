@@ -31,6 +31,8 @@ const (
 	Locale      string = "locale"       // Locale 地区(locale)
 )
 
+const HeaderSmartOauthKey = "Smart-Oauth-Key"
+
 const (
 	Fail                ResultCode = 0
 	Ok                             = 200

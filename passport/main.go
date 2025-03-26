@@ -183,7 +183,7 @@ func main() {
 	if conf.DiscoveryEnable {
 		rpc, err = rpcs.NewHertzRpc(nacos_hertz.NewNacosResolver(nnc), rpcClientInfo)
 	} else {
-		rpc, err = rpcs.NewDefaultRpc(rpcClientInfo)
+		rpc, err = rpcs.NewHertzRpc(nil, rpcClientInfo)
 	}
 	if err != nil {
 		hlog.Fatalf("failed to create rpc: %v", err)
@@ -196,6 +196,7 @@ func main() {
 		lockMgr,
 		middleware.NewJwt(*conf.Jwt, nil),
 		rpc,
+		conf.OAuth,
 	)
 	//
 	sqlRunner(db)

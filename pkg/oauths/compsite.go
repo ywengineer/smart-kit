@@ -24,6 +24,8 @@ func (o Oauth) Get(id string) (AuthFacade, error) {
 			af = NewWxAuth(authProp["app-id"], authProp["app-secret"])
 		case "qq":
 			af = NewQQAuth(authProp["app-id"], authProp["app-secret"], authProp["redirect-url"])
+		case "smart":
+			af = &anoAuth{}
 		default:
 			return nil, errors.New(fmt.Sprintf("unsupported oauth type [%s] for auth facade [%s] ", ot, id))
 		}

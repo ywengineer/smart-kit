@@ -2,6 +2,7 @@ package oauths
 
 import (
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"time"
 )
 
@@ -49,6 +50,10 @@ type UserInfo struct {
 	HeadImgUrl string   `json:"headimgurl"` // 用户头像，最后一个数值代表正方形头像大小（有 0、46、64、96、132 数值可选，0 代表 640*640 正方形头像），用户没有头像时该项为空
 	Privilege  []string `json:"privilege"`  // 用户特权信息，json 数组，如微信沃卡用户为（chinaunicom）
 	UnionId    string   `json:"unionid"`    // 用户统一标识。针对一个微信开放平台账号下的应用，同一用户的 unionid 是唯一的。
+}
+
+func (u *UserInfo) UniqueId() string {
+	return utilk.DefaultIfEmpty(u.UnionId, u.Openid)
 }
 
 type AuthFacade interface {

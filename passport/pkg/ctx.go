@@ -5,6 +5,7 @@ import (
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/pkg/lock"
+	"github.com/ywengineer/smart-kit/pkg/oauths"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"gorm.io/gorm"
 	"strconv"
@@ -19,6 +20,7 @@ type SmartContext interface {
 	GetDeviceLockKey(deviceId string) string
 	GetPassportLockKey(passportId uint) string
 	Rpc() rpcs.Rpc
+	GetAuth(authKey string) (oauths.AuthFacade, error)
 }
 
 type defaultContext struct {
@@ -28,6 +30,11 @@ type defaultContext struct {
 	_jwt    *jwt.HertzJWTMiddleware
 	jwtMw   app.HandlerFunc
 	mClient rpcs.Rpc
+	auth    oauths.Oauth
+}
+
+func (d *defaultContext) GetAuth(authKey string) (oauths.AuthFacade, error) {
+	return d.auth.Get(authKey)
 }
 
 func (d *defaultContext) Rpc() rpcs.Rpc {
@@ -42,7 +49,7 @@ func (d *defaultContext) GetPassportLockKey(passportId uint) string {
 	return "lock:passport:" + strconv.FormatUint(uint64(passportId), 10)
 }
 
-func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc) SmartContext {
+func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, auth oauths.Oauth) SmartContext {
 	return &defaultContext{
 		rdb:     rdb,
 		redis:   redis,
@@ -50,6 +57,7 @@ func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manage
 		_jwt:    jwt,
 		jwtMw:   jwt.MiddlewareFunc(),
 		mClient: rpcClient,
+		auth:    auth,
 	}
 }
 

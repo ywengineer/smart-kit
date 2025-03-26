@@ -18,13 +18,15 @@ var (
 	ErrBoundOther    = pkg.ApiError("common.err.bound_other")
 	ErrPassword      = pkg.ApiError("common.err.passwd")
 	ErrUserNotFound  = pkg.ApiError("common.err.user_not_found")
+	ErrAuth          = pkg.ApiError("common.err.auth")
 	// ErrMaxPerDevice error for register service
 	ErrMaxPerDevice = pkg.ApiError("register.err.max.account")
 	ErrRegisterFail = pkg.ApiError("register.error.rdb")
 	// ErrLoginTry error for login service
 	ErrLoginTry = pkg.ApiError("login.err.asshole")
 	// ErrSameBound
-	ErrSameBound = pkg.ApiError("bind.err.bound_type")
+	ErrSameBound   = pkg.ApiError("bind.err.bound_type")
+	ErrUnsupported = pkg.ApiError("bind.err.unsupported")
 )
 
 func ValidateErr(err error) pkg.ApiResult {

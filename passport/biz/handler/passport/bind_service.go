@@ -29,18 +29,33 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 	var req passport.BindReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
 	// ano
 	switch req.Type {
 	case passport.AccountType_EMail, passport.AccountType_Mobile:
-		c.JSON(consts.StatusNotImplemented, internal.ErrTodo)
+		c.AbortWithStatusJSON(consts.StatusNotImplemented, internal.ErrTodo)
+		return
+	case passport.AccountType_Anonymous:
+		c.AbortWithStatusJSON(consts.StatusNotImplemented, internal.ErrUnsupported)
 		return
 	default:
 	}
+	//----------------------------------------------- passport bind lock -----------------------------------------------
+	authKey := c.GetHeader(pkg.HeaderSmartOauthKey)
+	if len(authKey) == 0 {
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ValidateErr(errors.New("authKey is empty")))
+		return
+	}
+	_authKey := string(authKey)
 	//
 	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	auth, err := sCtx.GetAuth(_authKey)
+	if err != nil {
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+		return
+	}
 	passportId := uint(c.GetFloat64(sCtx.Jwt().IdentityKey))
 	//----------------------------------------------- passport bind lock -----------------------------------------------
 	lock, err := sCtx.LockMgr().Obtain(ctx, sCtx.GetPassportLockKey(passportId), time.Minute, &redislock.Options{
@@ -70,8 +85,21 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusOK, internal.ErrSameBound)
 		return
 	}
+	//-----------------------------------------------
+	tk, err := auth.GetToken(req.GetAuthCode())
+	if err != nil {
+		hlog.Error("failed to get access token", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+		return
+	}
+	usr, err := auth.GetUserInfo(tk.Openid, tk.AccessToken)
+	if err != nil {
+		hlog.Error("failed to get user info", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+		return
+	}
 	// bind other
-	bindKey := model.GetBindCacheKey(req.GetType().String(), req.GetBindId())
+	bindKey := model.GetBindCacheKey(req.GetType().String(), usr.UniqueId())
 	// query bind cache
 	if ok, err := sCtx.Redis().Exists(ctx, bindKey).Result(); err != nil && !errors.Is(err, redis.Nil) {
 		c.JSON(consts.StatusOK, internal.ErrCache)
@@ -82,12 +110,12 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 		bindInfo := model.PassportBinding{
 			PassportId:   passportId,
 			BindType:     req.GetType().String(),
-			BindId:       req.GetBindId(),
-			AccessToken:  req.GetAccessToken(),
-			RefreshToken: req.GetRefreshToken(),
-			SocialName:   req.GetName(),
-			Gender:       uint(req.GetGender()),
-			IconUrl:      req.GetIconUrl(),
+			BindId:       usr.UniqueId(),
+			AccessToken:  tk.AccessToken,
+			RefreshToken: tk.RefreshToken,
+			SocialName:   usr.Nickname,
+			Gender:       uint(usr.Sex),
+			IconUrl:      usr.HeadImgUrl,
 		}
 		sCtx.Rdb().WithContext(ctx).Save(&bindInfo)
 		//

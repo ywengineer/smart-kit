@@ -11,7 +11,7 @@ replace (
 require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bsm/redislock v0.9.4
-	github.com/bytedance/sonic v1.13.1
+	github.com/bytedance/sonic v1.13.2
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cloudwego/hertz v0.9.6
 	github.com/google/uuid v1.6.0
