@@ -24,15 +24,14 @@ func NewDefaultRpc(info RpcClientInfo) (rpc Rpc, err error) {
 
 func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err error) {
 	var cli *client.Client
-	info.MaxRetry = utilk.MaxInt(1, info.MaxRetry)
-	info.MaxConnPerHost = utilk.MaxInt(50, info.MaxConnPerHost)
-	if info.Delay < time.Millisecond*50 {
-		info.Delay = time.Millisecond * 50
-	}
+	info.MaxRetry = utilk.Max(1, info.MaxRetry)
+	info.MaxConnPerHost = utilk.Max(50, info.MaxConnPerHost)
+	info.Delay = utilk.Max(info.Delay, time.Millisecond*50)
+	info.ReadTimeout = utilk.Max(info.ReadTimeout, time.Millisecond*100)
 	if cli, err = client.NewClient(
 		client.WithMaxConnsPerHost(info.MaxConnPerHost),
 		client.WithName(info.ClientName),
-		client.WithClientReadTimeout(time.Second*5),
+		client.WithClientReadTimeout(info.ReadTimeout),
 		client.WithRetryConfig(retry.WithMaxAttemptTimes(info.MaxRetry), retry.WithDelayPolicy(retry.BackOffDelayPolicy)),
 	); err != nil {
 		return nil, err

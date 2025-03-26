@@ -1,8 +1,10 @@
 package utilk
 
+import "time"
+
 // DefaultIfEmpty if v is empty then return def
 func DefaultIfEmpty[T string | []any | map[any]any](v T, def T) T {
-	if v == nil || len(v) == 0 {
+	if len(v) == 0 {
 		return def
 	}
 	return v
@@ -17,7 +19,7 @@ func DefaultIfNil[T any](ptr *T, def T) T {
 	return *ptr
 }
 
-func MaxInt[T int | int32 | int64 | uint](a, b T) T {
+func Max[T int | int32 | int64 | uint | time.Duration](a, b T) T {
 	if a > b {
 		return a
 	}

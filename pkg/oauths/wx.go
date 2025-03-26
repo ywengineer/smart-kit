@@ -21,6 +21,13 @@ type wxAuth struct {
 	appSecret string
 }
 
+func (w *wxAuth) Validate(metadata string) (AuthFacade, error) {
+	if len(w.appSecret) == 0 || len(w.appId) == 0 {
+		return nil, errors.New("missing prop [app-id/app-secret] for auth: " + metadata)
+	}
+	return w, nil
+}
+
 func (w *wxAuth) GetToken(code string) (*AccessToken, error) {
 	p := url.Values{}
 	p.Set("appid", w.appId)

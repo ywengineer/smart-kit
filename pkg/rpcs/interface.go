@@ -15,13 +15,14 @@ const (
 	ContentTypeJSON       = "application/json"
 )
 
-var rpcPool = gopool.NewPool("rpc-pool", math.MaxInt, gopool.NewConfig())
+var rpcPool = gopool.NewPool("rpc-pool", math.MaxInt32, gopool.NewConfig())
 
 type RpcClientInfo struct {
 	ClientName     string        `json:"client_name" yaml:"client-name"`
 	MaxRetry       uint          `json:"max_retry" yaml:"max-retry"`
 	Delay          time.Duration `json:"retry-delay" yaml:"retry-delay"`
 	MaxConnPerHost int           `json:"max_conn_per_host" yaml:"max-conn-per-host"`
+	ReadTimeout    time.Duration `json:"read_timeout" yaml:"read-timeout"`
 }
 
 type RpcCallback func(statusCode int, body []byte, err error)

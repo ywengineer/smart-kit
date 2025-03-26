@@ -18,6 +18,7 @@ rpc-client-info:
   max-retry: 1
   max-conn-per-host: 256
   retry-delay: 50ms
+  read-timeout: 1s
 # rational database connect property
 rdb:
   name: "mysql" # mysql or postgres

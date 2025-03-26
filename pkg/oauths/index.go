@@ -5,9 +5,7 @@ import (
 	"time"
 )
 
-type AuthType int64
-
-var facadeMap = make(map[AuthType]AuthFacade)
+var facadeMap = make(map[string]AuthFacade)
 
 var cli, _ = rpcs.NewDefaultRpc(rpcs.RpcClientInfo{
 	ClientName:     "smart-oauth-client",
@@ -54,6 +52,7 @@ type UserInfo struct {
 }
 
 type AuthFacade interface {
+	Validate(metadata string) (AuthFacade, error)
 	GetToken(code string) (*AccessToken, error)
 	RefreshToken(refreshToken string) (*RefreshToken, error)
 	GetUserInfo(openid string, accessToken string) (*UserInfo, error)
