@@ -15,7 +15,7 @@ import (
 	"github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
@@ -32,12 +32,12 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	//
 	c.JSON(consts.StatusOK, _login(ctx, sCtx, req.GetType(), req.GetId(), req.GetAccessToken(), ""))
 }
 
-func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.AccountType, actId, token, refreshToken string) *pkg.ApiResult {
+func _login(ctx context.Context, sCtx app2.SmartContext, actType passport.AccountType, actId, token, refreshToken string) *app2.ApiResult {
 	//
 	bindKey := model2.GetBindCacheKey(actType.String(), actId)
 	// query bind cache
@@ -117,7 +117,7 @@ func _login(ctx context.Context, sCtx pkg.SmartContext, actType passport.Account
 			_ = sonic.UnmarshalString(pstJson, pst)
 		}
 		//
-		return pkg.ApiOk(passport.LoginResp{
+		return app2.ApiOk(passport.LoginResp{
 			PassportId: int64(bind.PassportId),
 			Token:      tk,
 			BrandNew:   false,

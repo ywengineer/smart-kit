@@ -39,11 +39,11 @@ func GenerateSignature(params map[string]string, secretKey string) string {
 }
 
 // VerifySignature 验证签名
-func VerifySignature(params map[string]string, signature string, secretKey string) bool {
+func VerifySignature(params map[string]string, signature []byte, secretKey string) bool {
 	// 去除签名参数
 	if _, ok := params["signature"]; ok {
 		delete(params, "signature")
 	}
 	// 比较签名
-	return hmac.Equal([]byte(GenerateSignature(params, secretKey)), []byte(signature))
+	return hmac.Equal([]byte(GenerateSignature(params, secretKey)), signature)
 }

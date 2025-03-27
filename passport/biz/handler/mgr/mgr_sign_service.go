@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
@@ -33,9 +33,9 @@ func Sign(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, mgrSign(ctx, c, &req))
 }
 
-func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrSignReq) *pkg.ApiResult {
+func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrSignReq) *app2.ApiResult {
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	//
 	mgrKey := model2.GetMgrCacheKey(req.GetAccount())
 	// query bind cache
@@ -81,7 +81,7 @@ func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrSignReq) *p
 		return &internal.ErrGenToken
 	} else {
 		//
-		return pkg.ApiOk(&mgr.MgrSignRes{
+		return app2.ApiOk(&mgr.MgrSignRes{
 			Id:    int64(bind.ID),
 			Act:   req.GetAccount(),
 			Name:  bind.Name,

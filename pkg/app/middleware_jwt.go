@@ -1,11 +1,10 @@
-package middleware
+package app
 
 import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hertz-contrib/jwt"
-	"github.com/ywengineer/smart-kit/passport/pkg"
 	"go.uber.org/zap"
 	"time"
 )
@@ -39,7 +38,7 @@ func NewJwt(cfg JwtConfig, auth Authentication) *jwt.HertzJWTMiddleware {
 		},
 		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
 			hlog.Infof("auth failed: %s", message)
-			c.JSON(code, pkg.ApiError("common.err.invalid_token"))
+			c.JSON(code, ApiError("common.err.invalid_token"))
 		},
 	})
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 	"github.com/ywengineer/smart-kit/passport/biz/model/mgr"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
 	"go.uber.org/zap"
 	"gorm.io/gorm/clause"
 	"time"
@@ -29,7 +29,7 @@ func Add(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	//
 	wKey := model2.GetWhiteListCacheKey(req.GetID())
 	//
@@ -47,13 +47,13 @@ func Add(ctx context.Context, c *app.RequestContext) {
 			c.JSON(consts.StatusOK, internal.ErrRdb)
 		} else {
 			sCtx.Redis().Set(ctx, wKey, wl.ID, 0)
-			c.JSON(consts.StatusOK, pkg.ApiOk(true))
+			c.JSON(consts.StatusOK, app2.ApiOk(true))
 		}
 	} else if err != nil {
 		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "white_list_add_service"))
 		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else {
-		c.JSON(consts.StatusOK, pkg.ApiOk(true))
+		c.JSON(consts.StatusOK, app2.ApiOk(true))
 	}
 }
 
@@ -68,7 +68,7 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	//
 	wKey := model2.GetWhiteListCacheKey(req.GetID())
 	//
@@ -81,12 +81,12 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 			c.JSON(consts.StatusOK, internal.ErrRdb)
 		} else {
 			sCtx.Redis().Set(ctx, wKey, id, time.Second)
-			c.JSON(consts.StatusOK, pkg.ApiOk(true))
+			c.JSON(consts.StatusOK, app2.ApiOk(true))
 		}
 	} else if !errors.Is(err, redis.Nil) {
 		hlog.Error("unreachable cache", zap.String("err", err.Error()), zap.String("tag", "white_list_add_service"))
 		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else {
-		c.JSON(consts.StatusOK, pkg.ApiOk(true))
+		c.JSON(consts.StatusOK, app2.ApiOk(true))
 	}
 }

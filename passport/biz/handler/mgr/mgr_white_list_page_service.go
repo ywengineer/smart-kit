@@ -9,8 +9,8 @@ import (
 	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/converter"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
-	"github.com/ywengineer/smart-kit/passport/pkg/sql"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	"github.com/ywengineer/smart-kit/pkg/sql"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -30,7 +30,7 @@ func Page(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	//
 	if req.PassportId > 0 {
 		var user model2.WhiteList
@@ -42,7 +42,7 @@ func Page(ctx context.Context, c *app.RequestContext) {
 			hlog.Error("paginator error", zap.Any("data", req), zap.String("err", stmt.Error.Error()), zap.String("tag", "white_list_page_service"))
 			c.JSON(consts.StatusOK, internal.ErrRdb)
 		} else {
-			c.JSON(consts.StatusOK, pkg.ApiOk(&mgr.WhiteListPageRes{
+			c.JSON(consts.StatusOK, app2.ApiOk(&mgr.WhiteListPageRes{
 				Page:     1,
 				PageSize: req.GetPageSize(),
 				Total:    1,
@@ -59,7 +59,7 @@ func Page(ctx context.Context, c *app.RequestContext) {
 			hlog.Error("paginator error", zap.Any("data", req), zap.String("err", err.Error()), zap.String("tag", "white_list_page_service"))
 			c.JSON(consts.StatusOK, internal.ErrRdb)
 		} else {
-			c.JSON(consts.StatusOK, pkg.ApiOk(&mgr.WhiteListPageRes{
+			c.JSON(consts.StatusOK, app2.ApiOk(&mgr.WhiteListPageRes{
 				Page:     req.GetPageNo(),
 				PageSize: req.GetPageSize(),
 				Total:    p.Total,

@@ -1,12 +1,13 @@
-package pkg
+package app
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
-	"github.com/ywengineer/smart-kit/passport/pkg/lock"
+	"github.com/ywengineer/smart-kit/pkg/lock"
 	"github.com/ywengineer/smart-kit/pkg/oauths"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
+	"github.com/ywengineer/smart-kit/pkg/signs"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -21,6 +22,7 @@ type SmartContext interface {
 	GetPassportLockKey(passportId uint) string
 	Rpc() rpcs.Rpc
 	GetAuth(authKey string) (oauths.AuthFacade, error)
+	VerifySignature(data map[string]string, sign []byte) bool
 }
 
 type defaultContext struct {
@@ -30,11 +32,15 @@ type defaultContext struct {
 	_jwt    *jwt.HertzJWTMiddleware
 	jwtMw   app.HandlerFunc
 	mClient rpcs.Rpc
-	auth    oauths.Oauth
+	conf    *Configuration
+}
+
+func (d *defaultContext) VerifySignature(data map[string]string, sign []byte) bool {
+	return signs.VerifySignature(data, sign, d.conf.SignKey)
 }
 
 func (d *defaultContext) GetAuth(authKey string) (oauths.AuthFacade, error) {
-	return d.auth.Get(authKey)
+	return d.conf.OAuth.Get(authKey)
 }
 
 func (d *defaultContext) Rpc() rpcs.Rpc {
@@ -49,7 +55,7 @@ func (d *defaultContext) GetPassportLockKey(passportId uint) string {
 	return "lock:passport:" + strconv.FormatUint(uint64(passportId), 10)
 }
 
-func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, auth oauths.Oauth) SmartContext {
+func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext {
 	return &defaultContext{
 		rdb:     rdb,
 		redis:   redis,
@@ -57,7 +63,7 @@ func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm lock.Manage
 		_jwt:    jwt,
 		jwtMw:   jwt.MiddlewareFunc(),
 		mClient: rpcClient,
-		auth:    auth,
+		conf:    conf,
 	}
 }
 

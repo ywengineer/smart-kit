@@ -12,7 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -42,17 +42,29 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 		return
 	default:
 	}
-	//----------------------------------------------- passport bind lock -----------------------------------------------
-	authKey := c.GetHeader(pkg.HeaderSmartOauthKey)
+	//----------------------------------------------- auth -----------------------------------------------
+	authKey := c.GetHeader(app2.HeaderSmartOauthKey)
 	if len(authKey) == 0 {
 		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ValidateErr(errors.New("authKey is empty")))
 		return
 	}
 	_authKey := string(authKey)
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
 	auth, err := sCtx.GetAuth(_authKey)
 	if err != nil {
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+		return
+	}
+	tk, err := auth.GetToken(req.GetAuthCode())
+	if err != nil {
+		hlog.Error("failed to get access token", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
+		return
+	}
+	usr, err := auth.GetUserInfo(tk.Openid, tk.AccessToken)
+	if err != nil {
+		hlog.Error("failed to get user info", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
 		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
 		return
 	}
@@ -83,19 +95,6 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 	// already bound
 	if strings.Contains(bc, req.GetType().String()) {
 		c.JSON(consts.StatusOK, internal.ErrSameBound)
-		return
-	}
-	//-----------------------------------------------
-	tk, err := auth.GetToken(req.GetAuthCode())
-	if err != nil {
-		hlog.Error("failed to get access token", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
-		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
-		return
-	}
-	usr, err := auth.GetUserInfo(tk.Openid, tk.AccessToken)
-	if err != nil {
-		hlog.Error("failed to get user info", zap.String("msg", err.Error()), zap.String("authKey", _authKey), zap.String("tag", "bind_service"))
-		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
 		return
 	}
 	// bind other
@@ -129,7 +128,7 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 			hlog.Error("cache new bind info failed", zap.String("err", err.Error()), zap.String("tag", "bind_service"))
 			c.JSON(consts.StatusOK, internal.ErrCache)
 		} else {
-			c.JSON(consts.StatusOK, pkg.ApiOk(strings.Split(bc, ",")))
+			c.JSON(consts.StatusOK, app2.ApiOk(strings.Split(bc, ",")))
 		}
 	}
 }

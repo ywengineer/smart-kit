@@ -20,13 +20,12 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/redis/go-redis/v9"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
-	"github.com/ywengineer/smart-kit/passport/pkg/lock"
-	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
-	"github.com/ywengineer/smart-kit/passport/pkg/validator"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	lock2 "github.com/ywengineer/smart-kit/pkg/lock"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart-kit/pkg/nets"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
+	"github.com/ywengineer/smart-kit/pkg/validator"
 	"github.com/ywengineer/smart/loader"
 	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap"
@@ -60,7 +59,7 @@ func main() {
 	hlog.SetLevel(hlog.LevelDebug)
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: zap.DebugLevel}
+	conf := &app2.Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: zap.DebugLevel}
 	_loader := loader.NewLocalLoader("./application.yaml")
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
@@ -84,16 +83,16 @@ func main() {
 	conf.Port = utility.MinInt(utility.MaxInt(conf.Port, 1), 65535)
 	// redis
 	var redisClient redis.UniversalClient
-	var lockMgr lock.Manager
+	var lockMgr lock2.Manager
 	if len(conf.Redis) > 0 {
 		redisClient = utility.NewRedis(conf.Redis)
 	}
 	if !conf.DistributeLock {
-		lockMgr = lock.NewSystemLockManager()
+		lockMgr = lock2.NewSystemLockManager()
 	} else if redisClient == nil {
 		panic("can not create distribute lock, because of redis client is nil")
 	} else {
-		lockMgr = lock.NewRedisLockManager(redislock.New(redisClient))
+		lockMgr = lock2.NewRedisLockManager(redislock.New(redisClient))
 	}
 	// rational database
 	db, err := utility.NewRDB(conf.RDB)
@@ -152,7 +151,7 @@ func main() {
 			Tags:        conf.RegistryInfo.Tags,
 		}))
 	} else {
-		conf.RegistryInfo = &ServiceInfo{
+		conf.RegistryInfo = &app2.ServiceInfo{
 			ServiceName: "smart-passport",
 			Addr:        fmt.Sprintf("%s:%d", nets.GetDefaultIpv4(), conf.Port),
 			Weight:      1,
@@ -190,20 +189,20 @@ func main() {
 		return
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
-	smartCtx := pkg.NewDefaultContext(
+	smartCtx := app2.NewDefaultContext(
 		db,
 		redisClient,
 		lockMgr,
-		middleware.NewJwt(*conf.Jwt, nil),
+		app2.NewJwt(*conf.Jwt, nil),
 		rpc,
-		conf.OAuth,
+		conf,
 	)
 	//
 	sqlRunner(db)
 	//
 	h.Use(requestid.New())
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
-		ctx.Next(context.WithValue(c, pkg.ContextKeySmart, smartCtx))
+		ctx.Next(context.WithValue(c, app2.ContextKeySmart, smartCtx))
 	})
 	h.NoRoute(func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(http.StatusNotFound, http.StatusText(http.StatusNotFound))

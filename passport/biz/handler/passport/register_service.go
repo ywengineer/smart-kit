@@ -13,7 +13,7 @@ import (
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/passport/pkg"
+	app2 "github.com/ywengineer/smart-kit/pkg/app"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
@@ -28,14 +28,26 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, internal.ValidateErr(err))
 		return
 	}
-	authKey := c.GetHeader(pkg.HeaderSmartOauthKey)
-	if len(authKey) == 0 {
+	authKey, signature := c.GetHeader(app2.HeaderSmartOauthKey), c.GetHeader(app2.HeaderSignature)
+	if len(authKey) == 0 || len(signature) == 0 {
 		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ValidateErr(errors.New("authKey is empty")))
 		return
 	}
 	_authKey := string(authKey)
 	//
-	sCtx := ctx.Value(pkg.ContextKeySmart).(pkg.SmartContext)
+	sCtx := ctx.Value(app2.ContextKeySmart).(app2.SmartContext)
+	//----------------------------------------------- signature verify -----------------------------------------------
+	if !sCtx.VerifySignature(map[string]string{
+		"type":          req.GetType().String(),
+		"app_bundle_id": req.GetAppBundleId(),
+		"auth_code":     req.GetAuthCode(),
+		"device_id":     req.GetDeviceId(),
+		"adid":          req.GetAdid(),
+		"auth_key":      _authKey,
+	}, signature) {
+		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrSign)
+		return
+	}
 	id, accessToken, refreshToken, bindKey := "", "", "", ""
 	socialName, gender, headImg := "", 0, ""
 	// ano
@@ -133,8 +145,8 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	pst := model2.Passport{
 		DeviceId:   req.GetDeviceId(),
 		Adid:       req.GetAdid(),
-		SystemType: req.GetDeviceInfo()[pkg.Os],
-		Locale:     req.GetDeviceInfo()[pkg.Locale],
+		SystemType: req.GetDeviceInfo()[app2.Os],
+		Locale:     req.GetDeviceInfo()[app2.Locale],
 		Extra:      deviceBytes,
 	}
 	if err = sCtx.Rdb().Transaction(func(pstBind *model2.PassportBinding) func(tx *gorm.DB) error {
@@ -185,7 +197,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, internal.ErrGenToken)
 	} else {
-		c.JSON(consts.StatusOK, pkg.ApiOk(passport.LoginResp{
+		c.JSON(consts.StatusOK, app2.ApiOk(passport.LoginResp{
 			PassportId: int64(pst.ID),
 			Token:      tk,
 			BrandNew:   true,

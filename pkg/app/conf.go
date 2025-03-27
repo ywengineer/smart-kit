@@ -1,8 +1,7 @@
-package main
+package app
 
 import (
 	"fmt"
-	"github.com/ywengineer/smart-kit/passport/pkg/middleware"
 	"github.com/ywengineer/smart-kit/pkg/oauths"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"github.com/ywengineer/smart/utility"
@@ -18,13 +17,14 @@ type Configuration struct {
 	DistributeLock   bool                  `json:"distribute_lock" yaml:"distribute-lock"`
 	MaxRequestBodyKB int                   `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`
 	Cors             *Cors                 `json:"cors,omitempty" yaml:"cors,omitempty"`
-	Jwt              *middleware.JwtConfig `json:"jwt,omitempty" yaml:"jwt,omitempty"`
+	Jwt              *JwtConfig            `json:"jwt,omitempty" yaml:"jwt,omitempty"`
 	LogLevel         zapcore.Level         `json:"log_level" yaml:"log-level"`
 	Nacos            *Nacos                `json:"nacos,omitempty" yaml:"nacos,omitempty"`
 	RegistryInfo     *ServiceInfo          `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
 	RpcClientInfo    rpcs.RpcClientInfo    `json:"rpc_client_info" yaml:"rpc-client-info"`
 	OAuth            oauths.Oauth          `json:"oauth" yaml:"oauth"`
+	SignKey          string                `json:"sign_key" yaml:"sign-key"`
 }
 
 type Cors struct {

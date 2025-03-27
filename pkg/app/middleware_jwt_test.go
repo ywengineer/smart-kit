@@ -1,4 +1,4 @@
-package middleware
+package app
 
 import (
 	"github.com/hertz-contrib/jwt"

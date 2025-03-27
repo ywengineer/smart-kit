@@ -1,4 +1,4 @@
-package pkg
+package app
 
 const (
 	ContextKeySmart   = "smart-context"
@@ -31,7 +31,10 @@ const (
 	Locale      string = "locale"       // Locale 地区(locale)
 )
 
-const HeaderSmartOauthKey = "Smart-Oauth-Key"
+const (
+	HeaderSmartOauthKey = "smart-oauth-key"
+	HeaderSignature     = "signature"
+)
 
 const (
 	Fail                ResultCode = 0
