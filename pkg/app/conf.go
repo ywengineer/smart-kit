@@ -3,28 +3,28 @@ package app
 import (
 	"fmt"
 	"github.com/ywengineer/smart-kit/pkg/oauths"
+	"github.com/ywengineer/smart-kit/pkg/rdb"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
-	"github.com/ywengineer/smart/utility"
 	"go.uber.org/zap/zapcore"
 	"time"
 )
 
 type Configuration struct {
-	Port             int                   `json:"port" yaml:"port"`
-	BasePath         string                `json:"base_path" yaml:"base-path"`
-	RDB              utility.RdbProperties `json:"rdb" yaml:"rdb"`
-	Redis            string                `yaml:"redis" json:"redis"` // redis://user:password@host:port/?db=0&node=host:port&node=host:port
-	DistributeLock   bool                  `json:"distribute_lock" yaml:"distribute-lock"`
-	MaxRequestBodyKB int                   `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`
-	Cors             *Cors                 `json:"cors,omitempty" yaml:"cors,omitempty"`
-	Jwt              *JwtConfig            `json:"jwt,omitempty" yaml:"jwt,omitempty"`
-	LogLevel         zapcore.Level         `json:"log_level" yaml:"log-level"`
-	Nacos            *Nacos                `json:"nacos,omitempty" yaml:"nacos,omitempty"`
-	RegistryInfo     *ServiceInfo          `json:"registry_info" yaml:"registry-info"`
-	DiscoveryEnable  bool                  `json:"discovery_enable" yaml:"discovery-enable"`
-	RpcClientInfo    rpcs.RpcClientInfo    `json:"rpc_client_info" yaml:"rpc-client-info"`
-	OAuth            oauths.Oauth          `json:"oauth" yaml:"oauth"`
-	SignKey          string                `json:"sign_key" yaml:"sign-key"`
+	Port             int                `json:"port" yaml:"port"`
+	BasePath         string             `json:"base_path" yaml:"base-path"`
+	RDB              rdb.Properties     `json:"rdb" yaml:"rdb"`
+	Redis            string             `yaml:"redis" json:"redis"` // redis://user:password@host:port/?db=0&node=host:port&node=host:port
+	DistributeLock   bool               `json:"distribute_lock" yaml:"distribute-lock"`
+	MaxRequestBodyKB int                `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`
+	Cors             *Cors              `json:"cors,omitempty" yaml:"cors,omitempty"`
+	Jwt              *JwtConfig         `json:"jwt,omitempty" yaml:"jwt,omitempty"`
+	LogLevel         zapcore.Level      `json:"log_level" yaml:"log-level"`
+	Nacos            *Nacos             `json:"nacos,omitempty" yaml:"nacos,omitempty"`
+	RegistryInfo     *ServiceInfo       `json:"registry_info" yaml:"registry-info"`
+	DiscoveryEnable  bool               `json:"discovery_enable" yaml:"discovery-enable"`
+	RpcClientInfo    rpcs.RpcClientInfo `json:"rpc_client_info" yaml:"rpc-client-info"`
+	OAuth            oauths.Oauth       `json:"oauth" yaml:"oauth"`
+	SignKey          string             `json:"sign_key" yaml:"sign-key"`
 }
 
 type Cors struct {

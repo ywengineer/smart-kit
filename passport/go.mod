@@ -12,24 +12,18 @@ require (
 	github.com/apache/thrift v0.0.0-00010101000000-000000000000
 	github.com/bsm/redislock v0.9.4
 	github.com/bytedance/sonic v1.13.2
-	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cloudwego/hertz v0.9.6
-	github.com/google/uuid v1.6.0
 	github.com/hertz-contrib/cors v0.1.0
-	github.com/hertz-contrib/jwt v1.0.2
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/hertz-contrib/registry/nacos/v2 v2.0.0-20250319055937-8a220332e808
 	github.com/hertz-contrib/requestid v1.1.0
 	github.com/nacos-group/nacos-sdk-go/v2 v2.2.9
-	github.com/pilagod/gorm-cursor-paginator/v2 v2.6.1
 	github.com/redis/go-redis/v9 v9.7.1
 	github.com/samber/lo v1.49.1
-	github.com/stretchr/testify v1.10.0
 	github.com/ywengineer/smart v0.0.0
 	github.com/ywengineer/smart-kit v0.0.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.5
 	gorm.io/gorm v1.25.12
 )
@@ -65,10 +59,10 @@ require (
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/gopkg v0.1.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clbanning/mxj/v2 v2.5.5 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/cloudwego/netpoll v0.6.5 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
@@ -77,7 +71,9 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
+	github.com/hertz-contrib/jwt v1.0.2 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.2 // indirect
@@ -93,8 +89,8 @@ require (
 	github.com/nyaruka/phonenumbers v1.5.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20210501183033-44dafcb38ecc // indirect
+	github.com/pilagod/gorm-cursor-paginator/v2 v2.6.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
@@ -119,6 +115,7 @@ require (
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.7 // indirect
 	gorm.io/driver/postgres v1.5.11 // indirect
 )

@@ -24,6 +24,7 @@ import (
 	lock2 "github.com/ywengineer/smart-kit/pkg/lock"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart-kit/pkg/nets"
+	"github.com/ywengineer/smart-kit/pkg/rdb"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"github.com/ywengineer/smart-kit/pkg/validator"
 	"github.com/ywengineer/smart/loader"
@@ -95,7 +96,7 @@ func main() {
 		lockMgr = lock2.NewRedisLockManager(redislock.New(redisClient))
 	}
 	// rational database
-	db, err := utility.NewRDB(conf.RDB)
+	db, err := rdb.NewRDB(conf.RDB)
 	if err != nil {
 		hlog.Fatalf("failed to create rdb instance: %v", err)
 	}
