@@ -2,10 +2,10 @@ package apps
 
 import (
 	"fmt"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart-kit/pkg/oauths"
 	"github.com/ywengineer/smart-kit/pkg/rdbs"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
-	"go.uber.org/zap/zapcore"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type Configuration struct {
 	MaxRequestBodyKB int                `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`
 	Cors             *Cors              `json:"cors,omitempty" yaml:"cors,omitempty"`
 	Jwt              *JwtConfig         `json:"jwt,omitempty" yaml:"jwt,omitempty"`
-	LogLevel         zapcore.Level      `json:"log_level" yaml:"log-level"`
+	LogLevel         logk.Level         `json:"log_level" yaml:"log-level"`
 	Nacos            *Nacos             `json:"nacos,omitempty" yaml:"nacos,omitempty"`
 	RegistryInfo     *ServiceInfo       `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool               `json:"discovery_enable" yaml:"discovery-enable"`

@@ -13,24 +13,20 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
-	hertzzap "github.com/hertz-contrib/logger/zap"
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/pkg/loaders"
 	"github.com/ywengineer/smart-kit/pkg/locks"
+	"github.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/ywengineer/smart-kit/pkg/nacos"
 	"github.com/ywengineer/smart-kit/pkg/nets"
 	"github.com/ywengineer/smart-kit/pkg/rdbs"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/ywengineer/smart-kit/pkg/validator"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -44,37 +40,21 @@ func NewHertzApp(appName string,
 	shutdown OnShutdown,
 	rdbModels ...interface{},
 ) *server.Hertz {
-	// 提供压缩和删除
-	lumberjackLogger := &lumberjack.Logger{
-		Filename:   "logs/app.out",
-		MaxSize:    20,   // 一个文件最大可达 20M。
-		MaxBackups: 5,    // 最多同时保存 5 个文件。
-		MaxAge:     10,   // 一个文件最多可以保存 10 天。
-		Compress:   true, // 用 gzip 压缩。
-	}
-	//
-	logger := hertzzap.NewLogger(
-		hertzzap.WithCoreWs(zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberjackLogger))),
-		hertzzap.WithZapOptions(
-			zap.AddStacktrace(zapcore.ErrorLevel),
-		),
-	)
-	hlog.SetLogger(logger)
-	hlog.SetLevel(hlog.LevelDebug)
+	hlog.SetLogger(logk.NewLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: zap.DebugLevel}
+	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug)}
 	_loader := loaders.NewLocalLoader("./application.yaml")
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
 	}
-	hlog.SetLevel(hlog.Level(conf.LogLevel + 1))
+	hlog.SetLevel(hlog.Level(conf.LogLevel))
 	//
 	if err := _loader.Watch(context.Background(), func(data string) error {
 		if err := _loader.Unmarshal([]byte(data), conf); err != nil {
 			return err
 		}
-		hlog.SetLevel(hlog.Level(conf.LogLevel + 1))
+		hlog.SetLevel(hlog.Level(conf.LogLevel))
 		return nil
 	}); err != nil {
 		hlog.Fatalf("failed to watch app configuration: %v", err)

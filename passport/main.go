@@ -4,9 +4,9 @@ package main
 
 import (
 	"context"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/ywengineer/smart-kit/pkg/apps"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,7 +32,7 @@ func main() {
 }
 
 func sqlRunner(db *gorm.DB) {
-	logk.DefaultLogger().Info(db.ToSQL(func(tx *gorm.DB) *gorm.DB {
+	hlog.Info(db.ToSQL(func(tx *gorm.DB) *gorm.DB {
 		return tx.WithContext(context.Background()).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "passport"}},                            // 冲突字段（唯一索引）
 			DoUpdates: clause.AssignmentColumns([]string{"updated_at", "deleted_at"}), // 更新字段

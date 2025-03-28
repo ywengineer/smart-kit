@@ -1,77 +1,76 @@
 package logk
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"os"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"gopkg.in/yaml.v3"
 )
 
-var srvLogger = NewLogger("./server.log", 10, 10, 7, zap.DebugLevel, false)
+var defLogger = NewLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
 
 // SetLogLevel must greater than debug level
-func SetLogLevel(lv zapcore.Level) {
-	srvLogger = srvLogger.WithOptions(zap.IncreaseLevel(lv))
+func SetLogLevel(lv hlog.Level) {
+	defLogger.SetLevel(lv)
 }
 
-func GetLogLevel() zapcore.Level {
-	return srvLogger.Level()
+func DefaultLogger() hlog.FullLogger {
+	return defLogger
 }
 
-func DefaultLogger() *zap.Logger {
-	return srvLogger
+type Level hlog.Level
+
+func (l *Level) String() string {
+	switch hlog.Level(*l) {
+	case hlog.LevelTrace:
+		return "trace"
+	case hlog.LevelDebug:
+		return "debug"
+	case hlog.LevelInfo:
+		return "info"
+	case hlog.LevelNotice, hlog.LevelWarn:
+		return "warn"
+	case hlog.LevelError:
+		return "error"
+	case hlog.LevelFatal:
+		return "fatal"
+	default:
+		return "info"
+	}
 }
 
-func NewLogger(logFile string, maxFileMB, maxBackups, maxDays int, level zapcore.Level, dev bool) *zap.Logger {
-	hook := lumberjack.Logger{
-		Filename:   logFile,    // 日志文件路径
-		MaxSize:    maxFileMB,  // 每个日志文件保存的最大尺寸 单位：M
-		MaxBackups: maxBackups, // 日志文件最多保存多少个备份
-		MaxAge:     maxDays,    // 文件最多保存多少天
-		Compress:   true,       // 是否压缩
+func (l *Level) from(v string) {
+	switch v {
+	case "trace":
+		*l = Level(hlog.LevelTrace)
+	case "debug":
+		*l = Level(hlog.LevelDebug)
+	case "info":
+		*l = Level(hlog.LevelInfo)
+	case "warn":
+		*l = Level(hlog.LevelWarn)
+	case "error":
+		*l = Level(hlog.LevelError)
+	case "fatal":
+		*l = Level(hlog.LevelFatal)
+	default:
+		*l = Level(hlog.LevelDebug)
 	}
+}
 
-	encoderConfig := zapcore.EncoderConfig{
-		TimeKey:        "time",
-		LevelKey:       "level",
-		NameKey:        "logger",
-		CallerKey:      "line",
-		MessageKey:     "msg",
-		StacktraceKey:  "stacktrace",
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,  // 小写编码器
-		EncodeTime:     zapcore.ISO8601TimeEncoder,     // ISO8601 UTC 时间格式
-		EncodeDuration: zapcore.SecondsDurationEncoder, //
-		EncodeCaller:   zapcore.ShortCallerEncoder,     // 全路径编码器
-		EncodeName:     zapcore.FullNameEncoder,
+func (l *Level) UnmarshalJSON(bytes []byte) error {
+	l.from(string(bytes))
+	return nil
+}
+
+func (l *Level) UnmarshalText(text []byte) error {
+	l.from(string(text))
+	return nil
+}
+
+func (l *Level) UnmarshalYAML(value *yaml.Node) error {
+	var s string
+	if err := value.Decode(&s); err != nil {
+		return err
 	}
-	// 设置日志级别
-	//atomicLevel := zap.NewAtomicLevel()
-	//atomicLevel.SetLevel(zap.InfoLevel)
-	//
-	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(encoderConfig),                                           // 编码器配置
-		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook)), // 打印到控制台和文件
-		zap.NewAtomicLevelAt(level),                                                     // 日志级别
-	)
-	var opts = []zap.Option{zap.AddStacktrace(zap.ErrorLevel)}
-	//
-	if dev {
-		// 开启开发模式，堆栈跟踪
-		opts = append(opts, zap.AddCaller())
-		//caller := zap.AddCaller()
-		// 开启文件及行号
-		opts = append(opts, zap.Development())
-		//development := zap.Development()
-		// 设置初始化字段
-		//filed := zap.Fields(zap.String("serviceName", "serviceName"))
-	}
-	// 构造日志
-	return zap.New(core, opts...)
-	//
-	//logger.Info("log 初始化成功")
-	//logger.Info("无法获取网址",
-	//	zap.String("url", "http://www.baidu.com"),
-	//	zap.Int("attempt", 3),
-	//	zap.Duration("backoff", time.Second))
+	l.from(s)
+	return nil
 }
