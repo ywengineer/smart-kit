@@ -1,10 +1,10 @@
-package sql
+package sqls
 
 import (
 	"context"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"github.com/samber/lo"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"gorm.io/gorm"
 	"math"
 )
@@ -30,7 +30,7 @@ type PageInfo[T interface{}] struct {
 // Paginate 分页工具函数
 func Paginate[T interface{}, V interface{}](ctx context.Context, query *gorm.DB, page, pageSize int32, dest *[]T, converter func(i T) V) (*PageInfo[V], error) {
 	var total int64
-	offset := (utility.MaxInt(page, 1) - 1) * pageSize
+	offset := (utilk.Max(page, 1) - 1) * pageSize
 	// 查询总数
 	if err := query.WithContext(ctx).Count(&total).Error; err != nil {
 		return nil, err

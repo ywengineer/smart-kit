@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"

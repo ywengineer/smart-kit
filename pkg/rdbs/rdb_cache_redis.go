@@ -1,4 +1,4 @@
-package rdb
+package rdbs
 
 import (
 	"context"

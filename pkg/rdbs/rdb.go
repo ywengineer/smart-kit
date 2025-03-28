@@ -1,10 +1,11 @@
-package rdb
+package rdbs
 
 import (
 	"fmt"
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -36,7 +37,7 @@ type DbPoolProperties struct {
 }
 
 // NewRDB create rational database instance
-func NewRDB(driver utility.RdbProperties, plugins ...gorm.Plugin) (*gorm.DB, error) {
+func NewRDB(driver Properties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
 	var cachePlugin gorm.Plugin
@@ -54,17 +55,17 @@ func NewRDB(driver utility.RdbProperties, plugins ...gorm.Plugin) (*gorm.DB, err
 		if strings.HasPrefix(driver.Cache, "mem://") {
 			if memProtocol, err := url.Parse(driver.Cache); err == nil {
 				cachePlugin = &caches.Caches{Conf: &caches.Config{
-					Cacher: (&memoryCacher{}).size(utility.QueryInt(memProtocol.Query(), "size")),
+					Cacher: (&memoryCacher{}).size(utilk.QueryInt(memProtocol.Query(), "size")),
 				}}
 			} else {
-				utility.DefaultLogger().Error("rdb cache inactivate, because of create failed: " + driver.Cache)
+				logk.DefaultLogger().Error("rdb cache inactivate, because of create failed: " + driver.Cache)
 			}
 		} else if strings.HasPrefix(driver.Cache, "redis://") {
 			cachePlugin = &caches.Caches{Conf: &caches.Config{
-				Cacher: &redisCacher{rdb: utility.NewRedis(driver.Cache)},
+				Cacher: &redisCacher{rdb: utilk.NewRedis(driver.Cache)},
 			}}
 		} else {
-			utility.DefaultLogger().Error("rdb not support this cache: " + driver.Cache)
+			logk.DefaultLogger().Error("rdb not support this cache: " + driver.Cache)
 		}
 	}
 	//
@@ -83,7 +84,7 @@ func NewRDB(driver utility.RdbProperties, plugins ...gorm.Plugin) (*gorm.DB, err
 }
 
 // NewMySQL create gorm.DB instance based on mysql database
-func NewMySQL(driver utility.RdbProperties) (*gorm.DB, error) {
+func NewMySQL(driver Properties) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", driver.Username, driver.Password, driver.Host, driver.Port, driver.Database)
 	if len(driver.Parameters) > 0 {
 		dsn += "&" + driver.Parameters
@@ -100,7 +101,7 @@ func NewMySQL(driver utility.RdbProperties) (*gorm.DB, error) {
 }
 
 // NewPostgres create gorm.DB instance based on postgres database
-func NewPostgres(driver utility.RdbProperties) (*gorm.DB, error) {
+func NewPostgres(driver Properties) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s TimeZone=Asia/Shanghai",
 		driver.Host, driver.Port, driver.Username, driver.Password, driver.Database)
 	if len(driver.Parameters) > 0 {
@@ -113,17 +114,17 @@ func NewPostgres(driver utility.RdbProperties) (*gorm.DB, error) {
 	}), defaultConfig(driver.DebugMode))
 }
 
-func initRbdConnPool(gdb *gorm.DB, driver utility.RdbProperties) (*gorm.DB, error) {
+func initRbdConnPool(gdb *gorm.DB, driver Properties) (*gorm.DB, error) {
 	db, err := gdb.DB()
 	if err != nil {
-		utility.DefaultLogger().Error("get db instance from gorm error", zap.Any("driver", driver), zap.Error(err))
+		logk.DefaultLogger().Error("get db instance from gorm error", zap.Any("driver", driver), zap.Error(err))
 		return nil, err
 	}
-	db.SetMaxIdleConns(utility.MaxInt(driver.Pool.MaxIdleCon, 5))
-	db.SetMaxOpenConns(utility.MaxInt(driver.Pool.MaxOpenCon, 5))
-	db.SetConnMaxLifetime(time.Duration(utility.MaxInt64(1, driver.Pool.MaxLifeTimeInMinute) * int64(time.Minute)))
+	db.SetMaxIdleConns(utilk.Max(driver.Pool.MaxIdleCon, 5))
+	db.SetMaxOpenConns(utilk.Max(driver.Pool.MaxOpenCon, 5))
+	db.SetConnMaxLifetime(time.Duration(utilk.Max(1, driver.Pool.MaxLifeTimeInMinute) * int64(time.Minute)))
 	if err = db.Ping(); err != nil {
-		utility.DefaultLogger().Error("connect to db instance failed", zap.Any("driver", driver), zap.Error(err))
+		logk.DefaultLogger().Error("connect to db instance failed", zap.Any("driver", driver), zap.Error(err))
 		return nil, err
 	}
 	return gdb, nil

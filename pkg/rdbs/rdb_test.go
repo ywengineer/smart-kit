@@ -1,15 +1,14 @@
-package rdb
+package rdbs
 
 import (
 	"github.com/bytedance/sonic"
-	"github.com/ywengineer/smart/utility"
 	"gopkg.in/yaml.v2"
 	"net/url"
 	"testing"
 )
 
 func TestRdbConfigProperties(t *testing.T) {
-	rp := &utility.RdbProperties{}
+	rp := &Properties{}
 	t.Log(sonic.MarshalString(rp))
 	rpYaml, _ := yaml.Marshal(rp)
 	t.Log(string(rpYaml))

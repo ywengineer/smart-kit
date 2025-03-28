@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 )
 
 func Jwt() []app.HandlerFunc {

@@ -12,7 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"strings"
 	"time"

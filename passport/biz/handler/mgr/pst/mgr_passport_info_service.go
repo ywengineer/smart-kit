@@ -11,7 +11,7 @@ import (
 	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/converter"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 

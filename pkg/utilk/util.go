@@ -25,3 +25,10 @@ func Max[T int | int32 | int64 | uint | time.Duration](a, b T) T {
 	}
 	return b
 }
+
+func Min[T int | int32 | int64 | uint | time.Duration](a, b T) T {
+	if a > b {
+		return b
+	}
+	return a
+}

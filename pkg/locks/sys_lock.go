@@ -1,4 +1,4 @@
-package lock
+package locks
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"github.com/bsm/redislock"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"io"
 	"sync"
 	"time"
@@ -43,7 +43,7 @@ func (s *sysLock) Metadata() string {
 }
 
 func (s *sysLock) TTL(ctx context.Context) (time.Duration, error) {
-	return time.Duration(utility.MaxInt64(s.expireAt-time.Now().Unix(), 0)) * time.Second, nil
+	return time.Duration(utilk.Max(s.expireAt-time.Now().Unix(), 0)) * time.Second, nil
 }
 
 func (s *sysLock) Refresh(ctx context.Context, ttl time.Duration, opt *redislock.Options) error {

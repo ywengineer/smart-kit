@@ -9,8 +9,8 @@ import (
 	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/converter"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
-	"github.com/ywengineer/smart-kit/pkg/sql"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/ywengineer/smart-kit/pkg/sqls"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
@@ -54,7 +54,7 @@ func Page(ctx context.Context, c *app.RequestContext) {
 		// extend query before paginating
 		stmt := sCtx.Rdb().WithContext(ctx).Model(&users).Order("id desc")
 		// with pagination
-		if p, err := sql.Paginate[model2.Passport](ctx, stmt, req.GetPageNo(), req.GetPageSize(), &users, func(i model2.Passport) *pst.PassportData {
+		if p, err := sqls.Paginate[model2.Passport](ctx, stmt, req.GetPageNo(), req.GetPageSize(), &users, func(i model2.Passport) *pst.PassportData {
 			return converter.ConvertPassport(&i, nil)
 		}); err != nil {
 			hlog.Error("paginator error", zap.Any("data", req), zap.String("err", err.Error()), zap.String("tag", "passport_page_service"))

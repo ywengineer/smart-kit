@@ -1,40 +1,40 @@
 package internal
 
 import (
-	"github.com/ywengineer/smart-kit/pkg/app"
+	"github.com/ywengineer/smart-kit/pkg/apps"
 	"strconv"
 )
 
 var (
 	// ErrTodo common error
-	ErrTodo          = app.ApiError("common.err.todo_feature")
-	ErrDisLock       = app.ApiError("common.err.lock")
-	ErrCache         = app.ApiError("common.err.cache")
-	ErrRdb           = app.ApiError("common.err.rdb")
-	ErrJsonMarshal   = app.ApiError("common.err.json_marshal")
-	ErrJsonUnmarshal = app.ApiError("common.err.json_unmarshal")
-	ErrGenToken      = app.ApiError("common.err.gen_token")
-	ErrInvalidToken  = app.ApiError("common.err.invalid_token")
-	ErrBoundOther    = app.ApiError("common.err.bound_other")
-	ErrPassword      = app.ApiError("common.err.passwd")
-	ErrUserNotFound  = app.ApiError("common.err.user_not_found")
-	ErrAuth          = app.ApiError("common.err.auth")
-	ErrSign          = app.ApiError("common.err.sign")
+	ErrTodo          = apps.ApiError("common.err.todo_feature")
+	ErrDisLock       = apps.ApiError("common.err.lock")
+	ErrCache         = apps.ApiError("common.err.cache")
+	ErrRdb           = apps.ApiError("common.err.rdb")
+	ErrJsonMarshal   = apps.ApiError("common.err.json_marshal")
+	ErrJsonUnmarshal = apps.ApiError("common.err.json_unmarshal")
+	ErrGenToken      = apps.ApiError("common.err.gen_token")
+	ErrInvalidToken  = apps.ApiError("common.err.invalid_token")
+	ErrBoundOther    = apps.ApiError("common.err.bound_other")
+	ErrPassword      = apps.ApiError("common.err.passwd")
+	ErrUserNotFound  = apps.ApiError("common.err.user_not_found")
+	ErrAuth          = apps.ApiError("common.err.auth")
+	ErrSign          = apps.ApiError("common.err.sign")
 	// ErrMaxPerDevice error for register service
-	ErrMaxPerDevice = app.ApiError("register.err.max.account")
-	ErrRegisterFail = app.ApiError("register.error.rdb")
+	ErrMaxPerDevice = apps.ApiError("register.err.max.account")
+	ErrRegisterFail = apps.ApiError("register.error.rdb")
 	// ErrLoginTry error for login service
-	ErrLoginTry = app.ApiError("login.err.asshole")
+	ErrLoginTry = apps.ApiError("login.err.asshole")
 	// ErrSameBound
-	ErrSameBound   = app.ApiError("bind.err.bound_type")
-	ErrUnsupported = app.ApiError("bind.err.unsupported")
+	ErrSameBound   = apps.ApiError("bind.err.bound_type")
+	ErrUnsupported = apps.ApiError("bind.err.unsupported")
 )
 
-func ValidateErr(err error) app.ApiResult {
+func ValidateErr(err error) apps.ApiResult {
 	if err == nil {
-		return app.ApiError("validation.err", "ignore")
+		return apps.ApiError("validation.err", "ignore")
 	}
-	return app.ApiError("validation.err", err.Error())
+	return apps.ApiError("validation.err", err.Error())
 }
 
 func CacheKeyBoundTypes(passportId uint) string {

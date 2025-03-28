@@ -1,9 +1,9 @@
-package app
+package apps
 
 import (
 	"fmt"
 	"github.com/ywengineer/smart-kit/pkg/oauths"
-	"github.com/ywengineer/smart-kit/pkg/rdb"
+	"github.com/ywengineer/smart-kit/pkg/rdbs"
 	"github.com/ywengineer/smart-kit/pkg/rpcs"
 	"go.uber.org/zap/zapcore"
 	"time"
@@ -12,7 +12,7 @@ import (
 type Configuration struct {
 	Port             int                `json:"port" yaml:"port"`
 	BasePath         string             `json:"base_path" yaml:"base-path"`
-	RDB              rdb.Properties     `json:"rdb" yaml:"rdb"`
+	RDB              rdbs.Properties    `json:"rdb" yaml:"rdb"`
 	Redis            string             `yaml:"redis" json:"redis"` // redis://user:password@host:port/?db=0&node=host:port&node=host:port
 	DistributeLock   bool               `json:"distribute_lock" yaml:"distribute-lock"`
 	MaxRequestBodyKB int                `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty"`

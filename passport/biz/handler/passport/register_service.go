@@ -13,7 +13,7 @@ import (
 	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/app"
+	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"

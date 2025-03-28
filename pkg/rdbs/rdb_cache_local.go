@@ -1,10 +1,10 @@
-package rdb
+package rdbs
 
 import (
 	"context"
 	"github.com/go-gorm/caches/v4"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/ywengineer/smart/utility"
+	"github.com/ywengineer/smart-kit/pkg/utilk"
 )
 
 type memoryCacher struct {
@@ -12,7 +12,7 @@ type memoryCacher struct {
 }
 
 func (c *memoryCacher) size(s int) caches.Cacher {
-	c.store, _ = lru.New[string, any](utility.MaxInt(128, s))
+	c.store, _ = lru.New[string, any](utilk.Max(128, s))
 	return c
 }
 
