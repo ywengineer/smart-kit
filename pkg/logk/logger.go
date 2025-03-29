@@ -1,8 +1,8 @@
 package logk
 
 import (
+	"context"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"gopkg.in/yaml.v3"
 )
 
 var defLogger = NewLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
@@ -16,61 +16,107 @@ func DefaultLogger() hlog.FullLogger {
 	return defLogger
 }
 
-type Level hlog.Level
-
-func (l *Level) String() string {
-	switch hlog.Level(*l) {
-	case hlog.LevelTrace:
-		return "trace"
-	case hlog.LevelDebug:
-		return "debug"
-	case hlog.LevelInfo:
-		return "info"
-	case hlog.LevelNotice, hlog.LevelWarn:
-		return "warn"
-	case hlog.LevelError:
-		return "error"
-	case hlog.LevelFatal:
-		return "fatal"
-	default:
-		return "info"
-	}
+// Fatal calls the default logger's Fatal method and then os.Exit(1).
+func Fatal(v ...interface{}) {
+	DefaultLogger().Fatal(v...)
 }
 
-func (l *Level) from(v string) {
-	switch v {
-	case "trace":
-		*l = Level(hlog.LevelTrace)
-	case "debug":
-		*l = Level(hlog.LevelDebug)
-	case "info":
-		*l = Level(hlog.LevelInfo)
-	case "warn":
-		*l = Level(hlog.LevelWarn)
-	case "error":
-		*l = Level(hlog.LevelError)
-	case "fatal":
-		*l = Level(hlog.LevelFatal)
-	default:
-		*l = Level(hlog.LevelDebug)
-	}
+// Error calls the default logger's Error method.
+func Error(v ...interface{}) {
+	DefaultLogger().Error(v...)
 }
 
-func (l *Level) UnmarshalJSON(bytes []byte) error {
-	l.from(string(bytes))
-	return nil
+// Warn calls the default logger's Warn method.
+func Warn(v ...interface{}) {
+	DefaultLogger().Warn(v...)
 }
 
-func (l *Level) UnmarshalText(text []byte) error {
-	l.from(string(text))
-	return nil
+// Notice calls the default logger's Notice method.
+func Notice(v ...interface{}) {
+	DefaultLogger().Notice(v...)
 }
 
-func (l *Level) UnmarshalYAML(value *yaml.Node) error {
-	var s string
-	if err := value.Decode(&s); err != nil {
-		return err
-	}
-	l.from(s)
-	return nil
+// Info calls the default logger's Info method.
+func Info(v ...interface{}) {
+	DefaultLogger().Info(v...)
+}
+
+// Debug calls the default logger's Debug method.
+func Debug(v ...interface{}) {
+	DefaultLogger().Debug(v...)
+}
+
+// Trace calls the default logger's Trace method.
+func Trace(v ...interface{}) {
+	DefaultLogger().Trace(v...)
+}
+
+// Fatalf calls the default logger's Fatalf method and then os.Exit(1).
+func Fatalf(format string, v ...interface{}) {
+	DefaultLogger().Fatalf(format, v...)
+}
+
+// Errorf calls the default logger's Errorf method.
+func Errorf(format string, v ...interface{}) {
+	DefaultLogger().Errorf(format, v...)
+}
+
+// Warnf calls the default logger's Warnf method.
+func Warnf(format string, v ...interface{}) {
+	DefaultLogger().Warnf(format, v...)
+}
+
+// Noticef calls the default logger's Noticef method.
+func Noticef(format string, v ...interface{}) {
+	DefaultLogger().Noticef(format, v...)
+}
+
+// Infof calls the default logger's Infof method.
+func Infof(format string, v ...interface{}) {
+	DefaultLogger().Infof(format, v...)
+}
+
+// Debugf calls the default logger's Debugf method.
+func Debugf(format string, v ...interface{}) {
+	DefaultLogger().Debugf(format, v...)
+}
+
+// Tracef calls the default logger's Tracef method.
+func Tracef(format string, v ...interface{}) {
+	DefaultLogger().Tracef(format, v...)
+}
+
+// CtxFatalf calls the default logger's CtxFatalf method and then os.Exit(1).
+func CtxFatalf(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxFatalf(ctx, format, v...)
+}
+
+// CtxErrorf calls the default logger's CtxErrorf method.
+func CtxErrorf(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxErrorf(ctx, format, v...)
+}
+
+// CtxWarnf calls the default logger's CtxWarnf method.
+func CtxWarnf(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxWarnf(ctx, format, v...)
+}
+
+// CtxNoticef calls the default logger's CtxNoticef method.
+func CtxNoticef(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxNoticef(ctx, format, v...)
+}
+
+// CtxInfof calls the default logger's CtxInfof method.
+func CtxInfof(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxInfof(ctx, format, v...)
+}
+
+// CtxDebugf calls the default logger's CtxDebugf method.
+func CtxDebugf(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxDebugf(ctx, format, v...)
+}
+
+// CtxTracef calls the default logger's CtxTracef method.
+func CtxTracef(ctx context.Context, format string, v ...interface{}) {
+	DefaultLogger().CtxTracef(ctx, format, v...)
 }
