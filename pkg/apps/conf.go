@@ -33,8 +33,14 @@ type Configuration struct {
 	RpcClientInfo    rpcs.RpcClientInfo `json:"rpc_client_info" yaml:"rpc-client-info"`
 	OAuth            oauths.Oauth       `json:"oauth" yaml:"oauth"`
 	SignKey          string             `json:"sign_key" yaml:"sign-key"`
-	ProfileType      ProfileType        `json:"profile_type" yaml:"profile-type"`
-	ProfilePrefix    string             `json:"profile_prefix" yaml:"profile-prefix"`
+	Profile          Profiling          `json:"profile" yaml:"profile"`
+}
+
+type Profiling struct {
+	Enabled bool        `json:"enabled" yaml:"enabled"`
+	Auth    bool        `json:"auth" yaml:"auth"`
+	Type    ProfileType `json:"type" yaml:"type"`
+	Prefix  string      `json:"prefix" yaml:"prefix"`
 }
 
 type Cors struct {

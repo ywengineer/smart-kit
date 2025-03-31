@@ -44,7 +44,7 @@ func NewHertzApp(appName string,
 	hlog.SetLogger(logk.NewLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), ProfileType: None, ProfilePrefix: "/mgr/prof"}
+	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, Auth: true, Prefix: "/mgr/prof"}}
 	_loader := loaders.NewLocalLoader("./application.yaml")
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
@@ -199,24 +199,29 @@ func NewHertzApp(appName string,
 	//
 	startup(smartCtx)
 	//
-	initProfile(conf, h, []app.HandlerFunc{smartCtx.TokenInterceptor()})
+	initProfile(conf, h, smartCtx)
 	//
 	return h
 }
 
-func initProfile(conf *Configuration, h *server.Hertz, handlers []app.HandlerFunc) {
+func initProfile(conf *Configuration, h *server.Hertz, ctx SmartContext) {
 	//
-	if conf.ProfileType == None {
+	if conf.Profile.Type == None || !conf.Profile.Enabled {
 		hlog.Infof("app profiling is not enabled")
 	} else {
-		if len(conf.ProfilePrefix) == 0 {
+		if len(conf.Profile.Prefix) == 0 {
 			hlog.Infof("app profile path is not set, default is /mgr/prof")
-			conf.ProfilePrefix = "/mgr/prof"
+			conf.Profile.Prefix = "/mgr/prof"
 		}
-		g := h.Group(conf.ProfilePrefix, handlers...)
-		if conf.ProfileType == Pprof {
+		var g *route.RouterGroup
+		if conf.Profile.Auth {
+			g = h.Group(conf.Profile.Prefix, ctx.TokenInterceptor())
+		} else {
+			g = h.Group(conf.Profile.Prefix)
+		}
+		if conf.Profile.Type == Pprof {
 			pprof.RouteRegister(g)
-		} else if conf.ProfileType == FGprof {
+		} else if conf.Profile.Type == FGprof {
 			pprof.FgprofRouteRegister(g)
 		}
 	}
