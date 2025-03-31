@@ -4,9 +4,9 @@ max-request-body-kb: 50
 redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
 profile:
-  auth: false
-  type: pprof # pprof, fgprof, none
-  prefix: "/mgr/prof"
+  auth: false # need auth when download profile data
+  type: pprof # pprof, fgprof, none. default is none
+  prefix: "" # default is /mgr/prof
 log-level: debug
 # service registry info
 #registry-info:
