@@ -1,8 +1,9 @@
 port: 8089
 base-path: passport
 max-request-body-kb: 50
-redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
+redis: "redis://192.168.44.129:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
+profile-type: pprof # pprof, fgprof, none
 log-level: debug
 # service registry info
 #registry-info:

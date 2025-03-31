@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type ProfileType string
+
+const (
+	Pprof  ProfileType = "pprof"
+	FGprof ProfileType = "fgprof"
+	None   ProfileType = "none"
+)
+
 type Configuration struct {
 	Port             int                `json:"port" yaml:"port"`
 	BasePath         string             `json:"base_path" yaml:"base-path"`
@@ -25,6 +33,8 @@ type Configuration struct {
 	RpcClientInfo    rpcs.RpcClientInfo `json:"rpc_client_info" yaml:"rpc-client-info"`
 	OAuth            oauths.Oauth       `json:"oauth" yaml:"oauth"`
 	SignKey          string             `json:"sign_key" yaml:"sign-key"`
+	ProfileType      ProfileType        `json:"profile_type" yaml:"profile-type"`
+	ProfilePrefix    string             `json:"profile_prefix" yaml:"profile-prefix"`
 }
 
 type Cors struct {

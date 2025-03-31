@@ -13,6 +13,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/pprof"
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
@@ -43,7 +44,7 @@ func NewHertzApp(appName string,
 	hlog.SetLogger(logk.NewLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug)}
+	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), ProfileType: None, ProfilePrefix: "/mgr/prof"}
 	_loader := loaders.NewLocalLoader("./application.yaml")
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
@@ -197,5 +198,26 @@ func NewHertzApp(appName string,
 	}, route.CtxCallback(shutdown))
 	//
 	startup(smartCtx)
+	//
+	initProfile(conf, h, []app.HandlerFunc{smartCtx.TokenInterceptor()})
+	//
 	return h
+}
+
+func initProfile(conf *Configuration, h *server.Hertz, handlers []app.HandlerFunc) {
+	//
+	if conf.ProfileType == None {
+		hlog.Infof("app profiling is not enabled")
+	} else {
+		if len(conf.ProfilePrefix) == 0 {
+			hlog.Infof("app profile path is not set, default is /mgr/prof")
+			conf.ProfilePrefix = "/mgr/prof"
+		}
+		g := h.Group(conf.ProfilePrefix, handlers...)
+		if conf.ProfileType == Pprof {
+			pprof.RouteRegister(g)
+		} else if conf.ProfileType == FGprof {
+			pprof.FgprofRouteRegister(g)
+		}
+	}
 }
