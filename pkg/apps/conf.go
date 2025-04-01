@@ -37,10 +37,10 @@ type Configuration struct {
 }
 
 type Profiling struct {
-	Enabled bool        `json:"enabled" yaml:"enabled"`
-	Auth    bool        `json:"auth" yaml:"auth"`
-	Type    ProfileType `json:"type" yaml:"type"`
-	Prefix  string      `json:"prefix" yaml:"prefix"`
+	Enabled      bool        `json:"enabled" yaml:"enabled"`
+	AuthDownload bool        `json:"auth_download" yaml:"auth-download"`
+	Type         ProfileType `json:"type" yaml:"type"`
+	Prefix       string      `json:"prefix" yaml:"prefix"`
 }
 
 type Cors struct {
