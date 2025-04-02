@@ -10,9 +10,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server/registry"
 	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/cloudwego/hertz/pkg/common/tracer/stats"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
+	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
@@ -105,6 +107,7 @@ func NewHertzApp(appName string,
 		server.WithHandleMethodNotAllowed(true),
 		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB * 1024), // KB
 		server.WithValidateConfig(validateConfig),
+		server.WithTraceLevel(stats.Level(conf.TraceLevel)),
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var nnc naming_client.INamingClient
@@ -140,6 +143,13 @@ func NewHertzApp(appName string,
 		}
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
+	var tracerConfig *hertztracing.Config
+	if stats.Level(conf.TraceLevel) != stats.LevelDisabled {
+		var tracer config.Option
+		tracer, tracerConfig = hertztracing.NewServerTracer()
+		sOption = append(sOption, tracer)
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{
@@ -151,6 +161,9 @@ func NewHertzApp(appName string,
 			MaxAge:           _cors.MaxAge,
 			AllowWildcard:    _cors.AllowWildcard,
 		}))
+	}
+	if tracerConfig != nil {
+		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var rpc rpcs.Rpc

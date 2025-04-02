@@ -9,14 +9,6 @@ import (
 	"time"
 )
 
-type ProfileType string
-
-const (
-	Pprof  ProfileType = "pprof"
-	FGprof ProfileType = "fgprof"
-	None   ProfileType = "none"
-)
-
 type Configuration struct {
 	Port             int                `json:"port" yaml:"port"`
 	BasePath         string             `json:"base_path" yaml:"base-path"`
@@ -27,6 +19,7 @@ type Configuration struct {
 	Cors             *Cors              `json:"cors,omitempty" yaml:"cors,omitempty"`
 	Jwt              *JwtConfig         `json:"jwt,omitempty" yaml:"jwt,omitempty"`
 	LogLevel         logk.Level         `json:"log_level" yaml:"log-level"`
+	TraceLevel       TraceLevel         `json:"trace_level" yaml:"trace-level"`
 	Nacos            *Nacos             `json:"nacos,omitempty" yaml:"nacos,omitempty"`
 	RegistryInfo     *ServiceInfo       `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool               `json:"discovery_enable" yaml:"discovery-enable"`
@@ -34,13 +27,6 @@ type Configuration struct {
 	OAuth            oauths.Oauth       `json:"oauth" yaml:"oauth"`
 	SignKey          string             `json:"sign_key" yaml:"sign-key"`
 	Profile          Profiling          `json:"profile" yaml:"profile"`
-}
-
-type Profiling struct {
-	Enabled      bool        `json:"enabled" yaml:"enabled"`
-	AuthDownload bool        `json:"auth_download" yaml:"auth-download"`
-	Type         ProfileType `json:"type" yaml:"type"`
-	Prefix       string      `json:"prefix" yaml:"prefix"`
 }
 
 type Cors struct {
