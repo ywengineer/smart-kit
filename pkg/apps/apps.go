@@ -147,18 +147,10 @@ func NewHertzApp(appName string,
 	if stats.Level(conf.TraceLevel) != stats.LevelDisabled {
 		var tracer config.Option
 		tracer, tracerConfig = hertztracing.NewServerTracer()
-		sOption = append(sOption, tracer)
+		sOption = append(sOption, server.WithTracer(&tracerLog{}), tracer)
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
-	//////////////////////////////////////////////////////////////////////////////////////////
-	h.Use(func(c context.Context, ctx *app.RequestContext) {
-		defer func() {
-			ti := ctx.GetTraceInfo()
-			hlog.CtxInfof(c, "trace: %+v", ti)
-		}()
-		ctx.Next(c)
-	})
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{
