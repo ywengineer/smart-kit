@@ -27,6 +27,7 @@ type Configuration struct {
 	OAuth            oauths.Oauth       `json:"oauth" yaml:"oauth"`
 	SignKey          string             `json:"sign_key" yaml:"sign-key"`
 	Profile          Profiling          `json:"profile" yaml:"profile"`
+	AccessLog        string             `json:"access_log" yaml:"access-log"`
 }
 
 type Cors struct {

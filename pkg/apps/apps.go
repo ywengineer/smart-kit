@@ -14,6 +14,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/logger/accesslog"
 	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
@@ -147,7 +148,7 @@ func NewHertzApp(appName string,
 	if stats.Level(conf.TraceLevel) != stats.LevelDisabled {
 		var tracer config.Option
 		tracer, tracerConfig = hertztracing.NewServerTracer()
-		sOption = append(sOption, server.WithTracer(&tracerLog{}), tracer)
+		sOption = append(sOption, tracer)
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
@@ -166,6 +167,15 @@ func NewHertzApp(appName string,
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
+	}
+	if len(conf.AccessLog) > 0 {
+		if strings.EqualFold(conf.AccessLog, "default") {
+			conf.AccessLog = "[${time}] | ${requestId} | ${status} | [r:${bytesReceived},s:${bytesSent}] | - ${latency} ${method} ${path}"
+		}
+		accesslog.Tags["requestId"] = func(output accesslog.Buffer, c *app.RequestContext, data *accesslog.Data, extraParam string) (int, error) {
+			return output.WriteString(requestid.Get(c))
+		}
+		h.Use(accesslog.New(accesslog.WithFormat("[AccessLog] " + conf.AccessLog)))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var rpc rpcs.Rpc

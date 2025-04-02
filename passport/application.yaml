@@ -1,7 +1,7 @@
 port: 8089
 base-path: passport
 max-request-body-kb: 50
-redis: "redis://192.168.44.129:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
+redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
 profile:
   type: pprof # pprof, fgprof, none. default is none
@@ -9,6 +9,7 @@ profile:
   auth-download: false # need auth when download profile data
 log-level: debug
 trace-level: detail # base, detail, disable/none. default is none
+access-log: default # disable if empty. see https://www.cloudwego.io/zh/docs/hertz/tutorials/third-party/middleware/access-log/#%E6%94%AF%E6%8C%81%E7%9A%84%E6%A0%87%E7%AD%BE
 # service registry info
 #registry-info:
 #  service-name: smart-passport
