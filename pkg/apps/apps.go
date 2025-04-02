@@ -151,6 +151,15 @@ func NewHertzApp(appName string,
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
+	//////////////////////////////////////////////////////////////////////////////////////////
+	h.Use(func(c context.Context, ctx *app.RequestContext) {
+		defer func() {
+			ti := ctx.GetTraceInfo()
+			hlog.CtxInfof(c, "trace: %+v", ti)
+		}()
+		ctx.Next(c)
+	})
+	//////////////////////////////////////////////////////////////////////////////////////////
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{
 			AllowOrigins:     _cors.AllowOrigins,
@@ -162,6 +171,7 @@ func NewHertzApp(appName string,
 			AllowWildcard:    _cors.AllowWildcard,
 		}))
 	}
+	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
