@@ -93,7 +93,8 @@ func _login(ctx context.Context, sCtx app2.SmartContext, actType passport.Accoun
 	}
 	//-------------------------------------- after all process --------------------------------------
 	if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		sCtx.Jwt().IdentityKey: bind.PassportId,
+		sCtx.Jwt().IdentityKey:    bind.PassportId,
+		internal.TokenKeyUserType: internal.UserTypePlayer,
 	}); err != nil {
 		return &internal.ErrGenToken
 	} else if bindTypes, err := sCtx.Redis().Get(ctx, internal.CacheKeyBoundTypes(bind.PassportId)).Result(); err != nil {

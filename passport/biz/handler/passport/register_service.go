@@ -192,7 +192,8 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		hlog.Error("cache passport json object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, internal.ErrCache)
 	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		sCtx.Jwt().IdentityKey: pst.ID,
+		sCtx.Jwt().IdentityKey:    pst.ID,
+		internal.TokenKeyUserType: internal.UserTypePlayer,
 	}); err != nil {
 		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, internal.ErrGenToken)

@@ -1,11 +1,7 @@
 package apps
 
 const (
-	ContextKeySmart   = "smart-context"
-	ContextKeyRDB     = "rdb"
-	ContextKeyRedis   = "redis"
-	ContextKeyApp     = "app"
-	ContextKeyRedLock = "red-lock"
+	ContextKeySmart = "smart-context"
 )
 
 type ApiResult struct {

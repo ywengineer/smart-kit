@@ -4,6 +4,8 @@ package mgr
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/hertz-contrib/jwt"
+	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/middleware"
 )
 
@@ -23,7 +25,12 @@ func _signMw() []app.HandlerFunc {
 }
 
 func _white_listMw() []app.HandlerFunc {
-	return middleware.Jwt()
+	return middleware.JwtWithValidate(func(data jwt.MapClaims) bool {
+		if _, ok := data[internal.TokenKeyUserType]; !ok {
+			return false
+		}
+		return true
+	})
 }
 
 func _addMw() []app.HandlerFunc {

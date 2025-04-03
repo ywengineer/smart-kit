@@ -5,6 +5,17 @@ import (
 	"strconv"
 )
 
+type UserType int
+
+const (
+	UserTypePlayer UserType = iota
+	UserTypeMgr
+)
+
+const (
+	TokenKeyUserType = "tkut"
+)
+
 var (
 	// ErrTodo common error
 	ErrTodo          = apps.ApiError("common.err.todo_feature")

@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
@@ -25,6 +26,14 @@ type SmartContext interface {
 	Rpc() rpcs.Rpc
 	GetAuth(authKey string) (oauths.AuthFacade, error)
 	VerifySignature(data map[string]string, sign []byte) bool
+}
+
+func GetContext(c context.Context) SmartContext {
+	if r := c.Value(ContextKeySmart); r == nil {
+		return nil
+	} else {
+		return r.(SmartContext)
+	}
 }
 
 type defaultContext struct {
