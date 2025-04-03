@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-type UserType int
+type UserType float64
 
 const (
 	UserTypePlayer UserType = iota

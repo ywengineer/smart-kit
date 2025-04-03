@@ -4,6 +4,7 @@ package pst
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/passport/internal/middleware"
 )
 
@@ -18,7 +19,7 @@ func _mgrMw() []app.HandlerFunc {
 }
 
 func _passportMw() []app.HandlerFunc {
-	return middleware.Jwt()
+	return middleware.JwtWithValidate(middleware.IsUserMatch(internal.UserTypeMgr))
 }
 
 func _detailMw() []app.HandlerFunc {

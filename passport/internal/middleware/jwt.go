@@ -5,8 +5,11 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/hertz-contrib/jwt"
+	"github.com/ywengineer/smart-kit/passport/internal"
 	"github.com/ywengineer/smart-kit/pkg/apps"
 )
+
+type TokenValidator func(data jwt.MapClaims) bool
 
 func Jwt() []app.HandlerFunc {
 	return []app.HandlerFunc{func(c context.Context, ctx *app.RequestContext) {
@@ -19,7 +22,7 @@ func Jwt() []app.HandlerFunc {
 	}}
 }
 
-func JwtWithValidate(f func(data jwt.MapClaims) bool) []app.HandlerFunc {
+func JwtWithValidate(f TokenValidator) []app.HandlerFunc {
 	return []app.HandlerFunc{
 		Jwt()[0],
 		func(c context.Context, ctx *app.RequestContext) {
@@ -29,5 +32,17 @@ func JwtWithValidate(f func(data jwt.MapClaims) bool) []app.HandlerFunc {
 				ctx.AbortWithStatus(consts.StatusUnauthorized)
 			}
 		},
+	}
+}
+
+func IsUserMatch(tp internal.UserType) TokenValidator {
+	return func(data jwt.MapClaims) bool {
+		if ut, ok := data[internal.TokenKeyUserType]; !ok {
+			return false
+		} else if internal.UserType(ut.(float64)) != tp {
+			return false
+		} else {
+			return true
+		}
 	}
 }
