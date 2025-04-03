@@ -62,6 +62,8 @@ jwt:
 #  context-path: /nacos
 #  timeout-ms: 10000
 #  namespace: local
+#  cluster: DEFAULT
+#  group: DEFAULT_GROUP
 #  user: user
 #  password: password
 oauth:

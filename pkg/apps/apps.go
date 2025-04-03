@@ -113,6 +113,8 @@ func NewHertzApp(appName string,
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var nnc naming_client.INamingClient
 	if conf.Nacos != nil {
+		conf.Nacos.Cluster = utilk.IfEmptyStr(conf.Nacos.Cluster, "DEFAULT")
+		conf.Nacos.Group = utilk.IfEmptyStr(conf.Nacos.Group, "DEFAULT_GROUP")
 		if nnc, err = nacos.NewNacosNamingClient(conf.Nacos.Ip, conf.Nacos.Port, conf.Nacos.ContextPath, conf.Nacos.TimeoutMs, conf.Nacos.Namespace, conf.Nacos.User, conf.Nacos.Password, conf.LogLevel.String()); err != nil {
 			hlog.Fatalf("failed to create nacos client: %v", err)
 			return nil
@@ -129,7 +131,7 @@ func NewHertzApp(appName string,
 		//
 		conf.RegistryInfo.Addr = addr
 		//
-		sOption = append(sOption, server.WithRegistry(nacos_hertz.NewNacosRegistry(nnc), &registry.Info{
+		sOption = append(sOption, server.WithRegistry(nacos_hertz.NewNacosRegistry(nnc, nacos_hertz.WithRegistryCluster(conf.Nacos.Cluster), nacos_hertz.WithRegistryGroup(conf.Nacos.Group)), &registry.Info{
 			ServiceName: conf.RegistryInfo.ServiceName,
 			Addr:        utils.NewNetAddr("tcp", addr),
 			Weight:      utilk.Max(1, conf.RegistryInfo.Weight),
@@ -186,7 +188,7 @@ func NewHertzApp(appName string,
 		MaxConnPerHost: 256,
 	}
 	if conf.DiscoveryEnable {
-		rpc, err = rpcs.NewHertzRpc(nacos_hertz.NewNacosResolver(nnc), rpcClientInfo)
+		rpc, err = rpcs.NewHertzRpc(nacos_hertz.NewNacosResolver(nnc, nacos_hertz.WithResolverCluster(conf.Nacos.Cluster), nacos_hertz.WithResolverGroup(conf.Nacos.Group)), rpcClientInfo)
 	} else {
 		rpc, err = rpcs.NewHertzRpc(nil, rpcClientInfo)
 	}

@@ -48,6 +48,8 @@ type Nacos struct {
 	Namespace   string `json:"namespace" yaml:"namespace"`
 	User        string `json:"user" yaml:"user"`
 	Password    string `json:"password" yaml:"password"`
+	Cluster     string `json:"cluster" yaml:"cluster"`
+	Group       string `json:"group" yaml:"group"`
 }
 type ServiceInfo struct {
 	// ServiceName will be set in hertz by default
