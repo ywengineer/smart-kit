@@ -67,8 +67,8 @@ jwt:
 #  user: user
 #  password: password
 oauth:
-  app-id:
-    type: wx # wx, qq, steam
+  app-id: # app bundle id when type is gamecenter
+    type: wx # wx, qq, steam, google, apple, gamecenter
     app-id: app-id
     app-secret: app-secret
     redirect-url: redirect-url # required when type is qq

@@ -13,6 +13,7 @@ require (
 	github.com/cloudwego/netpoll v0.6.4
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-gorm/caches/v4 v4.0.5
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hertz-contrib/cors v0.1.0
@@ -77,7 +78,6 @@ require (
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

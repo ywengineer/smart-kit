@@ -32,6 +32,8 @@ func (o Oauth) Get(id string) (AuthFacade, error) {
 			af = NewGoogleAuth(authProp["app-id"])
 		case "apple":
 			af = NewAppleAuth(authProp["app-id"])
+		case "gamecenter":
+			af = NewGameCenterAuth(authProp["app-id"])
 		default:
 			return nil, errors.New(fmt.Sprintf("unsupported oauth type [%s] for auth facade [%s] ", ot, id))
 		}
