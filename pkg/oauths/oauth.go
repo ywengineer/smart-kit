@@ -30,6 +30,8 @@ func (o Oauth) Get(id string) (AuthFacade, error) {
 			af = NewSteamWebAuth(authProp["app-id"], authProp["app-secret"])
 		case "google":
 			af = NewGoogleAuth(authProp["app-id"])
+		case "apple":
+			af = NewAppleAuth(authProp["app-id"])
 		default:
 			return nil, errors.New(fmt.Sprintf("unsupported oauth type [%s] for auth facade [%s] ", ot, id))
 		}
