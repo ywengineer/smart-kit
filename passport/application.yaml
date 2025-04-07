@@ -68,7 +68,7 @@ jwt:
 #  password: password
 oauth:
   app-id:
-    type: wx # wx, qq
+    type: wx # wx, qq, steam
     app-id: app-id
     app-secret: app-secret
     redirect-url: redirect-url # required when type is qq

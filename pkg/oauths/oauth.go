@@ -26,6 +26,8 @@ func (o Oauth) Get(id string) (AuthFacade, error) {
 			af = NewQQAuth(authProp["app-id"], authProp["app-secret"], authProp["redirect-url"])
 		case "smart":
 			af = &anoAuth{}
+		case "steam":
+			af = NewSteamWebAuth(authProp["app-id"], authProp["app-secret"])
 		default:
 			return nil, errors.New(fmt.Sprintf("unsupported oauth type [%s] for auth facade [%s] ", ot, id))
 		}
