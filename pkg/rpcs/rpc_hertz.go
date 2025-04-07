@@ -15,6 +15,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"io"
+	"net/http"
+	"runtime"
 	"time"
 )
 
@@ -34,7 +36,7 @@ func newDefaultRpc(info RpcClientInfo) (rpc Rpc, err error) {
 func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err error) {
 	var cli *client.Client
 	info.MaxRetry = utilk.Max(1, info.MaxRetry)
-	info.MaxConnPerHost = utilk.Max(100, info.MaxConnPerHost)
+	info.MaxConnPerHost = utilk.Max(runtime.GOMAXPROCS(0)+1, info.MaxConnPerHost)
 	info.Delay = utilk.Max(info.Delay, time.Millisecond*50)
 	info.ReadTimeout = utilk.Max(info.ReadTimeout, time.Millisecond*100)
 	if cli, err = client.NewClient(
@@ -101,6 +103,11 @@ func (h *hertzRPC) Post(ctx context.Context, contentType string, url string, req
 }
 
 func (h *hertzRPC) doRequestFollowRedirectsBuffer(ctx context.Context, req *protocol.Request, dst []byte, url string) (statusCode int, body []byte, err error) {
+	statusCode, body, err = h.doRequestFollowRedirectsBuffer2(ctx, req, dst, url, nil)
+	return statusCode, body, err
+}
+
+func (h *hertzRPC) doRequestFollowRedirectsBuffer2(ctx context.Context, req *protocol.Request, dst []byte, url string, respHeaders http.Header) (statusCode int, body []byte, err error) {
 	resp := protocol.AcquireResponse()
 	bodyBuf := resp.BodyBuffer()
 	oldBody := bodyBuf.B
@@ -112,7 +119,14 @@ func (h *hertzRPC) doRequestFollowRedirectsBuffer(ctx context.Context, req *prot
 	// In HTTP1, only client recv body exceed max body size and client is in stream mode can trig it.
 	body = resp.Body()
 	bodyBuf.B = oldBody
+	//
+	if respHeaders != nil {
+		resp.Header.VisitAll(func(k, v []byte) {
+			respHeaders[string(k)] = []string{string(v)}
+		})
+	}
+	resp.Header.GetProtocol()
+	//
 	protocol.ReleaseResponse(resp)
-
 	return statusCode, body, err
 }
