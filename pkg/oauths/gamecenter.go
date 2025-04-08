@@ -40,7 +40,7 @@ func (g *gameCenterAuth) Validate(metadata string) (AuthFacade, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse Apple root certificate: %w", err)
 	}
-	// 步骤 2: 构建证书池
+	// 构建证书池
 	g.rootCertPool = x509.NewCertPool()
 	g.rootCertPool.AddCert(rootCert)
 	return g, nil
@@ -65,7 +65,6 @@ func (g *gameCenterAuth) validateCert(publicKeyData []byte) (*rsa.PublicKey, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse public key certificate: %w", err)
 	}
-	// 步骤 4: 验证证书链
 	_, err = publicKeyCert.Verify(x509.VerifyOptions{Roots: g.rootCertPool})
 	if err != nil {
 		return nil, fmt.Errorf("public key certificate verification failed: %w", err)
@@ -85,22 +84,22 @@ func (g *gameCenterAuth) GetUserInfo(_ string, accessToken string) (*UserInfo, e
 	}
 	// 验证时间戳
 	now := time.Now().Unix()
-	// 步骤 1: 检查时间戳以减轻重放攻击
+	// 1: 检查时间戳以减轻重放攻击
 	// 这里可以根据实际情况调整时间范围，例如允许 5 分钟的误差
 	if now-ticket.Timestamp > 300 || ticket.Timestamp > now {
 		return nil, errors.New("timestamp is not recent")
 	}
-	// 步骤 2: 下载公钥
+	// 2: 下载公钥
 	sc, body, err := cli.Get(context.Background(), ticket.PublicKey)
 	if err != nil || !nets.Is2xx(sc) {
 		return nil, fmt.Errorf("failed to download public key: %w, sc = %d", err, sc)
 	}
-	// 步骤 3: 验证公钥是否由 Apple 签名
+	// 3: 验证公钥是否由 Apple 签名
 	pubKey, err := g.validateCert(body)
 	if err != nil {
 		return nil, err
 	}
-	// 步骤 4: 拼接数据
+	// 4: 拼接数据
 	buf := utilk.NewLinkBuffer([]byte{})
 	_, _ = buf.WriteBinary([]byte(ticket.PlayerID))
 	_, _ = buf.WriteBinary([]byte(ticket.AppBundleID))
@@ -109,15 +108,15 @@ func (g *gameCenterAuth) GetUserInfo(_ string, accessToken string) (*UserInfo, e
 	binary.BigEndian.PutUint64(timestampBytes, uint64(ticket.Timestamp))
 	_, _ = buf.WriteBinary(timestampBytes)
 	_, _ = buf.WriteBinary([]byte(ticket.Salt))
-	// 步骤 5: 计算数据的哈希
+	// 5: 计算数据的哈希
 	hash := sha256.Sum256(buf.Bytes())
 	_ = buf.Release()
-	// 步骤 6: 解码签名
+	// 6: 解码签名
 	sigBytes, err := base64.StdEncoding.DecodeString(ticket.Signature)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode signature: %w", err)
 	}
-	// 步骤 7: 使用公钥验证签名
+	// 7: 使用公钥验证签名
 	err = rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, hash[:], sigBytes)
 	if err != nil {
 		return nil, fmt.Errorf("signature verification failed: %w", err)

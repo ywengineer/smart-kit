@@ -11,12 +11,12 @@ import (
 	"sync"
 )
 
-var standard = &http.Client{
+var stdUseHertz = &http.Client{
 	Transport: &RoundTripper{rpc: defaultRpc},
 }
 
-func StandardBasedOnHertz() *http.Client {
-	return standard
+func StandardUseHertz() *http.Client {
+	return stdUseHertz
 }
 
 // RoundTripper implements the http.RoundTripper interface, using a rpc client to execute requests.

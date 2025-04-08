@@ -11,7 +11,7 @@ import (
 )
 
 func NewGoogleAuth(clientId string) AuthFacade {
-	va, err := idtoken.NewValidator(context.Background(), idtoken.WithHTTPClient(rpcs.StandardBasedOnHertz()))
+	va, err := idtoken.NewValidator(context.Background(), idtoken.WithHTTPClient(rpcs.StandardUseHertz()))
 	if err != nil {
 		logk.Fatalf("Failed to create google idtoken validator: %v", err)
 		return nil

@@ -1,6 +1,6 @@
 module github.com/ywengineer/smart-kit
 
-go 1.23
+go 1.23.0
 
 toolchain go1.23.6
 
@@ -8,7 +8,7 @@ require (
 	github.com/bsm/redislock v0.9.4
 	github.com/bytedance/gopkg v0.1.1
 	github.com/bytedance/sonic v1.13.2
-	github.com/cespare/xxhash/v2 v2.2.0
+	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/cloudwego/hertz v0.9.6
 	github.com/cloudwego/netpoll v0.6.4
 	github.com/fsnotify/fsnotify v1.5.4
@@ -72,7 +72,9 @@ require (
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
+	github.com/dgraph-io/ristretto/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/pkcs8 v1.0.0 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
@@ -121,7 +123,7 @@ require (
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
