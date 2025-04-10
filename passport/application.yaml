@@ -71,4 +71,4 @@ oauth:
     type: wx # wx, qq, steam, google, apple, gamecenter
     app-id: app-id # app bundle id when type is gamecenter
     app-secret: app-secret
-    redirect-url: redirect-url # required when type is qq
+    redirect-url: redirect-url # required when type is qq and facebook

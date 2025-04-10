@@ -29,7 +29,7 @@ type gameCenterAuth struct {
 
 func (g *gameCenterAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(g.appBundleId) == 0 {
-		return nil, errors.New("missing prop [app-bundle-id] for game center")
+		return nil, errors.New("missing prop [app-bundle-id] for game center auth: " + metadata)
 	}
 	sc, body, err := cli.Get(context.Background(), g.rootCertPath)
 	if err != nil || !nets.Is2xx(sc) {

@@ -27,7 +27,7 @@ type googleAuth struct {
 
 func (g *googleAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(g.appId) == 0 {
-		return nil, errors.New("missing prop [app-id/app-secret] for auth: " + metadata)
+		return nil, errors.New("missing prop [app-id/app-secret] for google auth: " + metadata)
 	}
 	return g, nil
 }

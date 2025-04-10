@@ -22,7 +22,7 @@ type steamAuth struct {
 
 func (steam *steamAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(steam.appSecret) == 0 || len(steam.appId) == 0 {
-		return nil, errors.New("missing prop [app-id/app-secret] for auth: " + metadata)
+		return nil, errors.New("missing prop [app-id/app-secret] for steam auth: " + metadata)
 	}
 	return steam, nil
 }

@@ -24,6 +24,8 @@ func (o Oauth) Get(id string) (AuthFacade, error) {
 			af = NewWxAuth(authProp["app-id"], authProp["app-secret"])
 		case "qq":
 			af = NewQQAuth(authProp["app-id"], authProp["app-secret"], authProp["redirect-url"])
+		case "facebook":
+			af = NewFacebookAuth(authProp["app-id"], authProp["app-secret"], authProp["redirect-url"])
 		case "smart":
 			af = &anoAuth{}
 		case "steam":

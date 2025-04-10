@@ -27,7 +27,7 @@ type appleAuth struct {
 
 func (a *appleAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(a.appId) == 0 {
-		return nil, errors.New("missing prop [app-id/app-secret] for auth: " + metadata)
+		return nil, errors.New("missing prop [app-id/app-secret] for apple auth: " + metadata)
 	}
 	if err := a.initPublicKeys(); err != nil {
 		return nil, err

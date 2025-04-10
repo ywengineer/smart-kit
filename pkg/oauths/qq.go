@@ -30,7 +30,7 @@ type qqAuth struct {
 
 func (q *qqAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(q.appSecret) == 0 || len(q.appId) == 0 || len(q.redirectURL) == 0 {
-		return nil, errors.New("missing prop [app-id/app-secret/redirect-url] for auth: " + metadata)
+		return nil, errors.New("missing prop [app-id/app-secret/redirect-url] for qq auth: " + metadata)
 	}
 	return q, nil
 }
