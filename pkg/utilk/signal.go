@@ -28,12 +28,12 @@ func Watch(ctx context.Context, notify chan<- bool) {
 		for {
 			select {
 			case <-ctx.Done():
-				logk.DefaultLogger().Info("terminating: context cancelled")
+				logk.Debug("terminating: context cancelled")
 				notify <- true
 				break stop
 			case <-ticker.C:
 				if ctx.Err() != nil {
-					logk.DefaultLogger().Info("terminating: context cancelled")
+					logk.Debug("terminating: context cancelled")
 					notify <- true
 					break stop
 				}
@@ -41,4 +41,10 @@ func Watch(ctx context.Context, notify chan<- bool) {
 		}
 		ticker.Stop()
 	}()
+}
+
+func WatchContext(ctx context.Context) <-chan bool {
+	ch := make(chan bool)
+	Watch(ctx, ch)
+	return ch
 }

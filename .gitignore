@@ -49,6 +49,7 @@ cmake-build-*/
 *.iws
 **/*.log
 **/*.log.gz
+**/logs/
 logs/
 # IntelliJ
 out/
