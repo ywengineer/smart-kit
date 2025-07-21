@@ -4,7 +4,6 @@ go 1.23.6
 
 replace (
 	github.com/apache/thrift => github.com/apache/thrift v0.13.0
-	github.com/ywengineer/smart v0.0.0 => ../smart
 	github.com/ywengineer/smart-kit v0.0.0 => ../
 )
 
