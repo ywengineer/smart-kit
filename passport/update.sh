@@ -4,7 +4,7 @@
 PATH=$PATH:$GOPATH/bin
 hzcmd="hz"
 repo="github.com/cloudwego/hertz/cmd/hz@latest"
-mod="github.com/ywengineer/smart-kit/passport"
+mod="gitee.com/ywengineer/smart-kit/passport"
 
 # 检查命令是否存在
 if ! command -v "$hzcmd" &> /dev/null; then

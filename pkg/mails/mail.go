@@ -1,8 +1,8 @@
 package mails
 
 import (
-	"github.com/ywengineer/smart-kit/pkg/logk"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )

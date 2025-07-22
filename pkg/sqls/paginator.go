@@ -2,9 +2,9 @@ package sqls
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/pilagod/gorm-cursor-paginator/v2/paginator"
 	"github.com/samber/lo"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"gorm.io/gorm"
 	"math"
 )

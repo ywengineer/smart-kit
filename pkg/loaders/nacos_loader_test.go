@@ -2,9 +2,9 @@ package loaders
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/nacos"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/stretchr/testify/assert"
-	"github.com/ywengineer/smart-kit/pkg/nacos"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"testing"
 )
 

@@ -3,9 +3,9 @@ package oauths
 import (
 	"context"
 	"errors"
+	"gitee.com/ywengineer/smart-kit/pkg/nets"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/bytedance/sonic"
-	"github.com/ywengineer/smart-kit/pkg/nets"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"net/url"
 	"strconv"
 )

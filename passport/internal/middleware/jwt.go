@@ -2,11 +2,11 @@ package middleware
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/passport/internal"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/hertz-contrib/jwt"
-	"github.com/ywengineer/smart-kit/passport/internal"
-	"github.com/ywengineer/smart-kit/pkg/apps"
 )
 
 type TokenValidator func(data jwt.MapClaims) bool

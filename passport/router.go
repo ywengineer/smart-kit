@@ -3,8 +3,8 @@
 package main
 
 import (
+	handler "gitee.com/ywengineer/smart-kit/passport/biz/handler"
 	"github.com/cloudwego/hertz/pkg/app/server"
-	handler "github.com/ywengineer/smart-kit/passport/biz/handler"
 )
 
 // customizeRegister registers customize routers.

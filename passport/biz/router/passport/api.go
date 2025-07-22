@@ -4,7 +4,7 @@ package passport
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	passport "github.com/ywengineer/smart-kit/passport/biz/handler/passport"
+	passport "gitee.com/ywengineer/smart-kit/passport/biz/handler/passport"
 )
 
 /*

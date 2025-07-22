@@ -1,9 +1,9 @@
 package converter
 
 import (
+	"gitee.com/ywengineer/smart-kit/passport/biz/model/mgr/pst"
+	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
 	"github.com/samber/lo"
-	"github.com/ywengineer/smart-kit/passport/biz/model/mgr/pst"
-	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 )
 
 func ConvertPassport(pstModel *model2.Passport, bounds *[]model2.PassportBinding) *pst.PassportData {

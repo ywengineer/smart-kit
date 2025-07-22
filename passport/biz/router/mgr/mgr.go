@@ -4,7 +4,7 @@ package mgr
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	mgr "github.com/ywengineer/smart-kit/passport/biz/handler/mgr"
+	mgr "gitee.com/ywengineer/smart-kit/passport/biz/handler/mgr"
 )
 
 /*

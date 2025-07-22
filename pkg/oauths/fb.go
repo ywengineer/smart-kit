@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ywengineer/smart-kit/pkg/nets"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
+	"gitee.com/ywengineer/smart-kit/pkg/nets"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"net/url"
 	"strconv"
 )

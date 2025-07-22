@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"github.com/ywengineer/smart-kit/passport/biz/model/mgr"
-	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
+	"gitee.com/ywengineer/smart-kit/passport/biz/model/mgr"
+	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
 )
 
 func WhiteList(i model2.WhiteList) *mgr.WhiteListData {

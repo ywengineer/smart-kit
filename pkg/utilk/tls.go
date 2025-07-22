@@ -3,7 +3,7 @@ package utilk
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"os"
 )

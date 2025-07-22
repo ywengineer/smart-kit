@@ -1,4 +1,4 @@
-module github.com/ywengineer/smart-kit
+module gitee.com/ywengineer/smart-kit
 
 go 1.23.0
 

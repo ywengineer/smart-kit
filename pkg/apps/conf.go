@@ -2,10 +2,10 @@ package apps
 
 import (
 	"fmt"
-	"github.com/ywengineer/smart-kit/pkg/logk"
-	"github.com/ywengineer/smart-kit/pkg/oauths"
-	"github.com/ywengineer/smart-kit/pkg/rdbs"
-	"github.com/ywengineer/smart-kit/pkg/rpcs"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/oauths"
+	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
+	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/ywengineer/smart-kit/pkg/apps"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"strconv"
 )
 

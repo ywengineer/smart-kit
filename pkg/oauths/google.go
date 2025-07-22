@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ywengineer/smart-kit/pkg/logk"
-	"github.com/ywengineer/smart-kit/pkg/rpcs"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"google.golang.org/api/idtoken"
 )
 

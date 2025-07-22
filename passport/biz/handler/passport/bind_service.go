@@ -5,21 +5,21 @@ package passport
 import (
 	"context"
 	"errors"
+	"gitee.com/ywengineer/smart-kit/passport/internal"
+	"gitee.com/ywengineer/smart-kit/passport/internal/model"
+	app2 "gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/bsm/redislock"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
-	"github.com/ywengineer/smart-kit/passport/internal"
-	"github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"strings"
 	"time"
 
+	passport "gitee.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
 )
 
 // Bind .

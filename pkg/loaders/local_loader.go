@@ -2,9 +2,9 @@ package loaders
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart-kit/pkg/logk"
 	"go.uber.org/zap"
 	"log"
 	"os"

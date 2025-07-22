@@ -2,9 +2,9 @@ package rdbs
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/go-gorm/caches/v4"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 )
 
 type memoryCacher struct {

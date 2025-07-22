@@ -2,10 +2,10 @@ package rdbs
 
 import (
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart-kit/pkg/logk"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"

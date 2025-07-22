@@ -2,10 +2,10 @@ package loaders
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"log"
 	"time"
 )

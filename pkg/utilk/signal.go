@@ -2,7 +2,7 @@ package utilk
 
 import (
 	"context"
-	"github.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"os"
 	"os/signal"
 	"syscall"

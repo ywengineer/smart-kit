@@ -3,9 +3,9 @@
 package passport
 
 import (
+	"gitee.com/ywengineer/smart-kit/passport/internal"
+	"gitee.com/ywengineer/smart-kit/passport/internal/middleware"
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/ywengineer/smart-kit/passport/internal"
-	"github.com/ywengineer/smart-kit/passport/internal/middleware"
 )
 
 func rootMw() []app.HandlerFunc {

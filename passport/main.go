@@ -4,9 +4,9 @@ package main
 
 import (
 	"context"
+	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	"github.com/ywengineer/smart-kit/pkg/apps"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

@@ -1,10 +1,9 @@
-module github.com/ywengineer/smart-kit/passport
+module gitee.com/ywengineer/smart-kit/passport
 
 go 1.23.6
 
 replace (
 	github.com/apache/thrift => github.com/apache/thrift v0.13.0
-	github.com/ywengineer/smart-kit v0.0.0 => ../
 )
 
 require (
@@ -14,7 +13,7 @@ require (
 	github.com/cloudwego/hertz v0.10.1
 	github.com/redis/go-redis/v9 v9.11.0
 	github.com/samber/lo v1.51.0
-	github.com/ywengineer/smart-kit v0.0.0
+	gitee.com/ywengineer/smart-kit 57ac1bd6b89d0ba4a99be4c11440dbe26ef3398b
 	go.uber.org/zap v1.27.0
 	gorm.io/datatypes v1.2.6
 	gorm.io/gorm v1.30.0

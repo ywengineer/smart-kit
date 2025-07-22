@@ -4,7 +4,7 @@ package pst
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	pst "github.com/ywengineer/smart-kit/passport/biz/handler/mgr/pst"
+	pst "gitee.com/ywengineer/smart-kit/passport/biz/handler/mgr/pst"
 )
 
 /*

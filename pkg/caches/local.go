@@ -1,8 +1,8 @@
 package caches
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"sync"
 )
 

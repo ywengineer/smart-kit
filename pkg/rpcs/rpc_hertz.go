@@ -3,6 +3,7 @@ package rpcs
 import (
 	"context"
 	"crypto/tls"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/client/discovery"
 	"github.com/cloudwego/hertz/pkg/app/client/retry"
@@ -13,7 +14,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	client_http "github.com/cloudwego/hertz/pkg/protocol/client"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
 	"io"
 	"net/http"
 	"runtime"

@@ -5,12 +5,12 @@ package passport
 import (
 	"context"
 	"errors"
+	passport "gitee.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/bsm/redislock"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	passport "github.com/ywengineer/smart-kit/passport/biz/model/passport"
 	"github.com/ywengineer/smart-kit/passport/internal"
 	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
 	app2 "github.com/ywengineer/smart-kit/pkg/apps"

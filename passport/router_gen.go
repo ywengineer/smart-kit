@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	router "github.com/ywengineer/smart-kit/passport/biz/router"
+	router "gitee.com/ywengineer/smart-kit/passport/biz/router"
 )
 
 // register registers all routers.

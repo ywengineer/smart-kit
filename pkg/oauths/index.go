@@ -1,8 +1,8 @@
 package oauths
 
 import (
-	"github.com/ywengineer/smart-kit/pkg/rpcs"
-	"github.com/ywengineer/smart-kit/pkg/utilk"
+	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"time"
 )
 
