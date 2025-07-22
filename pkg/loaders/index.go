@@ -15,6 +15,11 @@ type Conf struct {
 	Metadata          map[string]interface{} `json:"metadata" yaml:"metadata"`
 }
 
+func (c Conf) String() string {
+	s, _ := sonic.MarshalString(c)
+	return s
+}
+
 type Decoder interface {
 	Unmarshal(buf []byte, val interface{}) error
 }

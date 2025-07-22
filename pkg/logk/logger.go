@@ -120,3 +120,7 @@ func CtxDebugf(ctx context.Context, format string, v ...interface{}) {
 func CtxTracef(ctx context.Context, format string, v ...interface{}) {
 	DefaultLogger().CtxTracef(ctx, format, v...)
 }
+
+func With(data interface{}) context.Context {
+	return context.WithValue(context.Background(), "data", data)
+}

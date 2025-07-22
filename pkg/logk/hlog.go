@@ -28,6 +28,22 @@ func NewLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Le
 	}
 	//
 	hlog.SetLogger(hertzzap.NewLogger(
+		hertzzap.WithCoreEnc(zapcore.NewJSONEncoder(zapcore.EncoderConfig{
+			MessageKey:     "msg",
+			LevelKey:       "level",
+			NameKey:        "name",
+			TimeKey:        "ts",
+			CallerKey:      "caller",
+			FunctionKey:    "func",
+			StacktraceKey:  "stacktrace",
+			LineEnding:     "\n",
+			EncodeTime:     zapcore.ISO8601TimeEncoder,
+			EncodeLevel:    zapcore.CapitalLevelEncoder,
+			EncodeDuration: zapcore.StringDurationEncoder,
+			EncodeCaller:   zapcore.ShortCallerEncoder,
+		})),
+		hertzzap.WithExtraKeys([]hertzzap.ExtraKey{"data"}),
+		hertzzap.WithExtraKeyAsStr(),
 		hertzzap.WithCoreWs(zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberjackLogger))),
 		hertzzap.WithZapOptions(
 			zap.AddStacktrace(zapcore.ErrorLevel),
