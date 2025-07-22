@@ -2,7 +2,7 @@ package utilk
 
 import (
 	"context"
-	"gitee.com/ywengineer/smart-kit/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -27,7 +27,7 @@ func NewMongo(ctx context.Context, mongoUri string) (*mongo.Client, error) {
 	}
 	go func() {
 		_ = <-WatchContext(ctx)
-		logk.DefaultLogger().Infof("mongo client disconnected: %s, error: %v", opts.Hosts, client.Disconnect(context.TODO()))
+		logk.Infof("mongo client disconnected: %s, error: %v", opts.Hosts, client.Disconnect(context.TODO()))
 	}()
 	return client, nil
 }
