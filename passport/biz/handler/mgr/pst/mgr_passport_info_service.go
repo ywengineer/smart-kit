@@ -15,9 +15,9 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
+	pst "gitee.com/ywengineer/smart-kit/passport/biz/model/mgr/pst"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	pst "github.com/ywengineer/smart-kit/passport/biz/model/mgr/pst"
 )
 
 // Detail .

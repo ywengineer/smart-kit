@@ -19,10 +19,6 @@ require (
 	gorm.io/gorm v1.30.0
 )
 
-//replace (
-//	github.com/ywengineer/smart latest => ../smart latest
-//)
-
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-pop v0.0.6 // indirect

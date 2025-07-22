@@ -6,18 +6,18 @@ import (
 	"context"
 	"errors"
 	"gitee.com/ywengineer/smart-kit/passport/internal"
+	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
+	app2 "gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/redis/go-redis/v9"
-	model2 "github.com/ywengineer/smart-kit/passport/internal/model"
-	app2 "github.com/ywengineer/smart-kit/pkg/apps"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
 
+	mgr "gitee.com/ywengineer/smart-kit/passport/biz/model/mgr"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	mgr "github.com/ywengineer/smart-kit/passport/biz/model/mgr"
 )
 
 // Sign .

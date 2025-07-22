@@ -9,14 +9,14 @@ import (
 	"gitee.com/ywengineer/smart-kit/passport/internal/converter"
 	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
 	app2 "gitee.com/ywengineer/smart-kit/pkg/apps"
+	"gitee.com/ywengineer/smart-kit/pkg/sqls"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/ywengineer/smart-kit/pkg/sqls"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 
+	mgr "gitee.com/ywengineer/smart-kit/passport/biz/model/mgr"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	mgr "github.com/ywengineer/smart-kit/passport/biz/model/mgr"
 )
 
 // Page .

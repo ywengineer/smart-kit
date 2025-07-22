@@ -2,7 +2,7 @@ package utilk
 
 import (
 	"context"
-	"github.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/smart-kit/pkg/logk"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
