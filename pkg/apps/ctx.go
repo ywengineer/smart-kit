@@ -47,6 +47,9 @@ type defaultContext struct {
 }
 
 func (d *defaultContext) VerifySignature(data map[string]string, sign []byte) bool {
+	if len(d.conf.SignKey) <= 0 { // 没有配置签名key，默认不验证
+		return true
+	}
 	return signs.VerifySignature(data, sign, d.conf.SignKey)
 }
 

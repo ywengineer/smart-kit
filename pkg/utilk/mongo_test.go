@@ -12,13 +12,14 @@ import (
 )
 
 type Parent struct {
-	Id       int64     `json:"_id"`
-	CreateAt time.Time `json:"create_at"`
-	UpdateAt time.Time `json:"update_at"`
-	DeleteAt time.Time `json:"delete_at"`
+	Id       bson.ObjectID `json:"_id,omitempty"`
+	CreateAt time.Time     `json:"create_at"`
+	UpdateAt time.Time     `json:"update_at"`
+	DeleteAt time.Time     `json:"delete_at"`
 }
 
 type OrmObject struct {
+	Parent    `json:",inline"`
 	Name      string     `json:"name"`
 	Password  string     `json:"password"`
 	Int       int64      `json:"int"`
@@ -62,7 +63,7 @@ func TestNewMongo(t *testing.T) {
 
 func TestFindOne(t *testing.T) {
 	oo := OrmObject{Name: "test"}
-	err := coll.FindOne(ctx, bson.M{"name": "test"}).Decode(&oo)
+	err := coll.FindOne(ctx, bson.M{"name": "test:MW7X3NVU4AIMSUAJATSGVRCOH4"}).Decode(&oo)
 	assert.Nil(t, err)
 	t.Logf("TestFindOne: %+v", oo)
 }

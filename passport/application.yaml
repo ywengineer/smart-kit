@@ -29,10 +29,10 @@ rpc-client-info:
 rdb:
   name: "mysql" # mysql or postgres
   username: "root"
-  password: "iis"
+  password: "root"
   host: "127.0.0.1"
   port: 3306
-  database: "smart-passport"
+  database: "smart_passport"
   parameters: ""
   debug-mode: true
   pool:

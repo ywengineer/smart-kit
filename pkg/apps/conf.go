@@ -3,6 +3,7 @@ package apps
 import (
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
@@ -20,7 +21,7 @@ type Configuration struct {
 	Jwt              *JwtConfig         `json:"jwt,omitempty" yaml:"jwt,omitempty"`
 	LogLevel         logk.Level         `json:"log_level" yaml:"log-level"`
 	TraceLevel       TraceLevel         `json:"trace_level" yaml:"trace-level"`
-	Nacos            *Nacos             `json:"nacos,omitempty" yaml:"nacos,omitempty"`
+	Nacos            *nacos.Nacos       `json:"nacos,omitempty" yaml:"nacos,omitempty"`
 	RegistryInfo     *ServiceInfo       `json:"registry_info" yaml:"registry-info"`
 	DiscoveryEnable  bool               `json:"discovery_enable" yaml:"discovery-enable"`
 	RpcClientInfo    rpcs.RpcClientInfo `json:"rpc_client_info" yaml:"rpc-client-info"`
@@ -40,17 +41,6 @@ type Cors struct {
 	AllowWildcard    bool          `json:"allow_wildcard" yaml:"allow-wildcard"`
 }
 
-type Nacos struct {
-	Ip          string `json:"ip" yaml:"ip"`
-	Port        uint64 `json:"port" yaml:"port"`
-	ContextPath string `json:"context_path" yaml:"context-path"`
-	TimeoutMs   uint64 `json:"timeout_ms" yaml:"timeout-ms"`
-	Namespace   string `json:"namespace" yaml:"namespace"`
-	User        string `json:"user" yaml:"user"`
-	Password    string `json:"password" yaml:"password"`
-	Cluster     string `json:"cluster" yaml:"cluster"`
-	Group       string `json:"group" yaml:"group"`
-}
 type ServiceInfo struct {
 	// ServiceName will be set in hertz by default
 	ServiceName string `json:"service_name" yaml:"service-name"`
