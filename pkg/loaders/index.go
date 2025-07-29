@@ -1,6 +1,7 @@
 package loaders
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/bytedance/sonic"
 	"gopkg.in/yaml.v3"
 )
@@ -15,9 +16,16 @@ type Conf struct {
 	Metadata          map[string]interface{} `json:"metadata" yaml:"metadata"`
 }
 
-func (c Conf) String() string {
+func (c *Conf) String() string {
 	s, _ := sonic.MarshalString(c)
 	return s
+}
+
+func (c *Conf) Get(key string, def string) string {
+	if v, ok := c.Metadata[key]; ok {
+		return utilk.ToString(v)
+	}
+	return def
 }
 
 type Decoder interface {
