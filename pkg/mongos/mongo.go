@@ -21,8 +21,8 @@ type CollectionIndex struct {
 	ExpireAfterSeconds *int32 // 其他可选参数（如过期时间等）仅适用于TTL索引
 }
 
-func Register(collection Collection, index CollectionIndex) {
-	define[collection] = append(define[collection], index)
+func Register(collection Collection, index []CollectionIndex) {
+	define[collection] = append(define[collection], index...)
 }
 
 // NewMongo mongoUri format: see https://www.mongodb.com/docs/manual/reference/connection-string/
