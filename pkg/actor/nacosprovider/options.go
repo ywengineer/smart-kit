@@ -22,15 +22,15 @@ func WithClusterName(clusterName string) Option {
 	}
 }
 
-func WithGroupName(groupName string) Option {
+func WithServiceName(serviceName string) Option {
 	return func(p *Provider) {
-		p.groupName = groupName
+		p.serviceName = serviceName
 	}
 }
 
-func WithTTL(ttl time.Duration) Option {
+func WithGroupName(groupName string) Option {
 	return func(p *Provider) {
-		p.ttl = ttl
+		p.groupName = groupName
 	}
 }
 
@@ -43,5 +43,11 @@ func WithRefreshTTL(refreshTTL time.Duration) Option {
 func WithNamespace(namespace string) Option {
 	return func(p *Provider) {
 		p.namespace = namespace
+	}
+}
+
+func WithEphemeral() Option {
+	return func(p *Provider) {
+		p.ephemeral = true
 	}
 }

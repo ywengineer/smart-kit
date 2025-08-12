@@ -2,10 +2,11 @@ package nacosprovider
 
 import (
 	"fmt"
-	"github.com/nacos-group/nacos-sdk-go/v2/model"
-	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"log/slog"
 	"strings"
+
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/asynkron/protoactor-go/cluster"
@@ -53,6 +54,7 @@ func (pa *providerActor) init(ctx actor.Context) {
 			pa.refreshCanceller = refreshScheduler.SendRepeatedly(0, pa.refreshTTL, ctx.Self(), &UpdateTTL{})
 			if err := pa.doSubscribe(ctx); err == nil {
 				pa.Become(pa.running)
+				pa.blockingStatusChange()
 			}
 		}
 	}
@@ -98,7 +100,7 @@ func (pa *providerActor) processNacosUpdate(services []model.Instance, err error
 	}
 	var members []*cluster.Member
 	for _, v := range services {
-		if v.Enable && v.Healthy {
+		if v.Enable {
 			memberId := v.Metadata["id"]
 			if memberId == "" {
 				memberId = fmt.Sprintf("%v[%s]@%v:%v", pa.clusterName, v.InstanceId, v.Ip, v.Port)

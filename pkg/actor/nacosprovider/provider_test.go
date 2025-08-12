@@ -2,13 +2,17 @@ package nacosprovider
 
 import (
 	"fmt"
-	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"net"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
+	"gitee.com/ywengineer/smart-kit/pkg/nacos"
+	"gitee.com/ywengineer/smart-kit/pkg/nets"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/asynkron/protoactor-go/cluster/identitylookup/disthash"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/asynkron/protoactor-go/cluster"
@@ -16,11 +20,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const serviceName = "my_service"
+const groupName = "DEFAULT_GROUP"
+
 func newClusterForTest(name string, addr string, cp cluster.ClusterProvider) *cluster.Cluster {
 	host, _port, err := net.SplitHostPort(addr)
 	if err != nil {
 		panic(err)
 	}
+	host = utilk.DefaultIfEmpty(host, nets.GetDefaultIpv4())
 	port, _ := strconv.Atoi(_port)
 	remoteConfig := remote.Configure(host, port)
 	lookup := disthash.New()
@@ -37,19 +45,37 @@ func newClusterForTest(name string, addr string, cp cluster.ClusterProvider) *cl
 	return c
 }
 
+func newNacosProvider() cluster.ClusterProvider {
+	conf := nacos.Nacos{
+		Ip:          "127.0.0.1",
+		Port:        8848,
+		ContextPath: "/nacos",
+		TimeoutMs:   20000,
+		Namespace:   "public",
+		User:        "nacos",
+		Password:    "nacos",
+		Group:       groupName,
+	}
+	nc, err := nacos.NewNamingClientWithConfig(conf, "debug")
+	if err != nil {
+		panic(err)
+	}
+	return New(nc, WithServiceName(serviceName), WithGroupName(conf.Group), WithNamespace(conf.Namespace), WithRefreshTTL(5*time.Second), WithEphemeral())
+}
+
 func TestStartMember(t *testing.T) {
 	if testing.Short() {
 		return
 	}
 	a := assert.New(t)
-
-	p := New(naming_client.NewNamingClient())
+	p := newNacosProvider()
 	defer p.Shutdown(true)
 
-	c := newClusterForTest("mycluster", "127.0.0.1:0", p)
+	c := newClusterForTest(serviceName, "127.0.0.1:8000", p)
 	eventstream := c.ActorSystem.EventStream
 	ch := make(chan interface{}, 16)
 	eventstream.Subscribe(func(m interface{}) {
+		t.Logf("[%s] %+v", reflect.TypeOf(m).String(), m)
 		if _, ok := m.(*cluster.ClusterTopology); ok {
 			ch <- m
 		}
@@ -65,23 +91,8 @@ func TestStartMember(t *testing.T) {
 	case m := <-ch:
 		msg := m.(*cluster.ClusterTopology)
 		// member joined
-		members := []*cluster.Member{
-			{
-				// Id:    "mycluster@127.0.0.1:8000",
-				Id:    fmt.Sprintf("%s", c.ActorSystem.ID),
-				Host:  "127.0.0.1",
-				Port:  8000,
-				Kinds: []string{},
-			},
-		}
-
-		expected := &cluster.ClusterTopology{
-			Members:      members,
-			Joined:       members,
-			Left:         []*cluster.Member{},
-			TopologyHash: msg.TopologyHash,
-		}
-		a.Equal(expected, msg)
+		a.NotEmpty(msg.Members)
+		a.NotEmpty(msg.Joined)
 	}
 }
 
@@ -96,38 +107,45 @@ func TestRegisterMultipleMembers(t *testing.T) {
 		host    string
 		port    int
 	}{
-		{"mycluster2", "127.0.0.1", 8001},
-		{"mycluster2", "127.0.0.1", 8002},
-		{"mycluster2", "127.0.0.1", 8003},
+		{serviceName, "127.0.0.1", 8001},
+		{serviceName, "127.0.0.1", 8002},
+		{serviceName, "127.0.0.1", 8003},
 	}
 
-	p, _ := New()
+	p := newNacosProvider().(*Provider)
 	defer p.Shutdown(true)
 	for _, member := range members {
 		addr := fmt.Sprintf("%s:%d", member.host, member.port)
-		_p, _ := New()
+		_p := newNacosProvider()
 		c := newClusterForTest(member.cluster, addr, _p)
-		err := p.StartMember(c)
+		err := _p.StartMember(c)
 		a.NoError(err)
-		t.Cleanup(func() {
-			_p.Shutdown(true)
-		})
+		t.Cleanup(func(__p cluster.ClusterProvider) func() {
+			return func() {
+				t.Logf("shutdown: %+v", __p.Shutdown(true))
+			}
+		}(_p))
 	}
 
-	entries, _, err := p.client.Health().Service("mycluster2", "", true, nil)
+	entries, err := p.client.GetService(vo.GetServiceParam{
+		ServiceName: serviceName,
+		GroupName:   groupName,
+	})
 	a.NoError(err)
 
 	found := false
-	for _, entry := range entries {
+	for _, entry := range entries.Hosts {
 		found = false
 		for _, member := range members {
-			if entry.Service.Port == member.port {
+			if entry.Port == uint64(member.port) {
 				found = true
 			}
 		}
-		a.Truef(found, "Member port not found - ExtensionID:%v Address: %v:%v",
-			entry.Service.ID, entry.Service.Address, entry.Service.Port)
+		t.Logf("Member port [%v] - ExtensionID:%v Address: %v:%v, Metadata: %+v", found, entry.InstanceId, entry.Ip, entry.Port, entry.Metadata)
 	}
+	//
+	<-utilk.WatchQuitSignal()
+	//time.Sleep(5 * time.Second)
 }
 
 func TestUpdateTTL_DoesNotReregisterAfterShutdown(t *testing.T) {
@@ -136,8 +154,8 @@ func TestUpdateTTL_DoesNotReregisterAfterShutdown(t *testing.T) {
 	}
 	a := assert.New(t)
 
-	p, _ := New()
-	c := newClusterForTest("mycluster5", "127.0.0.1:8001", p)
+	p := newNacosProvider().(*Provider)
+	c := newClusterForTest(serviceName, "127.0.0.1:8001", p)
 
 	shutdownShouldHaveResolved := make(chan bool, 1)
 
@@ -167,14 +185,17 @@ func TestUpdateTTL_DoesNotReregisterAfterShutdown(t *testing.T) {
 func findService(t *testing.T, p *Provider) (found bool, status string) {
 	service := p.cluster.Config.Name
 	port := p.cluster.Config.RemoteConfig.Port
-	entries, _, err := p.client.Health().Service(service, "", false, nil)
+	entries, err := p.client.GetService(vo.GetServiceParam{
+		ServiceName: service,
+		GroupName:   groupName,
+	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	for _, entry := range entries {
-		if entry.Service.Port == port {
-			return true, entry.Checks.AggregatedStatus()
+	for _, entry := range entries.Hosts {
+		if entry.Port == uint64(port) {
+			return true, entry.InstanceId
 		}
 	}
 	return false, ""

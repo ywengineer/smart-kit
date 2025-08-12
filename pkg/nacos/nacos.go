@@ -1,6 +1,7 @@
 package nacos
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
@@ -56,7 +57,7 @@ func NewNacosConfig(ipAddr string, port uint64, contextPath string,
 		constant.WithNotLoadCacheAtStart(true),
 		constant.WithUsername(user),
 		constant.WithPassword(password),
-		constant.WithLogLevel(logLevel),
+		constant.WithLogLevel(utilk.DefaultIfEmpty(logLevel, "debug")),
 	)
 	return sc, cc
 }

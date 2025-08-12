@@ -2,12 +2,14 @@ package nacosprovider
 
 import (
 	"fmt"
-	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
-	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"log/slog"
 	"strings"
 	"sync"
 	"time"
+
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 
 	"github.com/asynkron/protoactor-go/actor"
 
@@ -26,7 +28,6 @@ type Provider struct {
 	address            string
 	port               int
 	knownKinds         []string
-	ttl                time.Duration
 	refreshTTL         time.Duration
 	updateTTLWaitGroup sync.WaitGroup
 	deregisterCritical time.Duration
@@ -40,11 +41,11 @@ type Provider struct {
 	clusterName string
 	groupName   string
 	namespace   string
+	ephemeral   bool
 }
 
 func New(client naming_client.INamingClient, opts ...Option) *Provider {
 	p := &Provider{
-		ttl:                3 * time.Second,
 		refreshTTL:         1 * time.Second,
 		deregisterCritical: 60 * time.Second,
 		blockingWaitTime:   20 * time.Second,
@@ -62,7 +63,6 @@ func New(client naming_client.INamingClient, opts ...Option) *Provider {
 
 func (p *Provider) init(c *cluster.Cluster) error {
 	knownKinds := c.GetClusterKinds()
-	clusterName := c.Config.Name
 	memberId := c.ActorSystem.ID
 
 	host, port, err := c.ActorSystem.GetHostPort()
@@ -72,10 +72,10 @@ func (p *Provider) init(c *cluster.Cluster) error {
 
 	p.cluster = c
 	p.id = memberId
-	p.clusterName = clusterName
 	p.address = host
 	p.port = port
 	p.knownKinds = knownKinds
+	p.serviceName = utilk.DefaultIfEmpty(p.serviceName, fmt.Sprintf("%s:%d", host, port))
 	return nil
 }
 
@@ -89,7 +89,7 @@ func (p *Provider) StartMember(c *cluster.Cluster) error {
 		return newProviderActor(p)
 	}), "nacos-provider")
 	if err != nil {
-		p.cluster.Logger().Error("Failed to start consul-provider actor", slog.Any("error", err))
+		p.cluster.Logger().Error("Failed to start nacos-provider actor", slog.Any("error", err))
 		return err
 	}
 
@@ -117,7 +117,7 @@ func (p *Provider) DeregisterMember() error {
 
 func (p *Provider) Shutdown(graceful bool) error {
 	if p.shutdown {
-		return nil
+		return ProviderShuttingDownError
 	}
 	p.shutdown = true
 	if p.pid != nil {
@@ -131,6 +131,19 @@ func (p *Provider) Shutdown(graceful bool) error {
 }
 
 func blockingUpdateTTL(p *Provider) error {
+	//_, p.clusterError = p.client.UpdateInstance(vo.UpdateInstanceParam{
+	//	Ip:      p.address,
+	//	Port:    uint64(p.port),
+	//	Weight:  float64(p.weight),
+	//	Enable:  true,
+	//	Healthy: true,
+	//	Metadata: map[string]string{
+	//		"id":   p.id,
+	//		"tags": strings.Join(p.knownKinds, ","),
+	//	},
+	//	GroupName:   p.groupName,
+	//	ServiceName: p.serviceName,
+	//})
 	if !p.client.ServerHealthy() {
 		p.clusterError = ClusterDisabledError
 	} else {
@@ -149,6 +162,7 @@ func (p *Provider) registerService() error {
 		Port:        uint64(p.port),
 		Healthy:     true,
 		Enable:      true,
+		Ephemeral:   p.ephemeral,
 		Metadata: map[string]string{
 			"id":   p.id,
 			"tags": strings.Join(p.knownKinds, ","),
@@ -159,14 +173,20 @@ func (p *Provider) registerService() error {
 }
 
 func (p *Provider) deregisterService() error {
+	if p.deregistered {
+		return nil
+	}
+	p.deregistered = true
 	s := vo.DeregisterInstanceParam{
 		Ip:          p.address,
 		Port:        uint64(p.port),
 		Cluster:     p.clusterName,
 		ServiceName: p.serviceName,
 		GroupName:   p.groupName,
+		Ephemeral:   p.ephemeral,
 	}
 	_, err := p.client.DeregisterInstance(s)
+	p.client.CloseClient()
 	return err
 }
 
@@ -186,7 +206,7 @@ func (p *Provider) notifyStatuses() {
 	}
 	var members []*cluster.Member
 	for _, v := range service.Hosts {
-		if v.Enable && v.Healthy {
+		if v.Enable {
 			memberId := v.Metadata["id"]
 			if memberId == "" {
 				memberId = fmt.Sprintf("%v[%s]@%v:%v", p.clusterName, v.InstanceId, v.Ip, v.Port)
