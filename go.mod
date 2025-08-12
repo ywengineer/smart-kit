@@ -6,6 +6,7 @@ toolchain go1.24.3
 
 require (
 	github.com/Netflix/go-env v0.1.2
+	github.com/asynkron/goconsole v0.0.0-20160504192649-bfa12eebf716
 	github.com/asynkron/protoactor-go v0.0.0-20250718162332-fca678d1096c
 	github.com/bsm/redislock v0.9.4
 	github.com/bytedance/gopkg v0.1.1

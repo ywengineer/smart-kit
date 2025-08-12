@@ -31,11 +31,8 @@ func (e *EchoActor) Receive(ctx actor.Context) {
 func main() {
 	system := actor.NewActorSystem()
 
-	// 配置远程服务（添加错误日志）
+	// 配置远程服务
 	remoteConfig := remote.Configure("localhost", 8080)
-	//remoteConfig.WithErrorHandler(func(err error) {
-	//	log.Printf("远程服务错误: %v", err)
-	//})
 
 	rs := remote.NewRemote(system, remoteConfig)
 
