@@ -125,6 +125,7 @@ func TestRegisterMultipleMembers(t *testing.T) {
 				t.Logf("shutdown: %+v", __p.Shutdown(true))
 			}
 		}(_p))
+		time.Sleep(2 * time.Second)
 	}
 
 	entries, err := p.client.GetService(vo.GetServiceParam{
@@ -133,6 +134,7 @@ func TestRegisterMultipleMembers(t *testing.T) {
 	})
 	a.NoError(err)
 
+	time.Sleep(5 * time.Second)
 	found := false
 	for _, entry := range entries.Hosts {
 		found = false

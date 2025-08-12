@@ -98,6 +98,7 @@ func (pa *providerActor) processNacosUpdate(services []model.Instance, err error
 		ctx.Logger().Error("Didn't get expected data from nacos subscription")
 		return
 	}
+	ctx.Logger().Info("process subs update")
 	var members []*cluster.Member
 	for _, v := range services {
 		if v.Enable {

@@ -192,6 +192,7 @@ func (p *Provider) deregisterService() error {
 
 // call this directly after registering the service
 func (p *Provider) blockingStatusChange() {
+	p.cluster.Logger().Info("Blocking status change")
 	p.notifyStatuses()
 }
 
