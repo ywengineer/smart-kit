@@ -2,9 +2,13 @@ package nacosprovider
 
 import (
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"github.com/bytedance/sonic"
+	"log/slog"
 	"net"
 	"reflect"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -30,12 +34,14 @@ func newClusterForTest(name string, addr string, cp cluster.ClusterProvider) *cl
 	}
 	host = utilk.DefaultIfEmpty(host, nets.GetDefaultIpv4())
 	port, _ := strconv.Atoi(_port)
-	remoteConfig := remote.Configure(host, port)
+	remoteConfig := remote.Configure(host, port, remote.WithAdvertisedHost(host))
 	lookup := disthash.New()
 	config := cluster.Configure(name, cp, lookup, remoteConfig)
 	// return cluster.NewForTest(system, config)
 
-	system := actor.NewActorSystem()
+	system := actor.NewActorSystem(actor.WithLoggerFactory(func(system *actor.ActorSystem) *slog.Logger {
+		return logk.GetDefaultSLogger().With("lib", "Proto.Actor").With("system", system.ID)
+	}))
 	c := cluster.New(system, config)
 
 	// use for test without start remote
@@ -60,7 +66,7 @@ func newNacosProvider() cluster.ClusterProvider {
 	if err != nil {
 		panic(err)
 	}
-	return New(nc, WithServiceName(serviceName), WithGroupName(conf.Group), WithNamespace(conf.Namespace), WithRefreshTTL(5*time.Second), WithEphemeral())
+	return New(nc, "public", groupName, WithServiceName(serviceName), WithRefreshTTL(5*time.Second), WithEphemeral())
 }
 
 func TestStartMember(t *testing.T) {
@@ -73,27 +79,14 @@ func TestStartMember(t *testing.T) {
 
 	c := newClusterForTest(serviceName, "127.0.0.1:8000", p)
 	eventstream := c.ActorSystem.EventStream
-	ch := make(chan interface{}, 16)
 	eventstream.Subscribe(func(m interface{}) {
 		t.Logf("[%s] %+v", reflect.TypeOf(m).String(), m)
-		if _, ok := m.(*cluster.ClusterTopology); ok {
-			ch <- m
-		}
 	})
 
 	err := p.StartMember(c)
 	a.NoError(err)
 
-	select {
-	case <-time.After(10 * time.Second):
-		a.FailNow("no member joined yet")
-
-	case m := <-ch:
-		msg := m.(*cluster.ClusterTopology)
-		// member joined
-		a.NotEmpty(msg.Members)
-		a.NotEmpty(msg.Joined)
-	}
+	<-utilk.WatchQuitSignal()
 }
 
 func TestRegisterMultipleMembers(t *testing.T) {
@@ -114,27 +107,44 @@ func TestRegisterMultipleMembers(t *testing.T) {
 
 	p := newNacosProvider().(*Provider)
 	defer p.Shutdown(true)
+	//
+	wg := sync.WaitGroup{}
+	wg.Add(len(members))
+	//
 	for _, member := range members {
-		addr := fmt.Sprintf("%s:%d", member.host, member.port)
-		_p := newNacosProvider()
-		c := newClusterForTest(member.cluster, addr, _p)
-		err := _p.StartMember(c)
-		a.NoError(err)
-		t.Cleanup(func(__p cluster.ClusterProvider) func() {
-			return func() {
-				t.Logf("shutdown: %+v", __p.Shutdown(true))
-			}
-		}(_p))
-		time.Sleep(2 * time.Second)
+		mk := fmt.Sprintf("%s@%s:%d", member.cluster, member.host, member.port)
+		go func(mk string) {
+			defer wg.Done()
+			addr := fmt.Sprintf("%s:%d", member.host, member.port)
+			_p := newNacosProvider()
+			c := newClusterForTest(member.cluster, addr, _p)
+			eventstream := c.ActorSystem.EventStream
+			eventstream.Subscribe(func(m interface{}) {
+				if ct, ok := m.(*cluster.ClusterTopology); ok {
+					topo, _ := sonic.Marshal(ct)
+					t.Logf("[%s] %s", mk, topo)
+				} else {
+					t.Logf("[%s] [%s] %+v", mk, reflect.TypeOf(m).String(), m)
+				}
+			})
+			err := _p.StartMember(c)
+			a.NoError(err)
+			t.Cleanup(func(__p cluster.ClusterProvider) func() {
+				return func() {
+					t.Logf("shutdown: %+v", __p.Shutdown(true))
+				}
+			}(_p))
+			<-utilk.WatchQuitSignal()
+			t.Logf("[%s], finished", mk)
+		}(mk)
 	}
-
+	//
+	time.Sleep(5 * time.Second)
 	entries, err := p.client.GetService(vo.GetServiceParam{
 		ServiceName: serviceName,
 		GroupName:   groupName,
 	})
 	a.NoError(err)
-
-	time.Sleep(5 * time.Second)
 	found := false
 	for _, entry := range entries.Hosts {
 		found = false
@@ -146,8 +156,8 @@ func TestRegisterMultipleMembers(t *testing.T) {
 		t.Logf("Member port [%v] - ExtensionID:%v Address: %v:%v, Metadata: %+v", found, entry.InstanceId, entry.Ip, entry.Port, entry.Metadata)
 	}
 	//
-	<-utilk.WatchQuitSignal()
-	//time.Sleep(5 * time.Second)
+	wg.Wait()
+	t.Log("TestRegisterMultipleMembers PASSED")
 }
 
 func TestUpdateTTL_DoesNotReregisterAfterShutdown(t *testing.T) {

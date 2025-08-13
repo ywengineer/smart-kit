@@ -5,7 +5,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
-var defLogger = NewLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
+var defLogger = NewZapLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
 
 // SetLogLevel must greater than debug level
 func SetLogLevel(lv hlog.Level) {

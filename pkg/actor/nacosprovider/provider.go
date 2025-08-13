@@ -44,7 +44,7 @@ type Provider struct {
 	ephemeral   bool
 }
 
-func New(client naming_client.INamingClient, opts ...Option) *Provider {
+func New(client naming_client.INamingClient, namespace, group string, opts ...Option) *Provider {
 	p := &Provider{
 		refreshTTL:         1 * time.Second,
 		deregisterCritical: 60 * time.Second,
@@ -55,6 +55,7 @@ func New(client naming_client.INamingClient, opts ...Option) *Provider {
 		clusterName:        "DEFAULT",
 		namespace:          "public",
 	}
+	opts = append(opts, WithNamespace(namespace), WithGroupName(group))
 	for _, opt := range opts {
 		opt(p)
 	}
@@ -192,7 +193,7 @@ func (p *Provider) deregisterService() error {
 
 // call this directly after registering the service
 func (p *Provider) blockingStatusChange() {
-	p.cluster.Logger().Info("Blocking status change")
+	p.cluster.Logger().Info("Blocking status change: get service topology")
 	p.notifyStatuses()
 }
 

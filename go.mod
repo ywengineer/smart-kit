@@ -6,7 +6,6 @@ toolchain go1.24.3
 
 require (
 	github.com/Netflix/go-env v0.1.2
-	github.com/asynkron/goconsole v0.0.0-20160504192649-bfa12eebf716
 	github.com/asynkron/protoactor-go v0.0.0-20250718162332-fca678d1096c
 	github.com/bsm/redislock v0.9.4
 	github.com/bytedance/gopkg v0.1.1
@@ -23,6 +22,7 @@ require (
 	github.com/hertz-contrib/cors v0.1.0
 	github.com/hertz-contrib/jwt v1.0.4
 	github.com/hertz-contrib/logger/accesslog v0.0.0-20241107070745-e4ce8c54dd97
+	github.com/hertz-contrib/logger/slog v1.0.0
 	github.com/hertz-contrib/logger/zap v1.1.0
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1
 	github.com/hertz-contrib/pprof v0.1.2

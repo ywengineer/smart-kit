@@ -44,7 +44,7 @@ func NewHertzApp(appName string,
 	shutdown OnShutdown,
 	rdbModels ...interface{},
 ) *server.Hertz {
-	hlog.SetLogger(logk.NewLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
+	hlog.SetLogger(logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
 	//
 	defaultPort := 8089
 	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, AuthDownload: true, Prefix: "/mgr/prof"}}

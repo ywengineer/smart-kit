@@ -7,27 +7,19 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
-	"time"
 )
 
-func Max[T int | int32 | int64 | uint | time.Duration](a, b T) T {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func NewLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) hlog.FullLogger {
+func NewZapLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) hlog.FullLogger {
 	// 提供压缩和删除
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   logFile,
-		MaxSize:    Max(20, maxFileMB), // 一个文件最大可达 20M。
-		MaxBackups: Max(5, maxBackups), // 最多同时保存 5 个文件。
-		MaxAge:     Max(1, maxDays),    // 一个文件最多可以保存 10 天。
-		Compress:   true,               // 用 gzip 压缩。
+		MaxSize:    _max(20, maxFileMB), // 一个文件最大可达 20M。
+		MaxBackups: _max(5, maxBackups), // 最多同时保存 5 个文件。
+		MaxAge:     _max(1, maxDays),    // 一个文件最多可以保存 10 天。
+		Compress:   true,                // 用 gzip 压缩。
 	}
 	//
-	hlog.SetLogger(hertzzap.NewLogger(
+	l := hertzzap.NewLogger(
 		hertzzap.WithCoreEnc(zapcore.NewJSONEncoder(zapcore.EncoderConfig{
 			MessageKey:     "msg",
 			LevelKey:       "level",
@@ -48,7 +40,7 @@ func NewLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Le
 		hertzzap.WithZapOptions(
 			zap.AddStacktrace(zapcore.ErrorLevel),
 		),
-	))
-	hlog.SetLevel(level)
-	return hlog.DefaultLogger()
+	)
+	l.SetLevel(level)
+	return l
 }

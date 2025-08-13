@@ -50,11 +50,11 @@ func (pa *providerActor) init(ctx actor.Context) {
 			ctx.Send(ctx.Self(), &RegisterService{})
 		} else {
 			ctx.Logger().Info("Registered service to nacos")
+			pa.Become(pa.running)
 			refreshScheduler := scheduler.NewTimerScheduler(ctx)
 			pa.refreshCanceller = refreshScheduler.SendRepeatedly(0, pa.refreshTTL, ctx.Self(), &UpdateTTL{})
-			if err := pa.doSubscribe(ctx); err == nil {
-				pa.Become(pa.running)
-				pa.blockingStatusChange()
+			if err := pa.doSubscribe(ctx); err != nil {
+				ctx.Logger().Error("Failed to subscribe nacos service", slog.String("service", pa.serviceName), slog.Any("error", err))
 			}
 		}
 	}
@@ -80,8 +80,9 @@ func (pa *providerActor) running(ctx actor.Context) {
 
 func (pa *providerActor) doSubscribe(ctx actor.Context) error {
 	err := pa.client.Subscribe(&vo.SubscribeParam{
+		Clusters:    []string{pa.clusterName},
 		GroupName:   pa.groupName,
-		ServiceName: pa.clusterName,
+		ServiceName: pa.serviceName,
 		SubscribeCallback: func(services []model.Instance, err error) {
 			pa.processNacosUpdate(services, err, ctx)
 		},
@@ -98,7 +99,7 @@ func (pa *providerActor) processNacosUpdate(services []model.Instance, err error
 		ctx.Logger().Error("Didn't get expected data from nacos subscription")
 		return
 	}
-	ctx.Logger().Info("process subs update")
+	ctx.Logger().Info("Subs trigger, service topology changed")
 	var members []*cluster.Member
 	for _, v := range services {
 		if v.Enable {

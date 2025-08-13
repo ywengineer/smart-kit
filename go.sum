@@ -114,8 +114,6 @@ github.com/aliyun/credentials-go v1.3.10/go.mod h1:Jm6d+xIgwJVLVWT561vy67ZRP4lPT
 github.com/aliyun/credentials-go v1.4.3 h1:N3iHyvHRMyOwY1+0qBLSf3hb5JFiOujVSVuEpgeGttY=
 github.com/aliyun/credentials-go v1.4.3/go.mod h1:Jm6d+xIgwJVLVWT561vy67ZRP4lPTQxMbEYRuT2Ti1U=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
-github.com/asynkron/goconsole v0.0.0-20160504192649-bfa12eebf716 h1:SgyG4sXkrlalMoCfp20LiNPNhfJS7ez3opNdtihIxPc=
-github.com/asynkron/goconsole v0.0.0-20160504192649-bfa12eebf716/go.mod h1:/zSlF0T2ArAsTG6SVu8d8qlK+19jjudjA3wWsxnGFHg=
 github.com/asynkron/gofun v0.0.0-20220329210725-34fed760f4c2 h1:jEsFZ9d/ieJGVrx3fSPi8oe/qv21fRmyUL5cS3ZEn5A=
 github.com/asynkron/gofun v0.0.0-20220329210725-34fed760f4c2/go.mod h1:5GMOSqaYxNWwuVRWyampTPJEntwz7Mj9J8v1a7gSU2E=
 github.com/asynkron/protoactor-go v0.0.0-20250718162332-fca678d1096c h1:mkZFPIwQdLY12b5bnPppopxyFIF7bMyvxm7WnPgU1Ws=
@@ -336,6 +334,8 @@ github.com/hertz-contrib/jwt v1.0.4 h1:PHddo1FDBpGHXx9nkhSwXamEyPNCkZCtszYXcRCD3
 github.com/hertz-contrib/jwt v1.0.4/go.mod h1:YntlFg4tdWw1CM5mELU00HbO8Gsa92xPd7EyrSYxAcg=
 github.com/hertz-contrib/logger/accesslog v0.0.0-20241107070745-e4ce8c54dd97 h1:7sVi9PFkcVRtL9kbW+8htABmtyCNr/hPxEZ5PMgGIUo=
 github.com/hertz-contrib/logger/accesslog v0.0.0-20241107070745-e4ce8c54dd97/go.mod h1:vB3TNAD0IvvDhfY1SWSeCaAVbWleDKEuQ4zOK70hb64=
+github.com/hertz-contrib/logger/slog v1.0.0 h1:nZVnsoLpSGzOyiXdfhAtFrLlsJc24yW/Hnu5oRhZPls=
+github.com/hertz-contrib/logger/slog v1.0.0/go.mod h1:npMO4ORv4v1puT/8Y5q4FcR94Ui+f6gO49YDYnqlQ+0=
 github.com/hertz-contrib/logger/zap v1.1.0 h1:4efINiIDJrXEtAFeEdDJvc3Hye0VFxp+0X4BwaZgxNs=
 github.com/hertz-contrib/logger/zap v1.1.0/go.mod h1:D/rJJgsYn+SGaHVfVqWS3vHTbbc7ODAlJO+6smWgTeE=
 github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1 h1:YOv/UcSHjeAg1CwvcXi1zsNz5xFKf1iAKlEKAt7k31I=
