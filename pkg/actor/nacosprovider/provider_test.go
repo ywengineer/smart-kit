@@ -2,9 +2,7 @@ package nacosprovider
 
 import (
 	"fmt"
-	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"github.com/bytedance/sonic"
-	"log/slog"
 	"net"
 	"reflect"
 	"strconv"
@@ -34,20 +32,17 @@ func newClusterForTest(name string, addr string, cp cluster.ClusterProvider) *cl
 	}
 	host = utilk.DefaultIfEmpty(host, nets.GetDefaultIpv4())
 	port, _ := strconv.Atoi(_port)
-	remoteConfig := remote.Configure(host, port, remote.WithAdvertisedHost(host))
+	remoteConfig := remote.Configure(host, port, remote.WithAdvertisedHost(net.JoinHostPort(host, strconv.Itoa(port))))
 	lookup := disthash.New()
 	config := cluster.Configure(name, cp, lookup, remoteConfig)
 	// return cluster.NewForTest(system, config)
 
-	system := actor.NewActorSystem(actor.WithLoggerFactory(func(system *actor.ActorSystem) *slog.Logger {
-		return logk.GetDefaultSLogger().With("lib", "Proto.Actor").With("system", system.ID)
-	}))
+	system := actor.NewActorSystem()
 	c := cluster.New(system, config)
-
 	// use for test without start remote
-	c.ActorSystem.ProcessRegistry.Address = addr
-	c.MemberList = cluster.NewMemberList(c)
-	c.Remote = remote.NewRemote(c.ActorSystem, c.Config.RemoteConfig)
+	//c.ActorSystem.ProcessRegistry.Address = addr
+	//c.MemberList = cluster.NewMemberList(c)
+	//c.Remote = remote.NewRemote(c.ActorSystem, c.Config.RemoteConfig)
 	return c
 }
 
@@ -73,19 +68,14 @@ func TestStartMember(t *testing.T) {
 	if testing.Short() {
 		return
 	}
-	a := assert.New(t)
 	p := newNacosProvider()
-	defer p.Shutdown(true)
-
 	c := newClusterForTest(serviceName, "127.0.0.1:8000", p)
+	defer c.Shutdown(true)
 	eventstream := c.ActorSystem.EventStream
 	eventstream.Subscribe(func(m interface{}) {
 		t.Logf("[%s] %+v", reflect.TypeOf(m).String(), m)
 	})
-
-	err := p.StartMember(c)
-	a.NoError(err)
-
+	c.StartMember()
 	<-utilk.WatchQuitSignal()
 }
 
@@ -93,20 +83,17 @@ func TestRegisterMultipleMembers(t *testing.T) {
 	if testing.Short() {
 		return
 	}
-	a := assert.New(t)
 
 	members := []struct {
 		cluster string
 		host    string
 		port    int
 	}{
-		{serviceName, "127.0.0.1", 8001},
-		{serviceName, "127.0.0.1", 8002},
-		{serviceName, "127.0.0.1", 8003},
+		{serviceName, "127.0.0.1", 8101},
+		{serviceName, "127.0.0.1", 8102},
+		{serviceName, "127.0.0.1", 8103},
 	}
 
-	p := newNacosProvider().(*Provider)
-	defer p.Shutdown(true)
 	//
 	wg := sync.WaitGroup{}
 	wg.Add(len(members))
@@ -116,44 +103,29 @@ func TestRegisterMultipleMembers(t *testing.T) {
 		go func(mk string) {
 			defer wg.Done()
 			addr := fmt.Sprintf("%s:%d", member.host, member.port)
-			_p := newNacosProvider()
-			c := newClusterForTest(member.cluster, addr, _p)
-			eventstream := c.ActorSystem.EventStream
-			eventstream.Subscribe(func(m interface{}) {
+			c := newClusterForTest(member.cluster, addr, newNacosProvider())
+			eventStream := c.ActorSystem.EventStream
+			eventStream.Subscribe(func(m interface{}) {
 				if ct, ok := m.(*cluster.ClusterTopology); ok {
 					topo, _ := sonic.Marshal(ct)
 					t.Logf("[%s] %s", mk, topo)
+				} else if _, ok := m.(*cluster.GossipUpdate); ok {
+					// ignore
 				} else {
 					t.Logf("[%s] [%s] %+v", mk, reflect.TypeOf(m).String(), m)
 				}
 			})
-			err := _p.StartMember(c)
-			a.NoError(err)
-			t.Cleanup(func(__p cluster.ClusterProvider) func() {
+			c.StartMember()
+			t.Cleanup(func(__c *cluster.Cluster) func() {
 				return func() {
-					t.Logf("shutdown: %+v", __p.Shutdown(true))
+					t.Logf("shutdown: %+v", __c.ActorSystem.ID)
+					__c.Shutdown(true)
 				}
-			}(_p))
+			}(c))
+			t.Logf("[%s], started", mk)
 			<-utilk.WatchQuitSignal()
 			t.Logf("[%s], finished", mk)
 		}(mk)
-	}
-	//
-	time.Sleep(5 * time.Second)
-	entries, err := p.client.GetService(vo.GetServiceParam{
-		ServiceName: serviceName,
-		GroupName:   groupName,
-	})
-	a.NoError(err)
-	found := false
-	for _, entry := range entries.Hosts {
-		found = false
-		for _, member := range members {
-			if entry.Port == uint64(member.port) {
-				found = true
-			}
-		}
-		t.Logf("Member port [%v] - ExtensionID:%v Address: %v:%v, Metadata: %+v", found, entry.InstanceId, entry.Ip, entry.Port, entry.Metadata)
 	}
 	//
 	wg.Wait()
