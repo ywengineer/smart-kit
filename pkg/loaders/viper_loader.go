@@ -15,25 +15,25 @@ const (
 )
 
 type viperLoader struct {
-	v  *viper.Viper
+	//v  *viper.Viper
 	ct ConfigType
 }
 
 func NewViperLoader(fileName string, configType ConfigType) SmartLoader {
-	v := viper.New()
-	v.SetConfigType(string(configType))
-	v.SetConfigFile(fileName)
-	v.AddConfigPath(".")
-	v.AutomaticEnv()                                   // 启用环境变量替换（关键：将 ${ENV} 替换为实际环境变量）
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // 允许使用 . 分隔符（如将 config 中的 db.host 对应环境变量 DB_HOST）
-	return &viperLoader{v: v, ct: configType}
+	//v := viper.New()
+	viper.SetConfigName(fileName)
+	viper.AddConfigPath(".")
+	viper.SetConfigType(string(configType))
+	viper.AutomaticEnv()                                   // 启用环境变量替换（关键：将 ${ENV} 替换为实际环境变量）
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // 允许使用 . 分隔符（如将 config 中的 db.host 对应环境变量 DB_HOST）
+	return &viperLoader{ct: configType}
 }
 
 func (ll *viperLoader) Unmarshal(_ []byte, out interface{}) error {
-	if err := ll.v.ReadInConfig(); err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}
-	return ll.v.Unmarshal(out)
+	return viper.Unmarshal(out)
 }
 
 func (ll *viperLoader) Load(out interface{}) error {

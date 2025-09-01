@@ -1,0 +1,8 @@
+network: "tcp"
+address: ":12345"
+workers: ${APP_WORKER:10}
+load-balance: ${GVM_PKGSET_NAME:hash}
+service-name: "game"
+weight: 10
+metadata:
+  key: "value"

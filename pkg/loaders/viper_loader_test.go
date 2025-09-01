@@ -7,7 +7,7 @@ import (
 
 func TestViperYamlLoader(t *testing.T) {
 	//
-	loader := NewViperLoader("conf", Yaml)
+	loader := NewViperLoader("conf_viper", Yaml)
 	var c = &Conf{}
 	if err := loader.Load(c); err != nil {
 		t.Fatalf("%v", err)
