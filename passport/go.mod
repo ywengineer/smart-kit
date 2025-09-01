@@ -1,6 +1,6 @@
 module gitee.com/ywengineer/smart-kit/passport
 
-go 1.23.8
+go 1.24.3
 
 toolchain go1.24.3
 

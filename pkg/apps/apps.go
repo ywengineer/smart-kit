@@ -48,21 +48,11 @@ func NewHertzApp(appName string,
 	//
 	defaultPort := 8089
 	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, AuthDownload: true, Prefix: "/mgr/prof"}}
-	_loader := loaders.NewLocalLoader("./application.yaml")
+	_loader := loaders.NewViperLoader("application", loaders.Yaml)
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
 	}
 	hlog.SetLevel(hlog.Level(conf.LogLevel))
-	//
-	if err := _loader.Watch(context.Background(), func(data string) error {
-		if err := _loader.Unmarshal([]byte(data), conf); err != nil {
-			return err
-		}
-		hlog.SetLevel(hlog.Level(conf.LogLevel))
-		return nil
-	}); err != nil {
-		hlog.Fatalf("failed to watch app configuration: %v", err)
-	}
 	//
 	if (conf.RegistryInfo != nil || conf.DiscoveryEnable) && conf.Nacos == nil {
 		hlog.Fatalf("enable service registry or discovery. but not found nacos configuration")

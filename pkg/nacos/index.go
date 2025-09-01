@@ -1,6 +1,9 @@
 package nacos
 
-import "github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+import (
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+)
 
 type Nacos struct {
 	Ip          string `json:"ip" yaml:"ip"`
@@ -18,4 +21,10 @@ type Nacos struct {
 // the logLevel must be one of debug,info,warn,error, default value is debug
 func NewNamingClientWithConfig(c Nacos, logLevel string) (naming_client.INamingClient, error) {
 	return NewNacosNamingClient(c.Ip, c.Port, c.ContextPath, c.TimeoutMs, c.Namespace, c.User, c.Password, logLevel)
+}
+
+// NewConfigClientWithConfig
+// the logLevel must be one of debug,info,warn,error, default value is debug
+func NewConfigClientWithConfig(c Nacos, logLevel string) (config_client.IConfigClient, error) {
+	return NewNacosConfigClient(c.Ip, c.Port, c.ContextPath, c.TimeoutMs, c.Namespace, c.User, c.Password, logLevel)
 }
