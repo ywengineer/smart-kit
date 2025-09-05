@@ -108,7 +108,7 @@ func NewHertzApp(appName string,
 	if conf.Nacos != nil {
 		conf.Nacos.Cluster = utilk.DefaultIfEmpty(conf.Nacos.Cluster, "DEFAULT")
 		conf.Nacos.Group = utilk.DefaultIfEmpty(conf.Nacos.Group, "DEFAULT_GROUP")
-		if nnc, err = nacos.NewNacosNamingClient(conf.Nacos.Ip, conf.Nacos.Port, conf.Nacos.ContextPath, conf.Nacos.TimeoutMs, conf.Nacos.Namespace, conf.Nacos.User, conf.Nacos.Password, conf.LogLevel.String()); err != nil {
+		if nnc, err = nacos.NewNamingClientWithConfig(*conf.Nacos, conf.LogLevel.String()); err != nil {
 			hlog.Fatalf("failed to create nacos client: %v", err)
 			return nil
 		}

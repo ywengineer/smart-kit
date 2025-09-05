@@ -92,8 +92,8 @@ func _login(ctx context.Context, sCtx app2.SmartContext, actType passport.Accoun
 		}
 	}
 	//-------------------------------------- after all process --------------------------------------
-	if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		sCtx.Jwt().IdentityKey:    bind.PassportId,
+	if tk, _, err := sCtx.CreateJwtToken(map[string]interface{}{ // jwt token
+		sCtx.JwtIdentityKey():     bind.PassportId,
 		internal.TokenKeyUserType: internal.UserTypePlayer,
 	}); err != nil {
 		return &internal.ErrGenToken

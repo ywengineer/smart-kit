@@ -68,7 +68,7 @@ func Bind(ctx context.Context, c *app.RequestContext) {
 		c.AbortWithStatusJSON(consts.StatusBadRequest, internal.ErrAuth)
 		return
 	}
-	passportId := uint(c.GetFloat64(sCtx.Jwt().IdentityKey))
+	passportId := uint(c.GetFloat64(sCtx.JwtIdentityKey()))
 	//----------------------------------------------- passport bind lock -----------------------------------------------
 	lock, err := sCtx.LockMgr().Obtain(ctx, sCtx.GetPassportLockKey(passportId), time.Minute, &redislock.Options{
 		Metadata:      "bind_service",

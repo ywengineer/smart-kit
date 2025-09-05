@@ -191,8 +191,8 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	} else if err = sCtx.Redis().JSONSet(ctx, internal.CacheKeyPassport(pst.ID), "$", pstJsonStr).Err(); err != nil { // cache error
 		hlog.Error("cache passport json object failed", zap.String("err", err.Error()), zap.String("tag", "register_service"))
 		c.JSON(consts.StatusOK, internal.ErrCache)
-	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		sCtx.Jwt().IdentityKey:    pst.ID,
+	} else if tk, _, err := sCtx.CreateJwtToken(map[string]interface{}{ // jwt token
+		sCtx.JwtIdentityKey():     pst.ID,
 		internal.TokenKeyUserType: internal.UserTypePlayer,
 	}); err != nil {
 		hlog.Error("gen token error", zap.String("msg", err.Error()), zap.String("deviceId", req.DeviceId), zap.String("tag", "register_service"))

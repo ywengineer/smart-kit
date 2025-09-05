@@ -3,6 +3,7 @@ package apps
 import (
 	"context"
 	"gitee.com/ywengineer/smart-kit/pkg/locks"
+	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"gitee.com/ywengineer/smart-kit/pkg/signs"
@@ -11,6 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type GenContext func(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext
@@ -19,13 +21,15 @@ type SmartContext interface {
 	Rdb() *gorm.DB
 	Redis() redis.UniversalClient
 	LockMgr() locks.Manager
-	Jwt() *jwt.HertzJWTMiddleware
+	JwtIdentityKey() string
+	CreateJwtToken(data interface{}) (string, time.Time, error)
 	TokenInterceptor() app.HandlerFunc
 	GetDeviceLockKey(deviceId string) string
 	GetPassportLockKey(passportId uint) string
 	Rpc() rpcs.Rpc
 	GetAuth(authKey string) (oauths.AuthFacade, error)
 	VerifySignature(data map[string]string, sign []byte) bool
+	GetNacosConfig() nacos.Nacos
 }
 
 func GetContext(c context.Context) SmartContext {
@@ -44,6 +48,18 @@ type defaultContext struct {
 	jwtMw   app.HandlerFunc
 	mClient rpcs.Rpc
 	conf    *Configuration
+}
+
+func (d *defaultContext) GetNacosConfig() nacos.Nacos {
+	return *d.conf.Nacos
+}
+
+func (d *defaultContext) JwtIdentityKey() string {
+	return d._jwt.IdentityKey
+}
+
+func (d *defaultContext) CreateJwtToken(data interface{}) (string, time.Time, error) {
+	return d._jwt.TokenGenerator(data)
 }
 
 func (d *defaultContext) VerifySignature(data map[string]string, sign []byte) bool {

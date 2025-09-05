@@ -75,8 +75,8 @@ func mgrSign(ctx context.Context, c *app.RequestContext, req *mgr.MgrSignReq) *a
 	//-------------------------------------- after all process --------------------------------------
 	if bind.Password != req.GetPassword() {
 		return &internal.ErrPassword
-	} else if tk, _, err := sCtx.Jwt().TokenGenerator(map[string]interface{}{ // jwt token
-		sCtx.Jwt().IdentityKey:    bind.ID,
+	} else if tk, _, err := sCtx.CreateJwtToken(map[string]interface{}{ // jwt token
+		sCtx.JwtIdentityKey():     bind.ID,
 		internal.TokenKeyUserType: internal.UserTypeMgr,
 	}); err != nil {
 		return &internal.ErrGenToken
