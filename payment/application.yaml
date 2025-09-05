@@ -47,13 +47,13 @@ jwt:
   max-refresh: 24h
   identity-key: smart-id
 # Nacos server info
-#nacos:
-#  ip: 127.0.0.1
-#  port: 8848
-#  context-path: /nacos
-#  timeout-ms: 10000
-#  namespace: local
-#  cluster: DEFAULT
-#  group: DEFAULT_GROUP
-#  user: user
-#  password: password
+nacos:
+  ip: 127.0.0.1
+  port: 8848
+  context-path: /nacos
+  timeout-ms: 10000
+  namespace: public
+  cluster: DEFAULT
+  group: DEFAULT_GROUP
+  user: root
+  password: iis
