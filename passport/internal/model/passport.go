@@ -1,6 +1,7 @@
 package model
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
 	"strconv"
 	"strings"
 	"time"
@@ -8,7 +9,7 @@ import (
 import "gorm.io/datatypes"
 
 type Passport struct {
-	Model
+	rdbs.Model
 	DeviceId   string         `json:"device_id" redis:"device_id" gorm:"index:idx_device;comment:设备ID"`
 	Adid       string         `json:"adid" redis:"adid" gorm:"comment:设备广告标识"`
 	SystemType string         `json:"system_type" redis:"system_type" gorm:"comment:系统类型;size:20"`
@@ -17,7 +18,7 @@ type Passport struct {
 }
 
 type PassportPunish struct {
-	Model
+	rdbs.Model
 	PassportId uint      `json:"passport_id" gorm:"index:idx_passport;comment:账号ID" redis:"passport_id"`
 	DeviceId   string    `json:"device_id" gorm:"index:idx_device;comment:设备ID" redis:"device_id"`
 	Type       string    `json:"type" gorm:"comment:惩罚类型" redis:"type"`

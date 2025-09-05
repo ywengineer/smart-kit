@@ -1,9 +1,12 @@
 package model
 
-import "strconv"
+import (
+	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
+	"strconv"
+)
 
 type MgrUser struct {
-	Model
+	rdbs.Model
 	Account  string `json:"account" redis:"account" gorm:"index:idx_account;not null;comment:账号"`
 	Password string `json:"password" redis:"password" gorm:"not null;comment:密码"`
 	Name     string `json:"name" redis:"name" gorm:"comment:姓名;size:20"`

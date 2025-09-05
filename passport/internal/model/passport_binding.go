@@ -1,11 +1,12 @@
 package model
 
 import (
+	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
 	"strings"
 )
 
 type PassportBinding struct {
-	Model
+	rdbs.Model
 	PassportId   uint   `json:"passport_id" gorm:"index:idx_passport_id;comment:账号ID" redis:"passport_id"` //
 	BindType     string `json:"bind_type" gorm:"index:idx_bind,unique;comment:绑定类型" redis:"bind_type"`     // 绑定类型：wx, qq, fb, apple, google
 	BindId       string `json:"bind_id" gorm:"index:idx_bind,unique;comment:平台ID" redis:"bind_id"`         //

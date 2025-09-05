@@ -1,4 +1,4 @@
-package model
+package rdbs
 
 import (
 	"gorm.io/gorm"

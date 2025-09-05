@@ -1,0 +1,59 @@
+port: 8089
+base-path: payment
+max-request-body-kb: 50
+redis: "redis://127.0.0.1:6379/?db=1" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
+distribute-lock: true
+profile:
+  type: pprof # pprof, fgprof, none. default is none
+  prefix: "" # default is /mgr/prof
+  auth-download: false # need auth when download profile data
+log-level: debug
+trace-level: detail # base, detail, disable/none. default is none
+access-log: default # disable if empty. see https://www.cloudwego.io/zh/docs/hertz/tutorials/third-party/middleware/access-log/#%E6%94%AF%E6%8C%81%E7%9A%84%E6%A0%87%E7%AD%BE
+# service registry info
+registry-info:
+  service-name: smart-payment
+  addr: 127.0.0.1
+  weight: 10
+  tags:
+    region: cn
+# enable rpc client service discovery
+discovery-enable: false
+# Rpc client info
+rpc-client-info:
+  max-retry: 1
+  max-conn-per-host: 256
+  retry-delay: 50ms
+  read-timeout: 1s
+# rational database connect property
+rdb:
+  name: "mysql" # mysql or postgres
+  username: "root"
+  password: "root"
+  host: "127.0.0.1"
+  port: 3306
+  database: "smart_payment"
+  parameters: ""
+  debug-mode: true
+  pool:
+    max-idle-con: 5
+    max-open-con: 50
+    max-life-time-minute: 10
+# JWT token
+jwt:
+  realm: Smart
+  key: 129kdfjiejalkid
+  timeout: 168h
+  max-refresh: 24h
+  identity-key: smart-id
+# Nacos server info
+#nacos:
+#  ip: 127.0.0.1
+#  port: 8848
+#  context-path: /nacos
+#  timeout-ms: 10000
+#  namespace: local
+#  cluster: DEFAULT
+#  group: DEFAULT_GROUP
+#  user: user
+#  password: password

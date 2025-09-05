@@ -48,7 +48,10 @@ func NewHertzApp(appName string,
 	//
 	defaultPort := 8089
 	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, AuthDownload: true, Prefix: "/mgr/prof"}}
-	_loader := loaders.NewViperLoader("application", loaders.Yaml)
+	_loader := loaders.NewCompositeLoader(
+		loaders.NewLocalLoader("./application.yaml"),
+		loaders.NewEnvLoader(),
+	)
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
 	}

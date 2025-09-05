@@ -1,8 +1,10 @@
 network: "tcp"
 address: ":12345"
-workers: ${APP_WORKER:10}
-load-balance: ${GVM_PKGSET_NAME:hash}
-service-name: "game"
+workers: ${APP_WORKERS:8}          # 优先使用环境变量APP_WORKERS，默认8
+load-balance: ${LOAD_BALANCE:hash} # 优先使用环境变量LOAD_BALANCE，默认hash
+service-name: "game-service"
 weight: 10
 metadata:
-  key: "value"
+  env: ${APP_ENV:development}      # 优先使用环境变量APP_ENV，默认development
+  version: "1.0.0"
+  author: "dev-team"
