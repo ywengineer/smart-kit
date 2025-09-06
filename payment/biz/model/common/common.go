@@ -8,9 +8,9 @@ import (
 )
 
 type ApiResult struct {
-	Code    string `thrift:"Code,1" protobuf:"bytes,1,opt,name=code" form:"code" json:"code"`
+	Code    string `thrift:"Code,1" protobuf:"bytes,1,req,name=code" form:"code" json:"code"`
 	Message string `thrift:"Message,2" protobuf:"bytes,2,opt,name=msg" form:"msg" json:"msg"`
-	ErrCode string `thrift:"ErrCode,3" protobuf:"bytes,3,opt,name=err_code" form:"err_code" json:"err_code"`
+	ErrCode string `thrift:"ErrCode,3" protobuf:"bytes,3,opt,name=errorCode" form:"err_code" json:"err_code"`
 }
 
 func NewApiResult() *ApiResult {

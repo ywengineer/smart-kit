@@ -12,7 +12,7 @@ import (
 )
 
 // Simulate .
-// @router /simulate [GET]
+// @router /simulate [POST]
 func Simulate(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req simulate.SimulateReq

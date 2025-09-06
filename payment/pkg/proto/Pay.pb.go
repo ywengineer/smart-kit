@@ -199,6 +199,90 @@ func (x *QuerySubs) GetPlayerId() string {
 	return ""
 }
 
+type PayNotify struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderID       *string                `protobuf:"bytes,1,req,name=orderID" json:"orderID,omitempty"`            //订单ID
+	ItemID        *string                `protobuf:"bytes,2,req,name=itemID" json:"itemID,omitempty"`              //商品ID
+	PlayerID      *string                `protobuf:"bytes,3,req,name=playerID" json:"playerID,omitempty"`          //玩家ID
+	PlatformCode  *string                `protobuf:"bytes,4,req,name=platformCode" json:"platformCode,omitempty"`  // 商品所在平台编码
+	ExpireTime    *int64                 `protobuf:"varint,5,req,name=expireTime" json:"expireTime,omitempty"`     // 过期时间
+	PurchaseTime  *int64                 `protobuf:"varint,6,req,name=purchaseTime" json:"purchaseTime,omitempty"` // 支付/订阅时间
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PayNotify) Reset() {
+	*x = PayNotify{}
+	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayNotify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayNotify) ProtoMessage() {}
+
+func (x *PayNotify) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayNotify.ProtoReflect.Descriptor instead.
+func (*PayNotify) Descriptor() ([]byte, []int) {
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PayNotify) GetOrderID() string {
+	if x != nil && x.OrderID != nil {
+		return *x.OrderID
+	}
+	return ""
+}
+
+func (x *PayNotify) GetItemID() string {
+	if x != nil && x.ItemID != nil {
+		return *x.ItemID
+	}
+	return ""
+}
+
+func (x *PayNotify) GetPlayerID() string {
+	if x != nil && x.PlayerID != nil {
+		return *x.PlayerID
+	}
+	return ""
+}
+
+func (x *PayNotify) GetPlatformCode() string {
+	if x != nil && x.PlatformCode != nil {
+		return *x.PlatformCode
+	}
+	return ""
+}
+
+func (x *PayNotify) GetExpireTime() int64 {
+	if x != nil && x.ExpireTime != nil {
+		return *x.ExpireTime
+	}
+	return 0
+}
+
+func (x *PayNotify) GetPurchaseTime() int64 {
+	if x != nil && x.PurchaseTime != nil {
+		return *x.PurchaseTime
+	}
+	return 0
+}
+
 // code取值如下:
 // c01, // 正常处理成功
 // c02, // 服务器异常
@@ -214,7 +298,7 @@ type ApiResult struct {
 
 func (x *ApiResult) Reset() {
 	*x = ApiResult{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -226,7 +310,7 @@ func (x *ApiResult) String() string {
 func (*ApiResult) ProtoMessage() {}
 
 func (x *ApiResult) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -239,7 +323,7 @@ func (x *ApiResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiResult.ProtoReflect.Descriptor instead.
 func (*ApiResult) Descriptor() ([]byte, []int) {
-	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2}
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ApiResult) GetCode() string {
@@ -273,7 +357,7 @@ type QuerySubs_Subscription struct {
 
 func (x *QuerySubs_Subscription) Reset() {
 	*x = QuerySubs_Subscription{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -285,7 +369,7 @@ func (x *QuerySubs_Subscription) String() string {
 func (*QuerySubs_Subscription) ProtoMessage() {}
 
 func (x *QuerySubs_Subscription) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +409,7 @@ type QuerySubs_Ret struct {
 
 func (x *QuerySubs_Ret) Reset() {
 	*x = QuerySubs_Ret{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -337,7 +421,7 @@ func (x *QuerySubs_Ret) String() string {
 func (*QuerySubs_Ret) ProtoMessage() {}
 
 func (x *QuerySubs_Ret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,6 +449,82 @@ func (x *QuerySubs_Ret) GetSubs() []*QuerySubs_Subscription {
 		return x.Subs
 	}
 	return nil
+}
+
+type PayNotify_Ret struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrderID       *string                `protobuf:"bytes,1,req,name=orderID" json:"orderID,omitempty"`        // 订单ID
+	RankPoints    *int32                 `protobuf:"varint,2,req,name=rankPoints" json:"rankPoints,omitempty"` // 段位积分
+	Credits       *int64                 `protobuf:"varint,3,req,name=credits" json:"credits,omitempty"`       // 点券剩余量
+	Money         *int64                 `protobuf:"varint,4,req,name=money" json:"money,omitempty"`           // 钻石剩余量
+	Coin          *int64                 `protobuf:"varint,5,req,name=coin" json:"coin,omitempty"`             // 当前金币
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PayNotify_Ret) Reset() {
+	*x = PayNotify_Ret{}
+	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PayNotify_Ret) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PayNotify_Ret) ProtoMessage() {}
+
+func (x *PayNotify_Ret) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PayNotify_Ret.ProtoReflect.Descriptor instead.
+func (*PayNotify_Ret) Descriptor() ([]byte, []int) {
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *PayNotify_Ret) GetOrderID() string {
+	if x != nil && x.OrderID != nil {
+		return *x.OrderID
+	}
+	return ""
+}
+
+func (x *PayNotify_Ret) GetRankPoints() int32 {
+	if x != nil && x.RankPoints != nil {
+		return *x.RankPoints
+	}
+	return 0
+}
+
+func (x *PayNotify_Ret) GetCredits() int64 {
+	if x != nil && x.Credits != nil {
+		return *x.Credits
+	}
+	return 0
+}
+
+func (x *PayNotify_Ret) GetMoney() int64 {
+	if x != nil && x.Money != nil {
+		return *x.Money
+	}
+	return 0
+}
+
+func (x *PayNotify_Ret) GetCoin() int64 {
+	if x != nil && x.Coin != nil {
+		return *x.Coin
+	}
+	return 0
 }
 
 var File_pkg_proto_Pay_proto protoreflect.FileDescriptor
@@ -398,7 +558,24 @@ const file_pkg_proto_Pay_proto_rawDesc = "" +
 	"\tleftMills\x18\x02 \x02(\x03R\tleftMills\x1aF\n" +
 	"\x03Ret\x12\x12\n" +
 	"\x04code\x18\x01 \x02(\x05R\x04code\x12+\n" +
-	"\x04subs\x18\x02 \x03(\v2\x17.QuerySubs.SubscriptionR\x04subs\"O\n" +
+	"\x04subs\x18\x02 \x03(\v2\x17.QuerySubs.SubscriptionR\x04subs\"\xc7\x02\n" +
+	"\tPayNotify\x12\x18\n" +
+	"\aorderID\x18\x01 \x02(\tR\aorderID\x12\x16\n" +
+	"\x06itemID\x18\x02 \x02(\tR\x06itemID\x12\x1a\n" +
+	"\bplayerID\x18\x03 \x02(\tR\bplayerID\x12\"\n" +
+	"\fplatformCode\x18\x04 \x02(\tR\fplatformCode\x12\x1e\n" +
+	"\n" +
+	"expireTime\x18\x05 \x02(\x03R\n" +
+	"expireTime\x12\"\n" +
+	"\fpurchaseTime\x18\x06 \x02(\x03R\fpurchaseTime\x1a\x83\x01\n" +
+	"\x03Ret\x12\x18\n" +
+	"\aorderID\x18\x01 \x02(\tR\aorderID\x12\x1e\n" +
+	"\n" +
+	"rankPoints\x18\x02 \x02(\x05R\n" +
+	"rankPoints\x12\x18\n" +
+	"\acredits\x18\x03 \x02(\x03R\acredits\x12\x14\n" +
+	"\x05money\x18\x04 \x02(\x03R\x05money\x12\x12\n" +
+	"\x04coin\x18\x05 \x02(\x03R\x04coin\"O\n" +
 	"\tApiResult\x12\x12\n" +
 	"\x04code\x18\x01 \x02(\tR\x04code\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1c\n" +
@@ -417,16 +594,18 @@ func file_pkg_proto_Pay_proto_rawDescGZIP() []byte {
 	return file_pkg_proto_Pay_proto_rawDescData
 }
 
-var file_pkg_proto_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_pkg_proto_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_pkg_proto_Pay_proto_goTypes = []any{
 	(*PayReceipt)(nil),             // 0: PayReceipt
 	(*QuerySubs)(nil),              // 1: QuerySubs
-	(*ApiResult)(nil),              // 2: ApiResult
-	(*QuerySubs_Subscription)(nil), // 3: QuerySubs.Subscription
-	(*QuerySubs_Ret)(nil),          // 4: QuerySubs.Ret
+	(*PayNotify)(nil),              // 2: PayNotify
+	(*ApiResult)(nil),              // 3: ApiResult
+	(*QuerySubs_Subscription)(nil), // 4: QuerySubs.Subscription
+	(*QuerySubs_Ret)(nil),          // 5: QuerySubs.Ret
+	(*PayNotify_Ret)(nil),          // 6: PayNotify.Ret
 }
 var file_pkg_proto_Pay_proto_depIdxs = []int32{
-	3, // 0: QuerySubs.Ret.subs:type_name -> QuerySubs.Subscription
+	4, // 0: QuerySubs.Ret.subs:type_name -> QuerySubs.Subscription
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -445,7 +624,7 @@ func file_pkg_proto_Pay_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_proto_Pay_proto_rawDesc), len(file_pkg_proto_Pay_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -12,7 +12,7 @@ import (
 )
 
 // Verify .
-// @router /verify [GET]
+// @router /verify [POST]
 func Verify(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req purchase.VerifyReq

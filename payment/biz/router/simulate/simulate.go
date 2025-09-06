@@ -17,5 +17,5 @@ import (
 func Register(r *server.Hertz) {
 
 	root := r.Group("/", rootMw()...)
-	root.GET("/simulate", append(_simulateMw(), simulate.Simulate)...)
+	root.POST("/simulate", append(_simulateMw(), simulate.Simulate)...)
 }

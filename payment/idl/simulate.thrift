@@ -14,5 +14,5 @@ struct SimulateReq {
 }
 
 service SimulateService {
-    common.ApiResult Simulate(1:SimulateReq req) (api.get="/simulate")
+    common.ApiResult Simulate(1:SimulateReq req) (api.post="/simulate")
 }

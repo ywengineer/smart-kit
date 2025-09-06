@@ -17,5 +17,5 @@ import (
 func Register(r *server.Hertz) {
 
 	root := r.Group("/", rootMw()...)
-	root.GET("/verify", append(_verifyMw(), purchase.Verify)...)
+	root.POST("/verify", append(_verifyMw(), purchase.Verify)...)
 }

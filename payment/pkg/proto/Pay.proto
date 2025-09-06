@@ -32,6 +32,24 @@ message QuerySubs {
         repeated QuerySubs.Subscription subs = 2;   // 订阅数据
     }
 }
+
+message PayNotify {
+  required string orderID = 1; //订单ID
+  required string itemID = 2; //商品ID
+  required string playerID = 3; //玩家ID
+  required string platformCode = 4; // 商品所在平台编码
+  required int64 expireTime = 5; // 过期时间
+  required int64 purchaseTime = 6; // 支付/订阅时间
+
+  message Ret {
+    required string orderID = 1; // 订单ID
+    required int32 rankPoints = 2; // 段位积分
+    required int64 credits = 3; // 点券剩余量
+    required int64 money = 4; // 钻石剩余量
+    required int64 coin = 5; // 当前金币
+  }
+}
+
 // code取值如下:
 // c01, // 正常处理成功
 // c02, // 服务器异常

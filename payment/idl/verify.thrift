@@ -27,5 +27,5 @@ struct VerifyReq {
 }
 
 service VerifyService {
-    common.ApiResult Verify(1:VerifyReq req) (api.get="/verify")
+    common.ApiResult Verify(1:VerifyReq req) (api.post="/verify")
 }
