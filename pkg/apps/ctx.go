@@ -2,6 +2,9 @@ package apps
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/pkg/locks"
 	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
@@ -11,8 +14,6 @@ import (
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
-	"strconv"
-	"time"
 )
 
 type GenContext func(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext
@@ -111,8 +112,4 @@ func (d *defaultContext) Redis() redis.UniversalClient {
 
 func (d *defaultContext) LockMgr() locks.Manager {
 	return d.lm
-}
-
-func (d *defaultContext) Jwt() *jwt.HertzJWTMiddleware {
-	return d._jwt
 }

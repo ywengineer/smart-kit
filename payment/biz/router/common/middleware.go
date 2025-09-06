@@ -3,5 +3,5 @@
 package common
 
 import (
-	"github.com/cloudwego/hertz/pkg/app"
+	_ "github.com/cloudwego/hertz/pkg/app"
 )

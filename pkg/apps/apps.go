@@ -3,6 +3,10 @@ package apps
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/pkg/loaders"
 	"gitee.com/ywengineer/smart-kit/pkg/locks"
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
@@ -30,9 +34,6 @@ import (
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/redis/go-redis/v9"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type OnStartup func(ctx SmartContext)

@@ -3,7 +3,6 @@
 package common
 
 import (
-	common "gitee.com/ywengineer/smart-kit/payment/biz/handler/common"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 

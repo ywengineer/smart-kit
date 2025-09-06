@@ -7,6 +7,7 @@ import (
 
 	common "gitee.com/ywengineer/smart-kit/payment/biz/model/common"
 	purchase "gitee.com/ywengineer/smart-kit/payment/biz/model/purchase"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
@@ -18,7 +19,7 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	var req purchase.VerifyReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.ProtoBuf(consts.StatusBadRequest, api.NewExceptionResult(err, api.None))
 		return
 	}
 

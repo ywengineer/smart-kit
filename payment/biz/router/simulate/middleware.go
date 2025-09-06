@@ -3,6 +3,7 @@
 package simulate
 
 import (
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
@@ -12,6 +13,5 @@ func rootMw() []app.HandlerFunc {
 }
 
 func _simulateMw() []app.HandlerFunc {
-	// your code...
-	return nil
+	return []app.HandlerFunc{config.BasicAuth()}
 }

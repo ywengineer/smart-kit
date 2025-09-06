@@ -4,19 +4,31 @@ package main
 
 import (
 	"context"
+
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"gorm.io/gorm"
 )
 
 func main() {
+	rootCtx, cn := context.WithCancel(context.Background())
+	//
 	if h := apps.NewHertzApp("smart-payment",
 		apps.NewDefaultContext,
 		func(ctx apps.SmartContext) {
+			if err := config.Watch(rootCtx, ctx.GetNacosConfig()); err != nil {
+				hlog.CtxFatalf(rootCtx, "watch payment application config error: %v", err)
+			} else {
+				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get())
+			}
 			sqlRunner(ctx.Rdb())
 		},
 		func(ctx context.Context) {
-			// ignore
+			cn()
 		},
+		&model.Purchase{},
 	); h != nil {
 		register(h)
 		h.Spin()
