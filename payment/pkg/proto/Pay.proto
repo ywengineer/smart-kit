@@ -1,0 +1,43 @@
+syntax = "proto2";
+option java_package = "com.aly.codex.pay.proto";
+option go_package = "./proto";
+
+// 支付订单验证地址: 充值服地址/rc/verify, 返回ApiResult
+message PayReceipt {
+    required string receipt = 1;        // 订单数据
+    required string gameId = 2;         // 游戏ID
+    required string serverId = 3;       // 服务器ID
+    required string passport = 4;       // 账号ID
+    required string playerId = 5;       // 玩家ID
+    required string playerName = 6;     // 玩家名称
+    required string channel = 7;        // 支付渠道. google, apple
+    optional string signature = 8;      // Google订单检验签名数据
+    optional string locale = 9;      // 区域码（当前设置的区域）
+    optional int64 createTime = 10;      // 账号注册时间
+}
+
+// 查询订阅地址: 充值服地址/rc/subs, 返回 QuerySubs.Ret
+message QuerySubs {
+    required string gameId = 1;         // 游戏ID
+    required string serverId = 2;       // 服务器ID
+    required string playerId = 3;       // 玩家ID
+
+    message Subscription {
+        required string productId = 1;  // 产品ID
+        required int64 leftMills = 2;  // 剩余时间(毫秒)
+    }
+
+    message Ret {
+        required int32 code = 1;                   // 查询结果. 0: 成功, 其它: 失败
+        repeated QuerySubs.Subscription subs = 2;   // 订阅数据
+    }
+}
+// code取值如下:
+// c01, // 正常处理成功
+// c02, // 服务器异常
+// c03, // 处理失败(错误消息)
+message ApiResult {
+    required string code = 1; //
+    optional string msg = 2; //
+    optional int32 errorCode = 3; //
+}
