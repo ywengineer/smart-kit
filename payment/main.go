@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -22,11 +23,15 @@ func main() {
 		apps.NewDefaultContext,
 		func(ctx apps.SmartContext) {
 			//--------------------------------------------------------------------------------------------------
-			if err := config.Watch(rootCtx, ctx.GetNacosConfig()); err != nil {
+			if err := config.Watch(rootCtx, ctx.GetNacosConfig(), func(c config.Payment) {
+
+			}); err != nil {
 				hlog.CtxFatalf(rootCtx, "watch payment application config error: %v", err)
 			} else {
 				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get())
 			}
+			//
+			queue.InitQueue(rootCtx, ctx, config.Get().Queue)
 			//--------------------------------------------------------------------------------------------------
 			c.Schedule(cron.Every(time.Second*30), config.MetaUpdateJob(rootCtx))
 			//--------------------------------------------------------------------------------------------------
@@ -35,6 +40,7 @@ func main() {
 		},
 		func(ctx context.Context) {
 			c.Stop()
+			queue.Shutdown()
 			cn()
 		},
 		&model.Purchase{},

@@ -26,12 +26,20 @@ type RemoteUrl struct {
 	Platform   string `yaml:"platform" json:"platform"`
 }
 
+type Queue struct {
+	Workers int            `yaml:"workers" json:"workers"`
+	Queues  map[string]int `yaml:"queues" json:"queues"`
+}
+
 type Payment struct {
 	Auth      Auth      `json:"auth" yaml:"auth" redis:"auth"`
 	RemoteUrl RemoteUrl `json:"remoteUrl" yaml:"remoteUrl" redis:"remoteUrl"`
+	Queue     Queue     `json:"queue" yaml:"queue" redis:"queue"`
 }
 
-func Watch(ctx context.Context, n nacos.Nacos) error {
+type Listener func(c Payment)
+
+func Watch(ctx context.Context, n nacos.Nacos, l Listener) error {
 	nc, err := nacos.NewConfigClientWithConfig(n, "info")
 	if err != nil {
 		return err
@@ -43,7 +51,10 @@ func Watch(ctx context.Context, n nacos.Nacos) error {
 	}
 	return loader.Watch(ctx, func(data string) error {
 		err := loader.Unmarshal([]byte(data), &p)
-		hlog.CtxInfof(ctx, "payment application config change: %+v", p)
+		hlog.CtxInfof(ctx, "payment application config change: %+v, error: %v", p, err)
+		if err == nil {
+			l(p)
+		}
 		return err
 	})
 }
