@@ -2,6 +2,10 @@ package rdbs
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/go-gorm/caches/v4"
@@ -11,9 +15,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"net/url"
-	"strings"
-	"time"
 )
 
 // Properties rational database configuration properties
@@ -78,9 +79,10 @@ func NewRDB(driver Properties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 				_ = db.Use(plugin)
 			}
 		}
+		//
+		return initRbdConnPool(db, driver)
 	}
-	//
-	return initRbdConnPool(db, driver)
+	return nil, errors.New("failed create gorm db instance : unreachable code")
 }
 
 // NewMySQL create gorm.DB instance based on mysql database
