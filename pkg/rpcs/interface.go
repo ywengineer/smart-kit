@@ -15,6 +15,7 @@ const (
 	ContentTypeFormData   = "multipart/form-data"
 	ContentTypeJSON       = "application/json"
 	ContentTypeProtoBuf   = "application/x-protobuf"
+	ContentTypeOctStream  = "application/octet-stream"
 )
 
 var rpcPool = gopool.NewPool("rpc-pool", 500, gopool.NewConfig())

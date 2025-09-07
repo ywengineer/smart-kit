@@ -3,6 +3,11 @@ package rpcs
 import (
 	"context"
 	"crypto/tls"
+	"io"
+	"net/http"
+	"runtime"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/cloudwego/hertz/pkg/app/client"
 	"github.com/cloudwego/hertz/pkg/app/client/discovery"
@@ -14,10 +19,6 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol"
 	client_http "github.com/cloudwego/hertz/pkg/protocol/client"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
-	"io"
-	"net/http"
-	"runtime"
-	"time"
 )
 
 const defaultMaxRedirectsCount = 16
@@ -40,9 +41,11 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 	info.Delay = utilk.Max(info.Delay, time.Millisecond*50)
 	info.ReadTimeout = utilk.Max(info.ReadTimeout, time.Millisecond*100)
 	if cli, err = client.NewClient(
-		client.WithMaxConnsPerHost(info.MaxConnPerHost),
 		client.WithName(info.ClientName),
+		client.WithMaxConnsPerHost(info.MaxConnPerHost),
+		client.WithDialTimeout(time.Second),
 		client.WithClientReadTimeout(info.ReadTimeout),
+		client.WithMaxConnWaitTimeout(2*time.Second),
 		client.WithTLSConfig(&tls.Config{InsecureSkipVerify: true}),
 		client.WithDialer(standard.NewDialer()),
 		client.WithRetryConfig(retry.WithMaxAttemptTimes(info.MaxRetry), retry.WithDelayPolicy(retry.BackOffDelayPolicy)),

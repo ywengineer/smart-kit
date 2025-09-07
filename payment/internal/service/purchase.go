@@ -21,7 +21,10 @@ func OnPurchase(ctx context.Context, sCtx apps.SmartContext, gameId, serverId, p
 	purchaseLog.Notified = false
 	// 查看订单是否已处理
 	var old model.Purchase
-	ret := sCtx.Rdb().WithContext(ctx).First(&old, "transaction_id = ?", purchaseLog.TransactionId)
+	ret := sCtx.Rdb().
+		WithContext(ctx).
+		Select("id", "expire_date").
+		First(&old, "transaction_id = ?", purchaseLog.TransactionId)
 	if ret.Error != nil {
 		return ret.Error
 	}

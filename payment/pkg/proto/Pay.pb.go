@@ -199,6 +199,67 @@ func (x *QuerySubs) GetPlayerId() string {
 	return ""
 }
 
+//通用返回
+type ManageRet struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          *int32                 `protobuf:"varint,1,req,name=code" json:"code,omitempty"` // 错误码  0 表示成功
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data" json:"data,omitempty"`  // 成功返回的数据
+	Msg           *string                `protobuf:"bytes,3,opt,name=msg" json:"msg,omitempty"`    // 消息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ManageRet) Reset() {
+	*x = ManageRet{}
+	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ManageRet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ManageRet) ProtoMessage() {}
+
+func (x *ManageRet) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ManageRet.ProtoReflect.Descriptor instead.
+func (*ManageRet) Descriptor() ([]byte, []int) {
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ManageRet) GetCode() int32 {
+	if x != nil && x.Code != nil {
+		return *x.Code
+	}
+	return 0
+}
+
+func (x *ManageRet) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *ManageRet) GetMsg() string {
+	if x != nil && x.Msg != nil {
+		return *x.Msg
+	}
+	return ""
+}
+
 type PayNotify struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderID       *string                `protobuf:"bytes,1,req,name=orderID" json:"orderID,omitempty"`            //订单ID
@@ -213,7 +274,7 @@ type PayNotify struct {
 
 func (x *PayNotify) Reset() {
 	*x = PayNotify{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -225,7 +286,7 @@ func (x *PayNotify) String() string {
 func (*PayNotify) ProtoMessage() {}
 
 func (x *PayNotify) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[2]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -238,7 +299,7 @@ func (x *PayNotify) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayNotify.ProtoReflect.Descriptor instead.
 func (*PayNotify) Descriptor() ([]byte, []int) {
-	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2}
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PayNotify) GetOrderID() string {
@@ -298,7 +359,7 @@ type ApiResult struct {
 
 func (x *ApiResult) Reset() {
 	*x = ApiResult{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +371,7 @@ func (x *ApiResult) String() string {
 func (*ApiResult) ProtoMessage() {}
 
 func (x *ApiResult) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[3]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +384,7 @@ func (x *ApiResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiResult.ProtoReflect.Descriptor instead.
 func (*ApiResult) Descriptor() ([]byte, []int) {
-	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{3}
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ApiResult) GetCode() string {
@@ -357,7 +418,7 @@ type QuerySubs_Subscription struct {
 
 func (x *QuerySubs_Subscription) Reset() {
 	*x = QuerySubs_Subscription{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +430,7 @@ func (x *QuerySubs_Subscription) String() string {
 func (*QuerySubs_Subscription) ProtoMessage() {}
 
 func (x *QuerySubs_Subscription) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[4]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +470,7 @@ type QuerySubs_Ret struct {
 
 func (x *QuerySubs_Ret) Reset() {
 	*x = QuerySubs_Ret{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -421,7 +482,7 @@ func (x *QuerySubs_Ret) String() string {
 func (*QuerySubs_Ret) ProtoMessage() {}
 
 func (x *QuerySubs_Ret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[5]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -464,7 +525,7 @@ type PayNotify_Ret struct {
 
 func (x *PayNotify_Ret) Reset() {
 	*x = PayNotify_Ret{}
-	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -476,7 +537,7 @@ func (x *PayNotify_Ret) String() string {
 func (*PayNotify_Ret) ProtoMessage() {}
 
 func (x *PayNotify_Ret) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_proto_Pay_proto_msgTypes[6]
+	mi := &file_pkg_proto_Pay_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -489,7 +550,7 @@ func (x *PayNotify_Ret) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PayNotify_Ret.ProtoReflect.Descriptor instead.
 func (*PayNotify_Ret) Descriptor() ([]byte, []int) {
-	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{2, 0}
+	return file_pkg_proto_Pay_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *PayNotify_Ret) GetOrderID() string {
@@ -558,7 +619,11 @@ const file_pkg_proto_Pay_proto_rawDesc = "" +
 	"\tleftMills\x18\x02 \x02(\x03R\tleftMills\x1aF\n" +
 	"\x03Ret\x12\x12\n" +
 	"\x04code\x18\x01 \x02(\x05R\x04code\x12+\n" +
-	"\x04subs\x18\x02 \x03(\v2\x17.QuerySubs.SubscriptionR\x04subs\"\xc7\x02\n" +
+	"\x04subs\x18\x02 \x03(\v2\x17.QuerySubs.SubscriptionR\x04subs\"E\n" +
+	"\tManageRet\x12\x12\n" +
+	"\x04code\x18\x01 \x02(\x05R\x04code\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\x12\x10\n" +
+	"\x03msg\x18\x03 \x01(\tR\x03msg\"\xc7\x02\n" +
 	"\tPayNotify\x12\x18\n" +
 	"\aorderID\x18\x01 \x02(\tR\aorderID\x12\x16\n" +
 	"\x06itemID\x18\x02 \x02(\tR\x06itemID\x12\x1a\n" +
@@ -594,18 +659,19 @@ func file_pkg_proto_Pay_proto_rawDescGZIP() []byte {
 	return file_pkg_proto_Pay_proto_rawDescData
 }
 
-var file_pkg_proto_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_pkg_proto_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_pkg_proto_Pay_proto_goTypes = []any{
 	(*PayReceipt)(nil),             // 0: PayReceipt
 	(*QuerySubs)(nil),              // 1: QuerySubs
-	(*PayNotify)(nil),              // 2: PayNotify
-	(*ApiResult)(nil),              // 3: ApiResult
-	(*QuerySubs_Subscription)(nil), // 4: QuerySubs.Subscription
-	(*QuerySubs_Ret)(nil),          // 5: QuerySubs.Ret
-	(*PayNotify_Ret)(nil),          // 6: PayNotify.Ret
+	(*ManageRet)(nil),              // 2: ManageRet
+	(*PayNotify)(nil),              // 3: PayNotify
+	(*ApiResult)(nil),              // 4: ApiResult
+	(*QuerySubs_Subscription)(nil), // 5: QuerySubs.Subscription
+	(*QuerySubs_Ret)(nil),          // 6: QuerySubs.Ret
+	(*PayNotify_Ret)(nil),          // 7: PayNotify.Ret
 }
 var file_pkg_proto_Pay_proto_depIdxs = []int32{
-	4, // 0: QuerySubs.Ret.subs:type_name -> QuerySubs.Subscription
+	5, // 0: QuerySubs.Ret.subs:type_name -> QuerySubs.Subscription
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -624,7 +690,7 @@ func file_pkg_proto_Pay_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pkg_proto_Pay_proto_rawDesc), len(file_pkg_proto_Pay_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

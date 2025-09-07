@@ -14,7 +14,7 @@ type Purchase struct {
 	PurchaseDate          time.Time  `json:"purchase_date" redis:"purchase_date"`                                   // 交易的日期(UTC)
 	OriginalPurchaseDate  time.Time  `json:"original_purchase_date" redis:"original_purchase_date"`                 // 对于恢复的transaction对象，该键对应了原始的交易日期(UTC)
 	ExpireDate            *time.Time `json:"expire_date" redis:"expire_date"`                                       // The expiration date for the subscription, expressed as the number of milliseconds since January 1, 1970, 00:00:00 GMT.
-	FinishDate            time.Time  `json:"finish_date" redis:"finish_date"`                                       // 订单处理结束时间
+	FinishDate            *time.Time `json:"finish_date" redis:"finish_date"`                                       // 订单处理结束时间
 	// GooglePlay 用于对给定商品和用户对进行唯一标识的令牌
 	// App Store 用来标识程序的字符串。一个服务器可能需要支持多个server的支付功能，可以用这个标识来区分程序。链接sandbox用来测试的程序的不到这个值，因此该键不存在。
 	AppItemId                  string `json:"app_item_id" redis:"app_item_id"`
@@ -34,4 +34,11 @@ type Purchase struct {
 	Credits    int64 `json:"credits" redis:"credits"`         // 点券剩余量
 	Money      int64 `json:"money" redis:"money"`             // 钻石剩余量
 	Coin       int64 `json:"coin" redis:"coin"`               // 当前金币
+}
+
+func (p Purchase) GetExpiredTime() int64 {
+	if p.ExpireDate == nil {
+		return 0
+	}
+	return p.ExpireDate.Unix()
 }

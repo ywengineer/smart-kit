@@ -55,6 +55,10 @@ func (g GameServerInfo) IsFuncOpen(funcName string) bool {
 	return ok && o.(bool)
 }
 
+func (g GameServerInfo) GetApiMethodUrl(method string) string {
+	return g.ApiUrl + "?m=" + method
+}
+
 type Metadata struct {
 	channelMap    map[string]Channel
 	productMap    map[uint64]Product

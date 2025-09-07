@@ -86,10 +86,12 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	// 通知
-	gopool.CtxGo(ctx, func() {
-		service.Notify(ctx, sCtx, purchaseLog)
+	gopool.Go(func() {
+		nCtx := context.Background()
+		if err := service.Notify(nCtx, sCtx, purchaseLog); err != nil {
+			hlog.CtxErrorf(nCtx, "simulate purchase notify error: %v, data: %+v", err, req)
+		}
 	})
-	//async(()- > gameServerService.notify(purchaseLog)).subscribe()
 	//
 	c.JSON(consts.StatusOK, api.NewOkResult("模拟充值成功"))
 }

@@ -33,6 +33,13 @@ message QuerySubs {
     }
 }
 
+//通用返回
+message ManageRet {
+  required int32 code = 1; // 错误码  0 表示成功
+  optional bytes data = 2; // 成功返回的数据
+  optional string msg = 3; // 消息
+}
+
 message PayNotify {
   required string orderID = 1; //订单ID
   required string itemID = 2; //商品ID
