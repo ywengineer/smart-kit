@@ -10,14 +10,14 @@ import (
 )
 
 type SimulateReq struct {
-	Passport   string `thrift:"Passport,1" form:"passport" json:"passport" query:"passport"`
-	PlayerId   string `thrift:"PlayerId,2" form:"player_id" json:"player_id" query:"player_id"`
-	PlayerName string `thrift:"PlayerName,3" form:"player_name" json:"player_name" query:"player_name"`
-	GameId     string `thrift:"GameId,4" form:"game_id" json:"game_id" query:"game_id"`
-	ServerId   string `thrift:"ServerId,5" form:"server_id" json:"server_id" query:"server_id"`
-	PlatformId string `thrift:"PlatformId,6" form:"platform_id" json:"platform_id" query:"platform_id"`
-	ProductId  string `thrift:"ProductId,7" form:"product_id" json:"product_id" query:"product_id"`
-	OrderId    string `thrift:"OrderId,8" form:"order_id" json:"order_id" query:"order_id"`
+	Passport   string `thrift:"Passport,1" form:"passport,required" json:"passport,required"`
+	PlayerId   string `thrift:"PlayerId,2" form:"playerId,required" json:"playerId,required"`
+	PlayerName string `thrift:"PlayerName,3" form:"playerName,required" json:"playerName,required"`
+	GameId     string `thrift:"GameId,4" form:"gameId,required" json:"gameId,required"`
+	ServerId   string `thrift:"ServerId,5" form:"serverId,required" json:"serverId,required"`
+	PlatformId string `thrift:"PlatformId,6" form:"platformId,required" json:"platformId,required"`
+	ProductId  string `thrift:"ProductId,7" form:"productId,required" json:"productId,required"`
+	OrderId    string `thrift:"OrderId,8" form:"orderId,required" json:"orderId,required"`
 }
 
 func NewSimulateReq() *SimulateReq {

@@ -4,11 +4,22 @@ package simulate
 
 import (
 	"context"
+	"fmt"
+	"time"
 
-	common "gitee.com/ywengineer/smart-kit/payment/biz/model/common"
 	simulate "gitee.com/ywengineer/smart-kit/payment/biz/model/simulate"
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/internal/service"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/bsm/redislock"
+	"github.com/cloudwego/gopkg/concurrency/gopool"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/gookit/goutil/timex"
+	"github.com/rs/xid"
 )
 
 // Simulate .
@@ -18,11 +29,67 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	var req simulate.SimulateReq
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		c.JSON(consts.StatusBadRequest, api.NewFailCodeResult(api.InvalidParameter))
 		return
 	}
-
-	resp := new(common.ApiResult)
-
-	c.JSON(consts.StatusOK, resp)
+	// 支付渠道
+	channel, ok := config.GetMeta().FindChannel(req.PlatformId)
+	if !ok {
+		c.JSON(consts.StatusBadRequest, api.NewFailResult("平台参数异常", api.InvalidChannel))
+		return
+	}
+	//
+	product, ok := config.GetMeta().FindProduct(req.ProductId, channel.Id)
+	if !ok {
+		c.JSON(consts.StatusBadRequest, api.NewFailResult("未知或者不支持模拟订阅的产品ID:"+req.ProductId, api.InvalidProduct))
+		return
+	}
+	if len(req.OrderId) == 0 {
+		req.OrderId = xid.New().String()
+	}
+	sCtx := apps.GetContext(ctx)
+	lk, err := sCtx.LockMgr().Obtain(ctx, fmt.Sprintf("%s:%s:%s", req.GameId, req.ServerId, req.OrderId), timex.Minute, &redislock.Options{
+		Metadata:      "Simulate",
+		RetryStrategy: redislock.NoRetry(),
+	})
+	if err != nil {
+		c.JSON(consts.StatusLocked, api.NewFailCodeResult(api.InvalidOrder))
+		return
+	}
+	defer lk.Release(ctx)
+	//
+	purchaseLog := model.Purchase{}
+	purchaseLog.CreatedAt = time.Now()
+	purchaseLog.UpdatedAt = time.Now()
+	purchaseLog.SystemType = "simulate"
+	purchaseLog.Status = 0                                        // 订单的购买状态。可能的值为 0（已购买）、1（已取消）或者 2（已退款）
+	purchaseLog.ProductId = req.ProductId                         // 商品的商品 ID。每种商品都有一个商品 ID，您必须通过 Google Play Developer Console 在应用的商品列表中指定此 ID。
+	purchaseLog.Quantity = 1                                      // 购买商品的数量
+	purchaseLog.TransactionId = req.OrderId                       // 交易的唯一订单标识符。此标识符对应于 Google Payments 订单 ID。 如果订单为应用内购买结算沙盒中的测试订单，orderId 将为空。
+	purchaseLog.OriginalTransactionId = purchaseLog.TransactionId // 同transaction_id
+	purchaseLog.PurchaseDate = purchaseLog.CreatedAt              // 商品的购买时间（从新纪年（1970 年 1 月 1 日）开始计算的毫秒数）。
+	purchaseLog.OriginalPurchaseDate = purchaseLog.PurchaseDate   // 对于恢复的transaction对象，该键对应了原始的交易日期
+	purchaseLog.OriginalApplicationVersion = "web simulate"       // 开发者指定的字符串，包含订单的补充信息。您可以在发起 getBuyIntent 请求时为此字段指定一个值。
+	purchaseLog.AppItemId = purchaseLog.TransactionId             // 用于对给定商品和用户对进行唯一标识的令牌。
+	purchaseLog.VersionExternalIdentifier = -1                    //  用来标识程序修订数。该键在sandbox环境下不存在
+	purchaseLog.BundleId = "simulate_bundle_id"                   //  程序的bundle标识
+	purchaseLog.Notified = false                                  // 是否已通知
+	purchaseLog.ReceiptResult = "模拟充值"
+	err = service.OnPurchase(ctx, sCtx, req.GameId, req.ServerId, req.Passport, req.PlayerId, req.PlayerName, &purchaseLog, channel, product)
+	if err != nil {
+		hlog.CtxErrorf(ctx, "simulate purchase error: %v, data: %+v", err, req)
+		if err.Error() == api.DuplicateOrder {
+			c.JSON(consts.StatusBadRequest, api.NewFailCodeResult(api.DuplicateOrder))
+		} else {
+			c.JSON(consts.StatusInternalServerError, api.NewFailResult("模拟充值失败", api.ServerError))
+		}
+		return
+	}
+	// 通知
+	gopool.CtxGo(ctx, func() {
+		service.Notify(ctx, sCtx, purchaseLog)
+	})
+	//async(()- > gameServerService.notify(purchaseLog)).subscribe()
+	//
+	c.JSON(consts.StatusOK, api.NewOkResult("模拟充值成功"))
 }

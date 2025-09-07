@@ -2,6 +2,9 @@ package utilk
 
 import (
 	"encoding/binary"
+	"fmt"
+	"hash/fnv"
+
 	"github.com/cloudwego/netpoll"
 )
 
@@ -32,4 +35,13 @@ func NewLinkBuffer(data []byte) *netpoll.LinkBuffer {
 	_, _ = lb.WriteBinary(data)
 	_ = lb.Flush()
 	return lb
+}
+
+// Hash 类似 Java Objects.hash()，计算多个值的组合哈希
+func Hash(values ...interface{}) uint64 {
+	h := fnv.New64a()
+	for _, v := range values {
+		_, _ = fmt.Fprintf(h, "%v", v)
+	}
+	return h.Sum64()
 }

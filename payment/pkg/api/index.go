@@ -14,7 +14,15 @@ const (
 
 type ErrCode string
 
-const None ErrCode = ""
+const (
+	None             ErrCode = ""
+	ServerError              = "SERVER_ERROR"
+	InvalidParameter         = "INVALID_PARAMETER"
+	InvalidChannel           = "INVALID_CHANNEL"
+	InvalidOrder             = "INVALID_ORDER"
+	InvalidProduct           = "INVALID_PRODUCT"
+	DuplicateOrder           = "DUPLICATE_ORDER"
+)
 
 func NewOkResult(message string) *common.ApiResult {
 	return NewResult(c01, message, None)
@@ -22,6 +30,10 @@ func NewOkResult(message string) *common.ApiResult {
 
 func NewExceptionResult(err error, errCode ErrCode) *common.ApiResult {
 	return NewResult(c02, err.Error(), errCode)
+}
+
+func NewFailCodeResult(errCode ErrCode) *common.ApiResult {
+	return NewResult(c03, "", errCode)
 }
 
 func NewFailResult(message string, errCode ErrCode) *common.ApiResult {

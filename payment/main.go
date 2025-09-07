@@ -4,32 +4,42 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
 func main() {
-	rootCtx, cn := context.WithCancel(context.Background())
+	rootCtx, cn := context.WithCancel(context.Background()) // 初始化 cron 实例（支持时区设置，默认 UTC，这里指定为本地时区）
+	c := cron.New(cron.WithLocation(time.Local))
 	//
 	if h := apps.NewHertzApp("smart-payment",
 		apps.NewDefaultContext,
 		func(ctx apps.SmartContext) {
+			//--------------------------------------------------------------------------------------------------
 			if err := config.Watch(rootCtx, ctx.GetNacosConfig()); err != nil {
 				hlog.CtxFatalf(rootCtx, "watch payment application config error: %v", err)
 			} else {
 				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get())
 			}
+			//--------------------------------------------------------------------------------------------------
+			c.Schedule(cron.Every(time.Second*30), config.MetaUpdateJob(rootCtx))
+			//--------------------------------------------------------------------------------------------------
 			sqlRunner(ctx.Rdb())
+			//--------------------------------------------------------------------------------------------------
 		},
 		func(ctx context.Context) {
+			c.Stop()
 			cn()
 		},
 		&model.Purchase{},
 	); h != nil {
+		c.Start()
 		register(h)
 		h.Spin()
 	}

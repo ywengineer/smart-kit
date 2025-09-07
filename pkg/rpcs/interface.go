@@ -2,20 +2,22 @@ package rpcs
 
 import (
 	"context"
+	"io"
+	"time"
+
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/bytedance/sonic"
-	"io"
-	"math"
-	"time"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
 	ContentTypeUrlencoded = "application/x-www-form-urlencoded"
 	ContentTypeFormData   = "multipart/form-data"
 	ContentTypeJSON       = "application/json"
+	ContentTypeProtoBuf   = "application/x-protobuf"
 )
 
-var rpcPool = gopool.NewPool("rpc-pool", math.MaxInt32, gopool.NewConfig())
+var rpcPool = gopool.NewPool("rpc-pool", 500, gopool.NewConfig())
 
 type RpcClientInfo struct {
 	ClientName     string        `json:"client_name" yaml:"client-name"`
@@ -41,18 +43,27 @@ type Rpc interface {
 	PostAsync(ctx context.Context, contentType string, url string, reqBody io.WriterTo, callback RpcCallback)
 }
 
-func NewJSONBody(v any) io.WriterTo {
-	return &jsonBody{v: v}
+type JsonBody struct {
+	V any
 }
 
-type jsonBody struct {
-	v any
-}
-
-func (j *jsonBody) WriteTo(w io.Writer) (n int64, err error) {
+func (j JsonBody) WriteTo(w io.Writer) (n int64, err error) {
 	var b []byte
 	var wn = 0
-	if b, err = sonic.Marshal(j.v); err == nil {
+	if b, err = sonic.Marshal(j.V); err == nil {
+		wn, err = w.Write(b)
+	}
+	return int64(wn), err
+}
+
+type ProtoBody struct {
+	V proto.Message
+}
+
+func (p ProtoBody) WriteTo(w io.Writer) (n int64, err error) {
+	var b []byte
+	var wn = 0
+	if b, err = proto.Marshal(p.V); err == nil {
 		wn, err = w.Write(b)
 	}
 	return int64(wn), err

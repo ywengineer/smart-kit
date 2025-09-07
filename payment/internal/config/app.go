@@ -8,11 +8,27 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
+var mt *Metadata
 var p Payment
 var loader loaders.SmartLoader
 
+func init() {
+	mt = &Metadata{
+		channelMap:    make(map[string]Channel),
+		productMap:    make(map[uint64]Product),
+		gameServerMap: make(map[uint64]GameServerInfo),
+	}
+}
+
+type RemoteUrl struct {
+	Product    string `yaml:"product" json:"product"`
+	GameServer string `yaml:"gameServer" json:"gameServer"`
+	Platform   string `yaml:"platform" json:"platform"`
+}
+
 type Payment struct {
-	Auth Auth `json:"auth" yaml:"auth" redis:"auth"`
+	Auth      Auth      `json:"auth" yaml:"auth" redis:"auth"`
+	RemoteUrl RemoteUrl `json:"remoteUrl" yaml:"remoteUrl" redis:"remoteUrl"`
 }
 
 func Watch(ctx context.Context, n nacos.Nacos) error {
@@ -34,4 +50,8 @@ func Watch(ctx context.Context, n nacos.Nacos) error {
 
 func Get() Payment {
 	return p
+}
+
+func GetMeta() *Metadata {
+	return mt
 }

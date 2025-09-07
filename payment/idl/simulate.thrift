@@ -3,14 +3,14 @@ namespace go simulate
 include "common.thrift"
 
 struct SimulateReq {
-    1: string Passport;
-    2: string PlayerId;
-    3: string PlayerName;
-    4: string GameId;
-    5: string ServerId;
-    6: string PlatformId;
-    7: string ProductId;
-    8: string OrderId;
+    1: string Passport (api.body="passport,required");
+    2: string PlayerId (api.body="playerId,required");
+    3: string PlayerName (api.body="playerName,required");
+    4: string GameId (api.body="gameId,required");
+    5: string ServerId (api.body="serverId,required");
+    6: string PlatformId (api.body="platformId,required");
+    7: string ProductId (api.body="productId,required");
+    8: string OrderId (api.body="orderId,required");
 }
 
 service SimulateService {

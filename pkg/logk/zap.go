@@ -1,12 +1,13 @@
 package logk
 
 import (
+	"os"
+
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	hertzzap "github.com/hertz-contrib/logger/zap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
-	"os"
 )
 
 func NewZapLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) hlog.FullLogger {
@@ -38,7 +39,7 @@ func NewZapLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog
 		hertzzap.WithExtraKeyAsStr(),
 		hertzzap.WithCoreWs(zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberjackLogger))),
 		hertzzap.WithZapOptions(
-			zap.AddStacktrace(zapcore.ErrorLevel),
+			zap.AddStacktrace(zapcore.PanicLevel),
 		),
 	)
 	l.SetLevel(level)

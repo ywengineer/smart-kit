@@ -7,7 +7,7 @@ profile:
   type: pprof # pprof, fgprof, none. default is none
   prefix: "" # default is /mgr/prof
   auth-download: false # need auth when download profile data
-log-level: debug
+log-level: info
 trace-level: detail # base, detail, disable/none. default is none
 access-log: default # disable if empty. see https://www.cloudwego.io/zh/docs/hertz/tutorials/third-party/middleware/access-log/#%E6%94%AF%E6%8C%81%E7%9A%84%E6%A0%87%E7%AD%BE
 # service registry info
