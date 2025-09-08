@@ -20,11 +20,13 @@ func main() {
 		func(ctx context.Context) {
 			// ignore
 		},
-		&model2.Passport{},
-		&model2.PassportPunish{},
-		&model2.PassportBinding{},
-		&model2.WhiteList{},
-		&model2.MgrUser{},
+		apps.WithModels(
+			&model2.Passport{},
+			&model2.PassportPunish{},
+			&model2.PassportBinding{},
+			&model2.WhiteList{},
+			&model2.MgrUser{},
+		),
 	); h != nil {
 		register(h)
 		h.Spin()

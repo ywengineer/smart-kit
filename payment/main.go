@@ -43,7 +43,9 @@ func main() {
 			queue.Shutdown()
 			cn()
 		},
-		&model.Purchase{},
+		apps.WithModels(
+			&model.Purchase{},
+		),
 	); h != nil {
 		c.Start()
 		register(h)

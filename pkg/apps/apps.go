@@ -43,9 +43,14 @@ func NewHertzApp(appName string,
 	genContext GenContext,
 	startup OnStartup,
 	shutdown OnShutdown,
-	rdbModels ...interface{},
+	options ...Option,
 ) *server.Hertz {
 	hlog.SetLogger(logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
+	//
+	opt := &option{}
+	for _, o := range options {
+		o(opt)
+	}
 	//
 	defaultPort := 8089
 	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, AuthDownload: true, Prefix: "/mgr/prof"}}
@@ -78,12 +83,12 @@ func NewHertzApp(appName string,
 		lockMgr = locks.NewRedisLockManager(redislock.New(redisClient))
 	}
 	// rational database
-	db, err := rdbs.NewRDB(conf.RDB)
+	db, err := rdbs.NewRDB(conf.RDB, opt.plugins...)
 	if err != nil {
 		hlog.Fatalf("failed to create rdb instance: %v", err)
 		return nil
 	}
-	if err = db.AutoMigrate(rdbModels...); err != nil {
+	if err = db.AutoMigrate(opt.models...); err != nil {
 		hlog.Fatalf("failed to start orm migrate: %v", err)
 		return nil
 	}
