@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"gitee.com/ywengineer/smart-kit/payment/internal/service"
 	"github.com/bytedance/sonic"
@@ -10,7 +11,14 @@ import (
 )
 
 func Test(ctx context.Context, task *asynq.Task) error {
+	var q queue.TestAsynqQueue
+	if err := sonic.Unmarshal(task.Payload(), &q); err != nil {
+		return err
+	}
 	hlog.CtxInfof(ctx, "test queue, payload = %s", string(task.Payload()))
+	if q.Flag {
+		return errors.New("test failed task")
+	}
 	return nil
 }
 

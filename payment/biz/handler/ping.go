@@ -4,7 +4,8 @@ package handler
 
 import (
 	"context"
-
+	"fmt"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -20,6 +21,13 @@ func Ping(ctx context.Context, c *app.RequestContext) {
 // TestQueue .
 func TestQueue(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, utils.H{
-		"message": "test queue message published",
+		"message": fmt.Sprintf("test queue message published: %+v", queue.PublishTest(false)),
+	})
+}
+
+// TestFailQueue .
+func TestFailQueue(ctx context.Context, c *app.RequestContext) {
+	c.JSON(consts.StatusOK, utils.H{
+		"message": fmt.Sprintf("test queue message published: %+v", queue.PublishTest(true)),
 	})
 }

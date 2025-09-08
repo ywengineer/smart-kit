@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
+	"github.com/hibiken/asynq"
 	"time"
 
 	simulate "gitee.com/ywengineer/smart-kit/payment/biz/model/simulate"
@@ -94,7 +95,7 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	}
 	// 通知
 	gopool.Go(func() {
-		if err := queue.PublishPurchaseNotify(purchaseLog); err != nil {
+		if err := queue.PublishPurchaseNotify(purchaseLog, asynq.MaxRetry(15)); err != nil {
 			hlog.Errorf("publish simulate purchase notify error: %v, data: %+v", err, req)
 		}
 	})

@@ -16,4 +16,5 @@ func customizedRegister(r *server.Hertz) {
 	//
 	mgrQueueG := mgrG.Group("/queue")
 	mgrQueueG.GET("/test", handler.TestQueue)
+	mgrQueueG.GET("/test-fail", handler.TestFailQueue)
 }

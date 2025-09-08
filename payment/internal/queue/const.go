@@ -44,7 +44,8 @@ type PurchaseNotifyPayload struct {
 }
 
 type TestAsynqQueue struct {
-	Time time.Time `bson:"time"`
+	Time time.Time `json:"time"`
+	Flag bool      `json:"flag"`
 }
 
 //----------------------------------------------
@@ -65,8 +66,8 @@ func PublishPurchaseNotify(purchase model.Purchase, options ...asynq.Option) err
 	}, options...)
 }
 
-func PublishTest() error {
-	return publishTask(Test, TestAsynqQueue{Time: time.Now()})
+func PublishTest(flag bool) error {
+	return publishTask(Test, TestAsynqQueue{Time: time.Now(), Flag: flag}, asynq.MaxRetry(5))
 }
 
 func publishTask(task TaskType, payload interface{}, options ...asynq.Option) error {

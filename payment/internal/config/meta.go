@@ -132,7 +132,7 @@ type metaUpdateJob struct {
 	executed bool
 }
 
-func (m metaUpdateJob) Run() {
+func (m *metaUpdateJob) Run() {
 	if !p.RemoteUrl.EnableUpdate {
 		if !m.executed {
 			// at least execute at a time
@@ -145,5 +145,5 @@ func (m metaUpdateJob) Run() {
 }
 
 func MetaUpdateJob(ctx context.Context) cron.Job {
-	return metaUpdateJob{ctx: ctx}
+	return &metaUpdateJob{ctx: ctx}
 }
