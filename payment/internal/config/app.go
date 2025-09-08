@@ -21,9 +21,10 @@ func init() {
 }
 
 type RemoteUrl struct {
-	Product    string `yaml:"product" json:"product"`
-	GameServer string `yaml:"gameServer" json:"gameServer"`
-	Platform   string `yaml:"platform" json:"platform"`
+	EnableUpdate bool   `json:"enableUpdate" yaml:"enableUpdate"`
+	Product      string `yaml:"product" json:"product"`
+	GameServer   string `yaml:"gameServer" json:"gameServer"`
+	Platform     string `yaml:"platform" json:"platform"`
 }
 
 type Queue struct {

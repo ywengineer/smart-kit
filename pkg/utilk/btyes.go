@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
+	"unsafe"
 
 	"github.com/cloudwego/netpoll"
 )
@@ -44,4 +45,25 @@ func Hash(values ...interface{}) uint64 {
 		_, _ = fmt.Fprintf(h, "%v", v)
 	}
 	return h.Sum64()
+}
+
+// B2s from Hertz bytesconv
+func B2s(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+type sliceHeader struct {
+	Data unsafe.Pointer
+	Len  int
+	Cap  int
+}
+
+// S2b converts string to a byte slice without memory allocation.
+//
+// Note it may break if string and/or slice header will change
+// in the future go versions.
+func S2b(s string) (b []byte) {
+	*(*string)(unsafe.Pointer(&b)) = s
+	(*sliceHeader)(unsafe.Pointer(&b)).Cap = len(s)
+	return
 }

@@ -53,7 +53,13 @@ func NewHertzApp(appName string,
 	}
 	//
 	defaultPort := 8089
-	conf := &Configuration{Port: defaultPort, MaxRequestBodyKB: 50, DistributeLock: false, LogLevel: logk.Level(hlog.LevelDebug), Profile: Profiling{Type: Pprof, Enabled: true, AuthDownload: true, Prefix: "/mgr/prof"}}
+	conf := &Configuration{
+		Port:             defaultPort,
+		MaxRequestBodyKB: 50,
+		DistributeLock:   false,
+		LogLevel:         logk.Level(hlog.LevelDebug),
+		Profile:          Profiling{Type: Pprof, Enabled: true, AuthDownload: true},
+	}
 	_loader := loaders.NewCompositeLoader(
 		loaders.NewLocalLoader("./application.yaml"),
 		loaders.NewEnvLoader(),
@@ -225,26 +231,16 @@ func NewHertzApp(appName string,
 	//
 	startup(smartCtx)
 	//
-	initProfile(conf, h, smartCtx)
+	initProfile(conf, h.Group("/mgr", opt.mgrAuth...), smartCtx)
 	//
 	return h
 }
 
-func initProfile(conf *Configuration, h *server.Hertz, ctx SmartContext) {
+func initProfile(conf *Configuration, g *route.RouterGroup, _ SmartContext) {
 	//
 	if conf.Profile.Type == None || !conf.Profile.Enabled {
 		hlog.Infof("app profiling is not enabled")
 	} else {
-		if len(conf.Profile.Prefix) == 0 {
-			hlog.Infof("app profile path is not set, default is /mgr/prof")
-			conf.Profile.Prefix = "/mgr/prof"
-		}
-		var g *route.RouterGroup
-		if conf.Profile.AuthDownload {
-			g = h.Group(conf.Profile.Prefix, ctx.TokenInterceptor())
-		} else {
-			g = h.Group(conf.Profile.Prefix)
-		}
 		if conf.Profile.Type == Pprof {
 			pprof.RouteRegister(g)
 		} else if conf.Profile.Type == FGprof {

@@ -35,6 +35,7 @@ func main() {
 			//
 			queue.InitQueue(rootCtx, ctx, config.Get().Queue, map[queue.TaskType]asynq.HandlerFunc{
 				queue.PurchaseNotify: handler.HandlePurchaseNotify,
+				queue.Test:           handler.Test,
 			})
 			//--------------------------------------------------------------------------------------------------
 			c.Schedule(cron.Every(time.Second*30), config.MetaUpdateJob(rootCtx))
@@ -47,6 +48,7 @@ func main() {
 			queue.Shutdown()
 			cn()
 		},
+		apps.WithMgrAuth(config.BasicAuth()),
 		apps.WithModels(
 			&model.Purchase{},
 		),

@@ -4,10 +4,16 @@ package main
 
 import (
 	handler "gitee.com/ywengineer/smart-kit/payment/biz/handler"
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
 
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.GET("/ping", handler.Ping)
+	// --------------------------------------------------------------------------------
+	mgrG := r.Group("/mgr", config.BasicAuth())
+	//
+	mgrQueueG := mgrG.Group("/queue")
+	mgrQueueG.GET("/test", handler.TestQueue)
 }

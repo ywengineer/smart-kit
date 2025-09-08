@@ -16,3 +16,10 @@ func Ping(ctx context.Context, c *app.RequestContext) {
 		"message": "pong",
 	})
 }
+
+// TestQueue .
+func TestQueue(ctx context.Context, c *app.RequestContext) {
+	c.JSON(consts.StatusOK, utils.H{
+		"message": "test queue message published",
+	})
+}

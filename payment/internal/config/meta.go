@@ -128,10 +128,19 @@ func (g *Metadata) FindChannel(code string) (r Channel, ok bool) {
 }
 
 type metaUpdateJob struct {
-	ctx context.Context
+	ctx      context.Context
+	executed bool
 }
 
 func (m metaUpdateJob) Run() {
+	if !p.RemoteUrl.EnableUpdate {
+		if !m.executed {
+			// at least execute at a time
+			m.executed = true
+			mt.refresh(m.ctx)
+		}
+		return
+	}
 	mt.refresh(m.ctx)
 }
 
