@@ -35,7 +35,7 @@ func NewRedis(redisURL string) redis.UniversalClient {
 		opt.Addrs = append(opt.Addrs, query["node"]...)
 	}
 	// select db
-	opt.DB = Max(0, QueryInt(query, "db"))
+	opt.DB = Max(0, QueryPositiveInt(query, "db"))
 	// use auth
 	if u.User != nil {
 		opt.Username = u.User.Username()

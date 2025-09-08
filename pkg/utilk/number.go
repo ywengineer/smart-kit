@@ -59,10 +59,22 @@ func Int2String(n interface{}) (string, error) {
 func QueryInt(query url.Values, key string) int {
 	v := query.Get(key)
 	if len(v) > 0 {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+		if n, err := strconv.Atoi(v); err == nil {
 			return n
 		} else {
-			logk.DefaultLogger().Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
+			logk.Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
+		}
+	}
+	return 0
+}
+
+func QueryPositiveInt(query url.Values, key string) int {
+	v := query.Get(key)
+	if len(v) > 0 {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			return n
+		} else {
+			logk.Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
 		}
 	}
 	return 0

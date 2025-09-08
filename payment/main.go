@@ -4,8 +4,12 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue/handler"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/hibiken/asynq"
+	"gorm.io/sharding"
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
@@ -49,6 +53,7 @@ func main() {
 			cn()
 		},
 		apps.WithMgrAuth(config.BasicAuth()),
+		apps.WithGormPlugins(shardingOrder()),
 		apps.WithModels(
 			&model.Purchase{},
 		),
@@ -57,6 +62,28 @@ func main() {
 		register(h)
 		h.Spin()
 	}
+}
+
+func shardingOrder() gorm.Plugin {
+	var shards uint64 = 64
+	return sharding.Register(sharding.Config{
+		ShardingKey:         "transaction_id",
+		NumberOfShards:      uint(shards),
+		PrimaryKeyGenerator: sharding.PKSnowflake,
+		ShardingAlgorithm: func(columnValue any) (suffix string, err error) {
+			if transactionID, ok := columnValue.(string); ok {
+				return fmt.Sprintf("_%02d", utilk.Hash(transactionID)%shards), nil
+			}
+			return "", errors.New("invalid transaction_id")
+		},
+		ShardingSuffixs: func() (suffixs []string) {
+			numberOfShards := int(shards)
+			for i := 0; i < numberOfShards; i++ {
+				suffixs = append(suffixs, fmt.Sprintf("_%02d", i%numberOfShards))
+			}
+			return
+		},
+	}, model.Purchase{})
 }
 
 func sqlRunner(db *gorm.DB) {
