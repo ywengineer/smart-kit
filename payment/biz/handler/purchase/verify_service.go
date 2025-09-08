@@ -4,26 +4,120 @@ package purchase
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
-	common "gitee.com/ywengineer/smart-kit/payment/biz/model/common"
-	purchase "gitee.com/ywengineer/smart-kit/payment/biz/model/purchase"
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
+	"gitee.com/ywengineer/smart-kit/payment/internal/services"
+	"gitee.com/ywengineer/smart-kit/payment/internal/verifier"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
+	msg "gitee.com/ywengineer/smart-kit/payment/pkg/proto"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/bsm/redislock"
+	"github.com/cloudwego/gopkg/concurrency/gopool"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/gookit/goutil/timex"
+	"github.com/hibiken/asynq"
 )
 
 // Verify .
 // @router /verify [POST]
 func Verify(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req purchase.VerifyReq
-	err = c.BindAndValidate(&req)
+	var req *msg.PayReceipt
+	err = c.BindAndValidate(req)
 	if err != nil {
-		c.ProtoBuf(consts.StatusBadRequest, api.NewExceptionResult(err, api.None))
+		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("bad request body", api.C0))
 		return
 	}
-
-	resp := new(common.ApiResult)
-
-	c.JSON(consts.StatusOK, resp)
+	//
+	serverInfo, ok := config.GetMeta().FindServer(*req.GameId, *req.ServerId)
+	// 如果通知地址不存在
+	if !ok || len(serverInfo.ApiUrl) == 0 {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("bad game", api.C0))
+		return
+	}
+	// 支付渠道
+	channel, ok := config.GetMeta().FindChannel(*req.Channel)
+	if !ok {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("unknown payment channel"), api.C21010))
+		return
+	}
+	//
+	hlog.Infof("[%s] receipt: r=%s, gameId=%s, serverId=%s, passport=%s, pid=%s, pname=%s",
+		req.GetChannel(),
+		req.GetReceipt(),
+		req.GetGameId(),
+		req.GetServerId(),
+		req.GetPassport(),
+		req.GetPlayerId(),
+		req.GetPlayerName(),
+	)
+	// TODO verify purchase
+	//final PurchaseLog purchase = channel.getValidator().verify(receipt.getReceipt());
+	var purchase model.Purchase
+	// return if subs expired
+	if errors.Is(err, verifier.ErrExpiredSub) || purchase.Expired() {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("订阅过期"), api.C90003))
+		return
+	}
+	// verify failed
+	if errors.Is(err, verifier.ErrFail) {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("the receipt could not be authenticated"), api.C21003))
+		return
+	}
+	// invalid purchase
+	if purchase.Status != 0 {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("the receipt could not be authenticated"), api.ProtoErrCode(purchase.Status)))
+		return
+	}
+	// invalid purchase bundle
+	//if (!channel.getValidator().isValidBundle(purchase.getBundle_id())) throw new ErrorCodeException(api.C90002, "invalid bundle id");
+	//
+	product, ok := config.GetMeta().FindProduct(purchase.ProductId, channel.Id)
+	// lock purchase
+	sCtx := apps.GetContext(ctx)
+	lk, err := sCtx.LockMgr().Obtain(ctx, fmt.Sprintf("%s:%s:%s", req.GameId, req.ServerId, purchase.TransactionId), timex.Minute, &redislock.Options{
+		Metadata:      "Verify",
+		RetryStrategy: redislock.NoRetry(),
+	})
+	if err != nil {
+		c.ProtoBuf(consts.StatusLocked, api.NewProtoFailResult("duplicated order", api.C90000))
+		return
+	}
+	defer lk.Release(ctx)
+	// original receipt
+	purchase.Receipt = req.GetReceipt()
+	// locale
+	if req.Locale != nil {
+		purchase.Locale = *req.Locale
+	}
+	// player create time
+	if req.CreateTime != nil {
+		ct := timex.FromUnix(*req.CreateTime).T()
+		purchase.PlayerCreateTime = &ct
+	}
+	// 支付验证成功
+	err = services.OnPurchase(ctx, sCtx, *req.GameId, *req.ServerId, *req.Passport, *req.PlayerId, *req.PlayerName, &purchase, channel, product)
+	if err != nil {
+		hlog.CtxErrorf(ctx, "verify purchase error: %v, data: %s", err, req.String())
+		if errors.Is(err, services.ErrDuplicateOrder) {
+			c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("duplicated order", api.C90000))
+		} else {
+			c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("rdb", api.ProtoErrCode(consts.StatusInternalServerError)))
+		}
+		return
+	}
+	// 通知
+	gopool.Go(func() {
+		if err := queue.PublishPurchaseNotify(purchase, asynq.MaxRetry(15)); err != nil {
+			hlog.Errorf("publish user purchase notify error: %v, data: %+v", err, req)
+		}
+	})
+	//
+	c.ProtoBuf(consts.StatusOK, api.NewProtoOkResult("succeed"))
 }

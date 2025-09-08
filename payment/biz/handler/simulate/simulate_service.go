@@ -5,13 +5,14 @@ package simulate
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"github.com/hibiken/asynq"
-	"time"
 
 	simulate "gitee.com/ywengineer/smart-kit/payment/biz/model/simulate"
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
-	"gitee.com/ywengineer/smart-kit/payment/internal/service"
+	"gitee.com/ywengineer/smart-kit/payment/internal/services"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
@@ -83,7 +84,7 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	purchaseLog.BundleId = "simulate_bundle_id"                   //  程序的bundle标识
 	purchaseLog.Notified = false                                  // 是否已通知
 	purchaseLog.ReceiptResult = "模拟充值"
-	err = service.OnPurchase(ctx, sCtx, req.GameId, req.ServerId, req.Passport, req.PlayerId, req.PlayerName, &purchaseLog, channel, product)
+	err = services.OnPurchase(ctx, sCtx, req.GameId, req.ServerId, req.Passport, req.PlayerId, req.PlayerName, &purchaseLog, channel, product)
 	if err != nil {
 		hlog.CtxErrorf(ctx, "simulate purchase error: %v, data: %+v", err, req)
 		if err.Error() == api.DuplicateOrder {

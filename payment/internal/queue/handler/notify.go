@@ -3,8 +3,9 @@ package handler
 import (
 	"context"
 	"errors"
+
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
-	"gitee.com/ywengineer/smart-kit/payment/internal/service"
+	"gitee.com/ywengineer/smart-kit/payment/internal/services"
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/hibiken/asynq"
@@ -27,5 +28,5 @@ func HandlePurchaseNotify(ctx context.Context, t *asynq.Task) error {
 	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	return service.Notify(ctx, payload)
+	return services.Notify(ctx, payload)
 }

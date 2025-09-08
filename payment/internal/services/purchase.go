@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -9,6 +9,8 @@ import (
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 )
+
+var ErrDuplicateOrder = errors.New(api.DuplicateOrder)
 
 func OnPurchase(ctx context.Context, sCtx apps.SmartContext, gameId, serverId, passport, playerId, playerName string, purchaseLog *model.Purchase, channel config.Channel, product config.Product) error {
 	// 订单数据补充
@@ -34,7 +36,7 @@ func OnPurchase(ctx context.Context, sCtx apps.SmartContext, gameId, serverId, p
 	}
 	// 如果已处理
 	if old.ID > 0 {
-		return errors.New(api.DuplicateOrder)
+		return ErrDuplicateOrder
 	}
 	// 如果是试用或者测试订单, 价格为0. 否则为填写金额
 	if purchaseLog.FreeTrail || purchaseLog.TestOrder {
