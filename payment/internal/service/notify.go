@@ -4,42 +4,43 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"net/http"
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	msg "gitee.com/ywengineer/smart-kit/payment/pkg/proto"
-	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"google.golang.org/protobuf/proto"
 	"gorm.io/gorm"
 )
 
-func Notify(ctx context.Context, sCtx apps.SmartContext, purchase model.Purchase) error {
-	serverInfo, ok := config.GetMeta().FindServer(purchase.GameId, purchase.ServerId)
+func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
+	serverInfo, ok := config.GetMeta().FindServer(data.GameID, data.ServerId)
 	// 如果通知地址不存在
 	if !ok || len(serverInfo.ApiUrl) == 0 {
 		return errors.New("[NotifyPay] [参数错误] 服务器不存在或邮件通知地址未配置！")
 	}
+	sCtx := apps.GetContext(ctx)
 	// update notify times
 	cnt, err := gorm.G[model.Purchase](sCtx.Rdb().WithContext(ctx)).
-		Where("transaction_id = ?", purchase.TransactionId).
+		Where("transaction_id = ?", data.TransactionId).
 		Update(ctx, "notified_times", gorm.Expr("notified_times + 1"))
 	if err != nil {
 		return err
 	} else if cnt <= 0 {
-		return errors.New(fmt.Sprintf("[NotifyPay] order [%s] not found", purchase.TransactionId))
+		return errors.New(fmt.Sprintf("[NotifyPay] order [%s] not found", data.TransactionId))
 	}
 	// build notify data
-	pt, et := purchase.PurchaseDate.UnixMilli(), purchase.GetExpiredTime()
 	notifyBody := msg.PayNotify{
-		PlayerID:     &purchase.PlayerId,
-		OrderID:      &purchase.TransactionId,
-		ItemID:       &purchase.ProductId,
-		PlatformCode: &purchase.Channel,
-		PurchaseTime: &pt,
-		ExpireTime:   &et,
+		PlayerID:     &data.PlayerId,
+		OrderID:      &data.TransactionId,
+		ItemID:       &data.ProductId,
+		PlatformCode: &data.Channel,
+		PurchaseTime: &data.PurchaseTime,
+		ExpireTime:   &data.ExpireTime,
 	}
 	//
 	statusCode, resp, err := sCtx.Rpc().Post(ctx, rpcs.ContentTypeOctStream, serverInfo.GetApiMethodUrl("pay"), rpcs.ProtoBody{V: &notifyBody})

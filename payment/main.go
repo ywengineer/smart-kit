@@ -4,6 +4,8 @@ package main
 
 import (
 	"context"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue/handler"
+	"github.com/hibiken/asynq"
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
@@ -31,7 +33,9 @@ func main() {
 				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get())
 			}
 			//
-			queue.InitQueue(rootCtx, ctx, config.Get().Queue)
+			queue.InitQueue(rootCtx, ctx, config.Get().Queue, map[queue.TaskType]asynq.HandlerFunc{
+				queue.PurchaseNotify: handler.HandlePurchaseNotify,
+			})
 			//--------------------------------------------------------------------------------------------------
 			c.Schedule(cron.Every(time.Second*30), config.MetaUpdateJob(rootCtx))
 			//--------------------------------------------------------------------------------------------------

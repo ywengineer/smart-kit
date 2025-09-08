@@ -8,9 +8,11 @@ import (
 	"github.com/hibiken/asynq"
 )
 
+type TaskType string
+
 // A list of task types.
 const (
-	TypePurchaseNotify = "purchase:notify"
+	PurchaseNotify TaskType = "purchase:notify"
 )
 
 var ErrNotInit = errors.New("queue is not initialized yet, please init queue use queue.InitQueue")
@@ -22,6 +24,8 @@ type PurchaseNotifyPayload struct {
 	PlayerId      string `json:"player_id"`
 	ProductId     string `json:"product_id"`
 	Channel       string `json:"channel"`
+	PurchaseTime  int64  `json:"purchase_time"`
+	ExpireTime    int64  `json:"expire_time"`
 }
 
 //----------------------------------------------
@@ -29,7 +33,7 @@ type PurchaseNotifyPayload struct {
 // A task consists of a type and a payload.
 //----------------------------------------------
 
-func NewPurchaseNotifyTask(purchase model.Purchase) error {
+func PublishPurchaseNotify(purchase model.Purchase, options ...asynq.Option) error {
 	if cli == nil {
 		return ErrNotInit
 	}
@@ -40,14 +44,14 @@ func NewPurchaseNotifyTask(purchase model.Purchase) error {
 		PlayerId:      purchase.PlayerId,
 		ProductId:     purchase.ProductId,
 		Channel:       purchase.Channel,
+		PurchaseTime:  purchase.PurchaseDate.Unix(),
+		ExpireTime:    purchase.GetExpiredTime(),
 	})
 	if err != nil {
 		return err
 	}
-	_, e := cli.Enqueue(
-		asynq.NewTask(TypePurchaseNotify, payload),
-		asynq.MaxRetry(0),
-		asynq.Queue(TypePurchaseNotify),
-	)
+	var ops []asynq.Option
+	ops = append(ops, options...)
+	_, e := cli.Enqueue(asynq.NewTask(string(PurchaseNotify), payload), ops...)
 	return e
 }

@@ -5,6 +5,7 @@ package simulate
 import (
 	"context"
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"time"
 
 	simulate "gitee.com/ywengineer/smart-kit/payment/biz/model/simulate"
@@ -30,6 +31,12 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		c.JSON(consts.StatusBadRequest, api.NewFailCodeResult(api.InvalidParameter))
+		return
+	}
+	serverInfo, ok := config.GetMeta().FindServer(req.GameId, req.ServerId)
+	// 如果通知地址不存在
+	if !ok || len(serverInfo.ApiUrl) == 0 {
+		c.JSON(consts.StatusBadRequest, api.NewFailResult("Game服务器参数异常", api.InvalidParameter))
 		return
 	}
 	// 支付渠道
@@ -87,9 +94,8 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	}
 	// 通知
 	gopool.Go(func() {
-		nCtx := context.Background()
-		if err := service.Notify(nCtx, sCtx, purchaseLog); err != nil {
-			hlog.CtxErrorf(nCtx, "simulate purchase notify error: %v, data: %+v", err, req)
+		if err := queue.PublishPurchaseNotify(purchaseLog); err != nil {
+			hlog.Errorf("publish simulate purchase notify error: %v, data: %+v", err, req)
 		}
 	})
 	//
