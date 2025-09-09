@@ -33,9 +33,10 @@ type Queue struct {
 }
 
 type Payment struct {
-	Auth      Auth      `json:"auth" yaml:"auth" redis:"auth"`
-	RemoteUrl RemoteUrl `json:"remoteUrl" yaml:"remoteUrl" redis:"remoteUrl"`
-	Queue     Queue     `json:"queue" yaml:"queue" redis:"queue"`
+	Auth      Auth                       `json:"auth" yaml:"auth" redis:"auth"`
+	RemoteUrl RemoteUrl                  `json:"remoteUrl" yaml:"remoteUrl" redis:"remoteUrl"`
+	Queue     Queue                      `json:"queue" yaml:"queue" redis:"queue"`
+	Channel   map[string]ChannelProperty `json:"channel" yaml:"channel" redis:"channel"`
 }
 
 type Listener func(c Payment)

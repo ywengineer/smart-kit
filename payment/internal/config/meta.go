@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -16,6 +17,10 @@ type Channel struct {
 	Id   int64  `json:"id" yaml:"id" redis:"id"`
 	Code string `json:"code" yaml:"code" redis:"code"`
 	Name string `json:"name" yaml:"name" redis:"name"`
+}
+
+func (c Channel) String() string {
+	return fmt.Sprintf("%d:%s:%s", c.Id, c.Code, c.Name)
 }
 
 type Product struct {

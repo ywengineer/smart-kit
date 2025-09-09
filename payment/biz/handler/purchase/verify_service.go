@@ -12,7 +12,6 @@ import (
 	"gitee.com/ywengineer/smart-kit/payment/internal/services"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
-	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	msg "gitee.com/ywengineer/smart-kit/payment/pkg/proto"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/bsm/redislock"
@@ -57,9 +56,18 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 		req.GetPlayerId(),
 		req.GetPlayerName(),
 	)
-	// TODO verify purchase
-	//final PurchaseLog purchase = channel.getValidator().verify(receipt.getReceipt());
-	var purchase model.Purchase
+	// find verifier
+	validator, err := verifier.FindVerifier(channel)
+	if errors.Is(err, verifier.ErrNoChannel) {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("missing channel metadata"), api.C21010))
+		return
+	} else if err != nil {
+		hlog.Errorf("[Verify] validator not found for channel [%s]. %v", channel, err)
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("no validator"), api.ProtoErrCode(consts.StatusInternalServerError)))
+		return
+	}
+	// verify purchase
+	purchase, err := validator.Verify(ctx, req.GetReceipt())
 	// return if subs expired
 	if errors.Is(err, verifier.ErrExpiredSub) || purchase.Expired() {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("订阅过期"), api.C90003))
