@@ -31,7 +31,7 @@ func (g *gameCenterAuth) Validate(metadata string) (AuthFacade, error) {
 	if len(g.appBundleId) == 0 {
 		return nil, errors.New("missing prop [app-bundle-id] for game center auth: " + metadata)
 	}
-	sc, body, err := cli.Get(context.Background(), g.rootCertPath)
+	sc, body, err := cli.Get(context.Background(), g.rootCertPath, nil)
 	if err != nil || !nets.Is2xx(sc) {
 		return nil, fmt.Errorf("failed to download Apple root certificate: %w", err)
 	}
@@ -90,7 +90,7 @@ func (g *gameCenterAuth) GetUserInfo(_ string, accessToken string) (*UserInfo, e
 		return nil, errors.New("timestamp is not recent")
 	}
 	// 2: 下载公钥
-	sc, body, err := cli.Get(context.Background(), ticket.PublicKey)
+	sc, body, err := cli.Get(context.Background(), ticket.PublicKey, nil)
 	if err != nil || !nets.Is2xx(sc) {
 		return nil, fmt.Errorf("failed to download public key: %w, sc = %d", err, sc)
 	}

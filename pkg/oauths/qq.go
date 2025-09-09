@@ -45,7 +45,7 @@ func (q *qqAuth) GetToken(code string) (*AccessToken, error) {
 	params.Add("redirect_uri", q.redirectURL)
 
 	tokenURL := fmt.Sprintf("%s/oauth2.0/token?%s", q.baseUrl, params.Encode())
-	sc, body, err := cli.Get(context.Background(), tokenURL)
+	sc, body, err := cli.Get(context.Background(), tokenURL, nil)
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {
@@ -82,7 +82,7 @@ func (q *qqAuth) RefreshToken(refreshToken string) (*RefreshToken, error) {
 func (q *qqAuth) GetUserInfo(_ string, accessToken string) (*UserInfo, error) {
 	// get openid
 	openidURL := fmt.Sprintf("%s/oauth2.0/me?access_token=%s", q.baseUrl, accessToken)
-	sc, body, err := cli.Get(context.Background(), openidURL)
+	sc, body, err := cli.Get(context.Background(), openidURL, nil)
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {

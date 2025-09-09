@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
@@ -72,7 +71,7 @@ type Metadata struct {
 
 func (g *Metadata) refresh(ctx context.Context) {
 	rpc := rpcs.GetDefaultRpc()
-	rpc.GetTimeoutAsync(ctx, p.RemoteUrl.Product, 10*time.Second, func(statusCode int, body []byte, err error) {
+	rpc.GetAsync(ctx, p.RemoteUrl.Product, nil, func(statusCode int, body []byte, err error) {
 		if err != nil || statusCode != http.StatusOK {
 			hlog.CtxErrorf(ctx, "failed to retrieve product data: [status = %d] [body = %s], [err = %v]", statusCode, body, err)
 		} else {
@@ -87,7 +86,7 @@ func (g *Metadata) refresh(ctx context.Context) {
 		}
 
 	})
-	rpc.GetTimeoutAsync(ctx, p.RemoteUrl.Platform, 10*time.Second, func(statusCode int, body []byte, err error) {
+	rpc.GetAsync(ctx, p.RemoteUrl.Platform, nil, func(statusCode int, body []byte, err error) {
 		if err != nil || statusCode != http.StatusOK {
 			hlog.CtxErrorf(ctx, "failed to retrieve channel data: [status = %d] [body = %s], [err = %v]", statusCode, body, err)
 		} else {
@@ -101,7 +100,7 @@ func (g *Metadata) refresh(ctx context.Context) {
 			}
 		}
 	})
-	rpc.GetTimeoutAsync(ctx, p.RemoteUrl.GameServer, 10*time.Second, func(statusCode int, body []byte, err error) {
+	rpc.GetAsync(ctx, p.RemoteUrl.GameServer, nil, func(statusCode int, body []byte, err error) {
 		if err != nil || statusCode != http.StatusOK {
 			hlog.CtxErrorf(ctx, "failed to retrieve game server data: [status = %d] [body = %s], [err = %v]", statusCode, body, err)
 		} else {

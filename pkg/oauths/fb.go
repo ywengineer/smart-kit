@@ -40,7 +40,7 @@ func (f *fbAuth) GetToken(code string) (*AccessToken, error) {
 	params.Add("redirect_uri", f.redirectURL)
 	params.Add("code", code)
 
-	sc, body, err := cli.Get(context.Background(), f.baseUrl+"/oauth/access_token?"+params.Encode())
+	sc, body, err := cli.Get(context.Background(), f.baseUrl+"/oauth/access_token?"+params.Encode(), nil)
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {
@@ -55,7 +55,7 @@ func (f *fbAuth) RefreshToken(refreshToken string) (*RefreshToken, error) {
 }
 
 func (f *fbAuth) GetUserInfo(_ string, accessToken string) (*UserInfo, error) {
-	sc, body, err := cli.Get(context.Background(), f.baseUrl+"/me?access_token="+accessToken)
+	sc, body, err := cli.Get(context.Background(), f.baseUrl+"/me?access_token="+accessToken, nil)
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {

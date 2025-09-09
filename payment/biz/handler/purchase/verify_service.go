@@ -11,6 +11,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"gitee.com/ywengineer/smart-kit/payment/internal/services"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier"
+	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/inf"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
 	msg "gitee.com/ywengineer/smart-kit/payment/pkg/proto"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
@@ -27,7 +28,7 @@ import (
 // @router /verify [POST]
 func Verify(ctx context.Context, c *app.RequestContext) {
 	var err error
-	var req *msg.PayReceipt
+	var req = &msg.PayReceipt{}
 	err = c.BindAndValidate(req)
 	if err != nil {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("bad request body", api.C0))
@@ -58,7 +59,7 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	)
 	// find verifier
 	validator, err := verifier.FindVerifier(channel)
-	if errors.Is(err, verifier.ErrNoChannel) {
+	if errors.Is(err, inf.ErrNoChannel) {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("missing channel metadata"), api.C21010))
 		return
 	} else if err != nil {
@@ -69,13 +70,17 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	// verify purchase
 	purchase, err := validator.Verify(ctx, req.GetReceipt())
 	// return if subs expired
-	if errors.Is(err, verifier.ErrExpiredSub) || purchase.Expired() {
-		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("订阅过期"), api.C90003))
+	if errors.Is(err, inf.ErrExpiredSub) || (purchase != nil && purchase.Expired()) {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("expired subs"), api.C90003))
 		return
 	}
 	// verify failed
-	if errors.Is(err, verifier.ErrFail) {
-		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("the receipt could not be authenticated"), api.C21003))
+	if errors.Is(err, inf.ErrFail) || errors.Is(err, inf.IncompletePurchase) || errors.Is(err, inf.OtherAppPurchase) {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(err, api.C21003))
+		return
+	} else if err != nil || purchase == nil {
+		hlog.Errorf("[Verify] verify failed [%s=%s]. %v", channel, req.String(), err)
+		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("server error"), api.C21003))
 		return
 	}
 	// invalid purchase
@@ -110,7 +115,7 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 		purchase.PlayerCreateTime = &ct
 	}
 	// 支付验证成功
-	err = services.OnPurchase(ctx, sCtx, *req.GameId, *req.ServerId, *req.Passport, *req.PlayerId, *req.PlayerName, &purchase, channel, product)
+	err = services.OnPurchase(ctx, sCtx, *req.GameId, *req.ServerId, *req.Passport, *req.PlayerId, *req.PlayerName, purchase, channel, product)
 	if err != nil {
 		hlog.CtxErrorf(ctx, "verify purchase error: %v, data: %s", err, req.String())
 		if errors.Is(err, services.ErrDuplicateOrder) {
@@ -122,7 +127,7 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	}
 	// 通知
 	gopool.Go(func() {
-		if err := queue.PublishPurchaseNotify(purchase, asynq.MaxRetry(15)); err != nil {
+		if err := queue.PublishPurchaseNotify(*purchase, asynq.MaxRetry(15)); err != nil {
 			hlog.Errorf("publish user purchase notify error: %v, data: %+v", err, req)
 		}
 	})

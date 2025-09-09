@@ -3,27 +3,21 @@ package rpcs
 import (
 	"context"
 	"io"
-	"time"
+	"net/http"
 )
 
 type asyncRpc struct {
 	t Rpc
 }
 
-func (h *asyncRpc) GetAsync(ctx context.Context, url string, callback RpcCallback) {
+func (h *asyncRpc) GetAsync(ctx context.Context, url string, header http.Header, callback RpcCallback) {
 	rpcPool.CtxGo(ctx, func() {
-		callback(h.t.Get(ctx, url))
+		callback(h.t.Get(ctx, url, header))
 	})
 }
 
-func (h *asyncRpc) GetTimeoutAsync(ctx context.Context, url string, timeout time.Duration, callback RpcCallback) {
+func (h *asyncRpc) PostAsync(ctx context.Context, contentType string, url string, header http.Header, reqBody io.WriterTo, callback RpcCallback) {
 	rpcPool.CtxGo(ctx, func() {
-		callback(h.t.GetTimeout(ctx, url, timeout))
-	})
-}
-
-func (h *asyncRpc) PostAsync(ctx context.Context, contentType string, url string, reqBody io.WriterTo, callback RpcCallback) {
-	rpcPool.CtxGo(ctx, func() {
-		callback(h.t.Post(ctx, contentType, url, reqBody))
+		callback(h.t.Post(ctx, contentType, url, header, reqBody))
 	})
 }

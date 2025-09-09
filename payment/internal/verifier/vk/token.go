@@ -1,135 +1,143 @@
 package vk
 
 import (
-	"bytes"
-	"crypto/hmac"
-	"crypto/sha256"
-	"crypto/sha512"
-	"encoding/hex"
+	"context"
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
-	"net/http"
-	"strconv"
+	"strings"
 	"sync"
 	"time"
-)
 
-// RustoreConfig rustore config
-type RustoreConfig struct {
-	ClientID     string // 控制台获取的 Client ID
-	ClientSecret string // 控制台获取的 Client Secret
-	IsSandbox    bool   // 是否启用沙箱环境
-}
+	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/pkg/errors"
+)
 
 // TokenManager token manager
 type TokenManager struct {
 	config     RustoreConfig
-	token      *TokenResponse
+	token      *tokenResponse
+	key        *rsa.PrivateKey
 	mu         sync.RWMutex
 	lastUpdate int64 // 令牌最后更新时间（秒级时间戳）
 }
 
-// TokenResponse 令牌响应结构体（对应官方文档）
-type TokenResponse struct {
-	AccessToken string `json:"access_token"` // JWE 令牌
-	TokenType   string `json:"token_type"`   // 固定为 "bearer"
-	ExpiresIn   int    `json:"expires_in"`   // 有效期（秒）
+// tokenResponse 令牌响应结构体（对应官方文档）
+type tokenResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Body    struct {
+		Jwe string `json:"jwe"`
+		Ttl int    `json:"ttl"`
+	} `json:"body"`
+	Timestamp string `json:"timestamp"`
 }
 
 // NewTokenManager 初始化令牌管理器
 func NewTokenManager(config RustoreConfig) (*TokenManager, error) {
 	tm := &TokenManager{config: config}
+	if err := tm.parsePrivateKey(); err != nil {
+		return nil, err
+	}
 	if err := tm.refreshToken(); err != nil {
-		return nil, fmt.Errorf("failed to init token manager：%w", err)
+		return nil, errors.WithMessage(err, "failed to init rustore token manager")
 	}
 	return tm, nil
+}
+
+func (tm *TokenManager) parsePrivateKey() error {
+	// private key bytes
+	privateKeyBytes, err := base64.StdEncoding.DecodeString(tm.config.ClientSecret)
+	if err != nil {
+		return errors.WithMessage(err, "failed to decode rustore private key")
+	}
+	// pem
+	block, _ := pem.Decode(privateKeyBytes)
+	if block == nil {
+		return errors.New("failed to decode rustore private key as pem format")
+	}
+	//
+	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return errors.WithMessage(err, "failed to parse rustore private key as x509 format")
+	}
+	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return errors.New("Not a valid RSA private key")
+	}
+	tm.key = rsaPrivateKey
+	return nil
 }
 
 // getToken 安全获取令牌（自动判断是否需要刷新）
 func (tm *TokenManager) getToken() (string, error) {
 	tm.mu.RLock()
 	// 检查令牌是否有效（未过期且距离过期>缓冲时间）
-	isValid := tm.token != nil && time.Now().Unix()-tm.lastUpdate < int64(tm.token.ExpiresIn-tokenExpiryBuffer)
+	isValid := tm.token != nil && time.Now().Unix()-tm.lastUpdate < int64(tm.token.Body.Ttl-tokenExpiryBuffer)
 	tm.mu.RUnlock()
 
 	if !isValid {
-		// 令牌无效，触发刷新（写锁）
+		//
 		if err := tm.refreshToken(); err != nil {
-			return "", fmt.Errorf("failed to refresh token：%w", err)
+			return "", err
 		}
 	}
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
-	return tm.token.AccessToken, nil
+	return tm.token.Body.Jwe, nil
+}
+
+func (tm *TokenManager) sign(t string) (string, error) {
+	// 计算SHA-512哈希
+	hash := crypto.SHA512.New()
+	hash.Write([]byte(tm.config.ClientID + t))
+	hashed := hash.Sum(nil)
+	// 使用RSA私钥签名
+	signatureBytes, err := rsa.SignPKCS1v15(rand.Reader, tm.key, crypto.SHA512, hashed)
+	if err != nil {
+		return "", errors.WithMessage(err, "Signature failed")
+	}
+	// 对签名结果进行Base64编码
+	return base64.StdEncoding.EncodeToString(signatureBytes), nil
 }
 
 // refreshToken 刷新令牌（核心：签名生成+请求发送）
 func (tm *TokenManager) refreshToken() error {
 	tokenURL := prodTokenURL
-	if tm.config.IsSandbox {
-		tokenURL = sandboxTokenURL
+	ts := time.Now()
+	timestamp := ts.Format(time.RFC3339)
+	signature, err := tm.sign(timestamp)
+	if err != nil {
+		return err
 	}
-	timestamp := time.Now().UnixMilli()
-	signStr := fmt.Sprintf("client_id=%s&timestamp=%d", tm.config.ClientID, timestamp)
-	h := hmac.New(sha256.New, []byte(tm.config.ClientSecret))
-	if _, err := h.Write([]byte(signStr)); err != nil {
-		return fmt.Errorf("签名计算失败：%w", err)
-	}
-	signature := hex.EncodeToString(h.Sum(nil))
-	// 4. 构造请求体
+	//
 	reqBody := struct {
-		GrantType     string `json:"grant_type"`
-		ClientID      string `json:"client_id"`
-		Timestamp     int64  `json:"timestamp"`
-		Signature     string `json:"signature"`
-		SignAlgorithm string `json:"sign_algorithm"`
+		KeyId     string `json:"keyId"`
+		Timestamp string `json:"timestamp"`
+		Signature string `json:"signature"`
 	}{
-		GrantType:     grantType,
-		ClientID:      tm.config.ClientID,
-		Timestamp:     timestamp,
-		Signature:     signature,
-		SignAlgorithm: signAlgorithm,
+		KeyId:     tm.config.ClientID,
+		Timestamp: timestamp,
+		Signature: signature,
 	}
-	// 5. 发送 POST 请求
-	reqBodyBytes, _ := json.Marshal(reqBody)
-	req, err := http.NewRequest("POST", tokenURL, bytes.NewBuffer(reqBodyBytes))
-	if err != nil {
-		return fmt.Errorf("请求创建失败：%w", err)
+	//
+	statusCode, resp, err := rpcs.GetDefaultRpc().Post(context.Background(), rpcs.ContentTypeJSON, tokenURL, nil, rpcs.JsonBody{V: reqBody})
+	if statusCode != consts.StatusOK {
+		return errors.New(fmt.Sprintf("Failed to get rustore token with status: %d", statusCode))
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Content-Length", strconv.Itoa(len(reqBodyBytes)))
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("请求发送失败：%w", err)
+	var tokenResp tokenResponse
+	if err := sonic.Unmarshal(resp, &tokenResp); err != nil || !strings.EqualFold(tokenResp.Code, "OK") {
+		return errors.WithMessagef(err, "Failed to parse the rustore token response: %s", string(resp))
 	}
-	defer resp.Body.Close()
-
-	// 6. 解析响应（区分成功/失败）
-	if resp.StatusCode != http.StatusOK {
-		var errResp struct {
-			Error            string `json:"error"`
-			ErrorDescription string `json:"error_description"`
-		}
-		if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
-			return fmt.Errorf("错误响应解析失败：%w", err)
-		}
-		return fmt.Errorf("令牌接口返回错误：%s（%s）", errResp.Error, errResp.ErrorDescription)
-	}
-
-	var tokenResp TokenResponse
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return fmt.Errorf("令牌响应解析失败：%w", err)
-	}
-	if tokenResp.AccessToken == "" {
-		return fmt.Errorf("获取到空令牌")
-	}
-
-	// 7. 更新令牌（写锁保护）
+	//
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
-	tm.token = &tokenResp
-	tm.lastUpdate = time.Now().Unix()
-
+	tm.token, tm.lastUpdate = &tokenResp, ts.Unix()
 	return nil
 }

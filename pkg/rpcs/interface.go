@@ -3,6 +3,7 @@ package rpcs
 import (
 	"context"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -18,7 +19,7 @@ const (
 	ContentTypeOctStream  = "application/octet-stream"
 )
 
-var rpcPool = gopool.NewPool("rpc-pool", 500, gopool.NewConfig())
+var rpcPool = gopool.NewPool("rpc-pool", 10000, gopool.NewConfig())
 
 type RpcClientInfo struct {
 	ClientName     string        `json:"client_name" yaml:"client-name"`
@@ -31,17 +32,13 @@ type RpcClientInfo struct {
 type RpcCallback func(statusCode int, body []byte, err error)
 
 type Rpc interface {
-	Get(ctx context.Context, url string) (statusCode int, body []byte, err error)
+	Get(ctx context.Context, url string, header http.Header) (statusCode int, body []byte, err error)
 
-	GetTimeout(ctx context.Context, url string, timeout time.Duration) (statusCode int, body []byte, err error)
+	Post(ctx context.Context, contentType string, url string, header http.Header, reqBody io.WriterTo) (statusCode int, body []byte, err error)
 
-	Post(ctx context.Context, contentType string, url string, reqBody io.WriterTo) (statusCode int, body []byte, err error)
+	GetAsync(ctx context.Context, url string, header http.Header, callback RpcCallback)
 
-	GetAsync(ctx context.Context, url string, callback RpcCallback)
-
-	GetTimeoutAsync(ctx context.Context, url string, timeout time.Duration, callback RpcCallback)
-
-	PostAsync(ctx context.Context, contentType string, url string, reqBody io.WriterTo, callback RpcCallback)
+	PostAsync(ctx context.Context, contentType string, url string, header http.Header, reqBody io.WriterTo, callback RpcCallback)
 }
 
 type JsonBody struct {

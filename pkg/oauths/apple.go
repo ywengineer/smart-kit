@@ -139,7 +139,7 @@ type AppleJWKS struct {
 
 // GetApplePublicKeys 获取 Apple 的公钥
 func (a *appleAuth) initPublicKeys() error {
-	sc, body, err := cli.Get(context.Background(), a.basePath+"/auth/keys")
+	sc, body, err := cli.Get(context.Background(), a.basePath+"/auth/keys", nil)
 	if err != nil {
 		return err
 	} else if !nets.Is2xx(sc) {

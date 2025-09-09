@@ -78,24 +78,38 @@ func (h *hertzRPC) init() Rpc {
 	return h
 }
 
-func (h *hertzRPC) Get(ctx context.Context, url string) (statusCode int, body []byte, err error) {
-	return h.cli.Get(ctx, nil, url, h.cluster)
-}
+func (h *hertzRPC) Get(ctx context.Context, url string, header http.Header) (statusCode int, body []byte, err error) {
+	req := protocol.AcquireRequest()
+	if header != nil {
+		for k, v := range header {
+			req.Header.Set(k, v[0])
+		}
+	}
+	req.SetOptions(h.cluster)
 
-func (h *hertzRPC) GetTimeout(ctx context.Context, url string, timeout time.Duration) (statusCode int, body []byte, err error) {
-	return h.cli.GetTimeout(ctx, nil, url, timeout, h.cluster)
+	statusCode, body, err = h.doRequestFollowRedirectsBuffer(ctx, req, nil, url)
+
+	protocol.ReleaseRequest(req)
+	return statusCode, body, err
 }
 
 // Post contentType see consts.MIMEXXX
-func (h *hertzRPC) Post(ctx context.Context, contentType string, url string, reqBody io.WriterTo) (statusCode int, body []byte, err error) {
+func (h *hertzRPC) Post(ctx context.Context, contentType string, url string, header http.Header, reqBody io.WriterTo) (statusCode int, body []byte, err error) {
 	req := protocol.AcquireRequest()
+	if header != nil {
+		for k, v := range header {
+			req.Header.Set(k, v[0])
+		}
+	}
 	req.Header.SetMethod(consts.MethodPost)
 	req.Header.SetContentTypeBytes([]byte(contentType))
 	req.SetOptions(h.cluster)
 	//
 	if reqBody != nil {
-		if _, err := reqBody.WriteTo(req.BodyWriter()); err != nil {
+		if cl, err := reqBody.WriteTo(req.BodyWriter()); err != nil {
 			return 0, nil, err
+		} else {
+			req.Header.SetContentLength(int(cl))
 		}
 	}
 	//

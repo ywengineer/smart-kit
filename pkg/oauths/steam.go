@@ -52,7 +52,7 @@ func (steam *steamAuth) GetUserInfo(_ string, token string) (*UserInfo, error) {
 	if len(identity) > 0 {
 		p.Set("identity", identity)
 	}
-	sc, body, err := cli.Get(context.Background(), steam.baseUrl+"/ISteamUserAuth/AuthenticateUserTicket/v1/?"+p.Encode())
+	sc, body, err := cli.Get(context.Background(), steam.baseUrl+"/ISteamUserAuth/AuthenticateUserTicket/v1/?"+p.Encode(), nil)
 	if err != nil {
 		return nil, err
 	} else if !nets.Is2xx(sc) {

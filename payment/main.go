@@ -6,14 +6,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue/handler"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/hibiken/asynq"
 	"gorm.io/sharding"
-	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
+	_ "gitee.com/ywengineer/smart-kit/payment/internal/verifier"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
