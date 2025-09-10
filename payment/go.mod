@@ -13,11 +13,17 @@ require (
 	github.com/bytedance/sonic v1.14.1
 	github.com/cloudwego/gopkg v0.1.4
 	github.com/cloudwego/hertz v0.10.2
+	github.com/dgraph-io/ristretto/v2 v2.3.0
 	github.com/gookit/goutil v0.7.1
+	github.com/hibiken/asynq v0.25.1
+	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/xid v1.6.0
+	github.com/samber/lo v1.51.0
+	github.com/stretchr/testify v1.11.1
 	google.golang.org/protobuf v1.36.8
 	gorm.io/gorm v1.30.3
+	gorm.io/sharding v0.6.2
 )
 
 require (
@@ -56,8 +62,10 @@ require (
 	github.com/clbanning/mxj/v2 v2.5.5 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/cloudwego/netpoll v0.7.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/pkcs8 v1.0.0 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -75,7 +83,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hertz-contrib/cors v0.1.0 // indirect
 	github.com/hertz-contrib/jwt v1.0.4 // indirect
@@ -86,8 +93,6 @@ require (
 	github.com/hertz-contrib/pprof v0.1.2 // indirect
 	github.com/hertz-contrib/registry/nacos/v2 v2.0.0-20250319055937-8a220332e808 // indirect
 	github.com/hertz-contrib/requestid v1.1.0 // indirect
-	github.com/hibiken/asynq v0.25.1 // indirect
-	github.com/hibiken/asynqmon v0.7.2 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
@@ -105,14 +110,13 @@ require (
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
 	github.com/orcaman/concurrent-map v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.23.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.65.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/redis/go-redis/v9 v9.13.0 // indirect
 	github.com/sagikazarmark/locafero v0.10.0 // indirect
-	github.com/samber/lo v1.51.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
@@ -149,5 +153,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
-	gorm.io/sharding v0.6.2 // indirect
 )

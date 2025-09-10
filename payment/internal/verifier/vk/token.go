@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/pem"
 	"fmt"
 	"strings"
 	"sync"
@@ -57,13 +56,8 @@ func (tm *TokenManager) parsePrivateKey() error {
 	if err != nil {
 		return errors.WithMessage(err, "failed to decode rustore private key")
 	}
-	// pem
-	block, _ := pem.Decode(privateKeyBytes)
-	if block == nil {
-		return errors.New("failed to decode rustore private key as pem format")
-	}
 	//
-	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	privateKey, err := x509.ParsePKCS8PrivateKey(privateKeyBytes)
 	if err != nil {
 		return errors.WithMessage(err, "failed to parse rustore private key as x509 format")
 	}
@@ -128,7 +122,9 @@ func (tm *TokenManager) refreshToken() error {
 	}
 	//
 	statusCode, resp, err := rpcs.GetDefaultRpc().Post(context.Background(), rpcs.ContentTypeJSON, tokenURL, nil, rpcs.JsonBody{V: reqBody})
-	if statusCode != consts.StatusOK {
+	if err != nil {
+		return errors.WithMessage(err, "Failed to get rustore token")
+	} else if statusCode != consts.StatusOK {
 		return errors.New(fmt.Sprintf("Failed to get rustore token with status: %d", statusCode))
 	}
 	var tokenResp tokenResponse

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"net/http"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -40,14 +39,14 @@ type verifyResp struct {
 //	REFUNDED - 已回收的资金将退还给买方.
 //	REFUNDING - 退款中.
 type paymentBody struct {
-	InvoiceId        int64    `json:"invoiceId"`        // 账单ID（检验入参）
-	InvoiceDate      string   `json:"invoiceDate"`      // 账单创建时间
-	RefundDate       string   `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
-	InvoiceStatus    string   `json:"invoiceStatus"`    // 账单状态（核心校验字段）
-	DeveloperPayload string   `json:"developerPayload"` // 自定义订单信息
-	AppId            int64    `json:"appId"`            // 应用ID（需与配置匹配）
-	OwnerCode        int64    `json:"ownerCode"`        // 应用所有者编码
-	PurchaseId       string   `json:"purchaseId"`       // 唯一购买UUID
+	InvoiceId        int64  `json:"invoiceId"`        // 账单ID（检验入参）
+	InvoiceDate      string `json:"invoiceDate"`      // 账单创建时间
+	RefundDate       string `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
+	InvoiceStatus    string `json:"invoiceStatus"`    // 账单状态（核心校验字段）
+	DeveloperPayload string `json:"developerPayload"` // 自定义订单信息
+	AppId            int64  `json:"appId"`            // 应用ID（需与配置匹配）
+	OwnerCode        int64  `json:"ownerCode"`        // 应用所有者编码
+	PurchaseId       string `json:"purchaseId"`       // 唯一购买UUID
 	PaymentInfo      struct { // 支付详情（CREATED 状态为空）
 		PaymentDate    string `json:"paymentDate"`    // 支付时间
 		MaskedPan      string `json:"maskedPan"`      // 掩码卡号（如 **1111）
@@ -100,16 +99,18 @@ func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Pu
 	//
 	var verifyURL string
 	if rustore.config.IsSandbox {
-		verifyURL = path.Join(sandboxVerifyURL, invoiceId)
+		verifyURL = sandboxVerifyURL + invoiceId
 	} else {
-		verifyURL = path.Join(prodVerifyURL, invoiceId)
+		verifyURL = prodVerifyURL + invoiceId
 	}
 	//
 	statusCode, resp, err := rpcs.GetDefaultRpc().Get(ctx, verifyURL, http.Header{
 		"Public-Token": []string{token},
 	})
-	if statusCode != consts.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Failed to get rustore purchase with status: %d", statusCode))
+	if err != nil {
+		return nil, errors.WithMessage(err, "Failed to get rustore purchase with error")
+	} else if statusCode != consts.StatusOK {
+		return nil, errors.New(fmt.Sprintf("Failed to get rustore purchase with status: %d, resp = %s", statusCode, string(resp)))
 	}
 	//
 	var vr verifyResp

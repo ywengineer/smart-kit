@@ -23,7 +23,7 @@ import (
 
 const defaultMaxRedirectsCount = 16
 
-var defaultRpc, _ = newDefaultRpc(RpcClientInfo{ClientName: "default-smart-rpc-client"})
+var defaultRpc, _ = newDefaultRpc(RpcClientInfo{ClientName: "default-smart-rpc-client", ReadTimeout: 5 * time.Second})
 
 // GetDefaultRpc retry = 1, delay = 50ms, read_timout = 100ms, max_retry = 1, max_conn_per_host = 100
 func GetDefaultRpc() Rpc {
@@ -43,9 +43,9 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 	if cli, err = client.NewClient(
 		client.WithName(info.ClientName),
 		client.WithMaxConnsPerHost(info.MaxConnPerHost),
-		client.WithDialTimeout(time.Second),
+		client.WithDialTimeout(5*time.Second),
 		client.WithClientReadTimeout(info.ReadTimeout),
-		client.WithMaxConnWaitTimeout(2*time.Second),
+		client.WithMaxConnWaitTimeout(time.Second),
 		client.WithTLSConfig(&tls.Config{InsecureSkipVerify: true}),
 		client.WithDialer(standard.NewDialer()),
 		client.WithRetryConfig(retry.WithMaxAttemptTimes(info.MaxRetry), retry.WithDelayPolicy(retry.BackOffDelayPolicy)),
@@ -59,7 +59,7 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 		return func(ctx context.Context, req *protocol.Request, resp *protocol.Response) (err error) {
 			ts := time.Now().Unix()
 			n := next(ctx, req, resp)
-			hlog.Debugf("[RPC][%s] [cost %dms] invoke target: %s ", info.ClientName, time.Now().Unix()-ts, req.RequestURI())
+			hlog.Debugf("[RPC][%s] [cost %dms] invoke [host=%s] target: %s ", info.ClientName, time.Now().Unix()-ts, req.Host(), req.RequestURI())
 			return n
 		}
 	})
