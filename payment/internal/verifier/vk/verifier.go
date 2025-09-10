@@ -3,10 +3,12 @@ package vk
 import (
 	"context"
 	"fmt"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/inf"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
@@ -89,21 +91,21 @@ func NewRustore(config RustoreConfig) (*Rustore, error) {
 // 返回值：
 // - *model.Purchase：支付成功且校验通过时返回核心数据
 // - error：校验失败（网络错误、接口错误、状态非法等）
-func (pc *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchase, error) {
+func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchase, error) {
 	// 获取有效 JWE 令牌
-	token, err := pc.tokenManager.getToken()
+	token, err := rustore.tokenManager.getToken()
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to obtain the token")
 	}
 	//
 	var verifyURL string
-	if pc.config.IsSandbox {
+	if rustore.config.IsSandbox {
 		verifyURL = path.Join(sandboxVerifyURL, invoiceId)
 	} else {
 		verifyURL = path.Join(prodVerifyURL, invoiceId)
 	}
 	//
-	statusCode, resp, err := rpcs.GetDefaultRpc().Get(context.Background(), verifyURL, http.Header{
+	statusCode, resp, err := rpcs.GetDefaultRpc().Get(ctx, verifyURL, http.Header{
 		"Public-Token": []string{token},
 	})
 	if statusCode != consts.StatusOK {
@@ -119,7 +121,7 @@ func (pc *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchas
 		return nil, inf.IncompletePurchase
 	}
 	// 校验应用ID（可选，确保请求对应正确应用）
-	if !pc.config.IsValidApp(strconv.FormatInt(vr.Body.AppId, 10)) {
+	if !rustore.config.IsValidApp(strconv.FormatInt(vr.Body.AppId, 10)) {
 		return nil, inf.OtherAppPurchase
 	}
 	// 校验产品编码（可选，确保购买的是正确产品）
@@ -133,49 +135,49 @@ func (pc *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchas
 	// 	return nil, fmt.Errorf("支付金额不匹配：实际 %d，期望 %d", paymentBody.Order.AmountCurrent, expectedAmount)
 	// }
 	// 所有校验通过，返回支付核心数据
-	p := &model.Purchase{}
+	p, err := rustore.convert(vr.Body)
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed to convert rustore payment 2 model.Purchase")
+	}
+	//
+	p.ReceiptResult = string(resp)
+	p.TestOrder = rustore.config.IsSandbox
 	return p, nil
 }
 
-//func main() {
-//	// 1. 配置参数（需替换为你的实际值！）
-//	config := RustoreConfig{
-//		ClientID:     "your-client-id",     // 从控制台获取
-//		ClientSecret: "your-client-secret", // 从控制台获取（严格保密）
-//		IsSandbox:    true,                 // 测试用 true，生产用 false
-//	}
-//
-//	// 2. 初始化支付检验器
-//	checker, err := NewPaymentChecker(config)
-//	if err != nil {
-//		fmt.Printf("初始化支付检验器失败：%v\n", err)
-//		return
-//	}
-//
-//	// 3. 待检验的 invoiceId（从 Pay SDK 回调或订单记录获取）
-//	invoiceId := int64(123456789) // 示例值，需修改！
-//
-//	// 4. 执行支付检验
-//	paymentData, err := checker.CheckPaymentByInvoiceId(invoiceId)
-//	if err != nil {
-//		fmt.Printf("支付检验失败：%v\n", err)
-//		return
-//	}
-//
-//	// 5. 检验成功，处理业务逻辑（如更新订单状态、发放商品等）
-//	fmt.Println("=== 支付检验成功 ===")
-//	// 打印核心信息（生产环境建议用日志记录，而非直接打印）
-//	fmt.Printf("Invoice ID: %d\n", paymentData.InvoiceId)
-//	fmt.Printf("支付状态: %s\n", paymentData.InvoiceStatus)
-//	fmt.Printf("支付时间: %s\n", *paymentData.PaymentInfo.PaymentDate)
-//	fmt.Printf("订单金额: %d %s（%0.2f 元）\n",
-//		paymentData.Order.AmountCurrent,
-//		paymentData.Order.Currency,
-//		float64(paymentData.Order.AmountCurrent)/100) // 转换为元（假设最小单位是分）
-//	if paymentData.DeveloperPayload != nil {
-//		fmt.Printf("自定义订单信息: %s\n", *paymentData.DeveloperPayload)
-//	}
-//
-//	// 后续业务逻辑：更新数据库订单状态、调用业务接口发放权益等
-//	// ...
-//}
+type developerPayload struct {
+	SystemType string `json:"systemType"`
+	AppVersion string `json:"appVersion"`
+	BundleId   string `json:"bundleId"`
+}
+
+// convert rustore payment 2 model.Purchase
+// need reset data after conver
+// - TestOrder
+// - FreeTrail
+func (rustore *Rustore) convert(data *paymentBody) (*model.Purchase, error) {
+	var payload developerPayload
+	var err error
+	p := &model.Purchase{}
+	_ = sonic.Unmarshal(utilk.S2b(data.DeveloperPayload), &payload)
+	p.SystemType = payload.SystemType
+	// ------------------------------------------------------------------------------------------
+	p.TransactionId = strconv.FormatInt(data.InvoiceId, 64)
+	p.TestOrder, p.FreeTrail = false, false
+	p.OriginalTransactionId = p.TransactionId                                    // 同transaction_id
+	p.PurchaseDate, err = time.Parse(time.RFC3339, data.PaymentInfo.PaymentDate) // 商品的购买时间（从新纪年（1970 年 1 月 1 日）开始计算的毫秒数）。
+	if err != nil {
+		return nil, err
+	}
+	p.OriginalPurchaseDate = p.PurchaseDate           // 对于恢复的transaction对象，该键对应了原始的交易日期
+	p.ExpireDate = nil                                // 普通消耗类型,没有过期时间
+	p.OriginalApplicationVersion = payload.AppVersion // 开发者指定的字符串，包含订单的补充信息。您可以在发起 getBuyIntent 请求时为此字段指定一个值。
+	p.AppItemId = data.Order.ItemCode                 // 用于对给定商品和用户对进行唯一标识的令牌。
+	p.VersionExternalIdentifier = 0                   // 用来标识程序修订数。该键在sandbox环境下不存在
+	// ------------------------------------------------------------------------------------------
+	p.Quantity = 1                    // 购买商品的数量
+	p.Status = 0                      // 订单的购买状态。可能的值为 0（已购买）、1（已取消）或者 2（已退款）
+	p.ProductId = data.Order.ItemCode // 商品的商品 ID。每种商品都有一个商品 ID，您必须通过 Google Play Developer Console 在应用的商品列表中指定此 ID。
+	p.BundleId = payload.BundleId     //  Android程序的bundle标识
+	return p, nil
+}

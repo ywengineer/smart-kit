@@ -12,20 +12,27 @@ var s sync.Once
 func init() {
 	s.Do(func() {
 		var err error
-		cache, err = ristretto.NewCache(&ristretto.Config[string, []byte]{
-			NumCounters: 1e7,     // number of keys to track frequency of (10M).
-			MaxCost:     1 << 30, // maximum cost of cache (1GB).
-			BufferItems: 64,      // number of keys per Get buffer.
-		})
+		cache, err = NewCache[[]byte](1 << 30)
 		if err != nil {
 			panic(err)
-		} else {
-			go func() {
-				defer cache.Close()
-				<-utilk.WatchQuitSignal()
-			}()
 		}
 	})
+}
+
+func NewCache[T any](capacity int64) (*ristretto.Cache[string, T], error) {
+	c, err := ristretto.NewCache(&ristretto.Config[string, T]{
+		NumCounters: 1e7,      // number of keys to track frequency of (10M).
+		MaxCost:     capacity, // maximum cost of cache (1GB).
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		go func() {
+			defer c.Close()
+			<-utilk.WatchQuitSignal()
+		}()
+	}
+	return c, nil
 }
 
 func Get(key string) ([]byte, bool) {

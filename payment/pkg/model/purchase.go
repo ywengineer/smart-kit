@@ -6,7 +6,7 @@ import (
 
 type Purchase struct {
 	BaseLog               `json:",inline"`
-	Status                int        `json:"status" redis:"status"`                                                 // 订单状态
+	Status                int        `json:"status" redis:"status"`                                                 // 订单状态 可能的值为 0（已购买）、1（已取消）或者 2（已退款）
 	ProductId             string     `json:"product_id" redis:"product_id"`                                         // 商品的标识
 	Quantity              int        `json:"quantity" redis:"quantity"`                                             // 购买商品的数量
 	TransactionId         string     `json:"transaction_id" redis:"transaction_id" gorm:"uniqueIndex:idx_order_id"` // 交易的标识
