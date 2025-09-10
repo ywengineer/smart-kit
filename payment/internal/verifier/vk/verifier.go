@@ -3,11 +3,13 @@ package vk
 import (
 	"context"
 	"fmt"
-	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/inf"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
@@ -74,15 +76,21 @@ type Rustore struct {
 	config       RustoreConfig
 }
 
-// NewRustore 初始化支付检验器
-func NewRustore(config RustoreConfig) (*Rustore, error) {
-	tm, err := NewTokenManager(config)
+// New 初始化支付检验器
+func New(cp config.ChannelProperty) (inf.Verifier, error) {
+	c := RustoreConfig{
+		ClientID:     cp.ClientID,
+		ClientSecret: cp.ClientSecret,
+		IsSandbox:    cp.Sandbox,
+		Apps:         cp.Apps,
+	}
+	tm, err := NewTokenManager(c)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to initialize the token manager")
 	}
 	return &Rustore{
 		tokenManager: tm,
-		config:       config,
+		config:       c,
 	}, nil
 }
 

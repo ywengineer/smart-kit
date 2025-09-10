@@ -1,12 +1,15 @@
 package verifier
 
 import (
+	"sync"
+
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/hw"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/inf"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/vk"
+	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/xm"
 	"gitee.com/ywengineer/smart-kit/pkg/caches"
 	"github.com/dgraph-io/ristretto/v2"
-	"sync"
 )
 
 type Factory func(cp config.ChannelProperty) (inf.Verifier, error)
@@ -23,32 +26,11 @@ func init() {
 			panic(err)
 		}
 		//
-		RegisterFactory("rustore", func(cp config.ChannelProperty) (inf.Verifier, error) {
-			return vk.NewRustore(vk.RustoreConfig{
-				ClientID:     cp.ClientID,
-				ClientSecret: cp.ClientSecret,
-				IsSandbox:    cp.Sandbox,
-				Apps:         cp.Apps,
-			})
-		})
+		RegisterFactory("rustore", vk.New)
 		//
-		RegisterFactory("huawei", func(cp config.ChannelProperty) (inf.Verifier, error) {
-			return vk.NewRustore(vk.RustoreConfig{
-				ClientID:     cp.ClientID,
-				ClientSecret: cp.ClientSecret,
-				IsSandbox:    cp.Sandbox,
-				Apps:         cp.Apps,
-			})
-		})
+		RegisterFactory("huawei", hw.New)
 		//
-		RegisterFactory("xiaomi", func(cp config.ChannelProperty) (inf.Verifier, error) {
-			return vk.NewRustore(vk.RustoreConfig{
-				ClientID:     cp.ClientID,
-				ClientSecret: cp.ClientSecret,
-				IsSandbox:    cp.Sandbox,
-				Apps:         cp.Apps,
-			})
-		})
+		RegisterFactory("xiaomi", xm.New)
 	})
 }
 
