@@ -20,7 +20,7 @@ docker-build-payment:
 	@sed -i 's/VERSION/$(version)/g' $(APP_EXAMPLE_DIR)/docker-compose.yaml
 
 clean:
-	rm -f $(BUILD_OUTPUT)/*
+	rm -fr $(BUILD_OUTPUT)
 
 
 help:
