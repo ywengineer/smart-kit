@@ -6,8 +6,9 @@ WORKDIR /app
 ENV GOPROXY=https://goproxy.cn,direct
 # 复制源代码
 COPY . .
+RUN ls -al
 # 复制依赖文件并下载
-RUN CD payment && \
+RUN cd payment && \
     go mod download && \
     CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 

@@ -84,6 +84,7 @@ fabric.properties
 *.iml
 out
 gen
+example
 ### Go template
 # Binaries for programs and plugins
 *.exe

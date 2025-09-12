@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  APP_NAME:
+    image: APP_NAME:VERSION
+    container_name: APP_NAME-container
+    ports:
+      - "8089:8089"
+    environment:
+      - AUTHOR=Yang.Wei
+    volumes:
+      - ./application.yaml:/app/application.yaml
+      - ./logs:/app/logs
+    restart: always
+    networks:
+      - local-dev
+
+networks:
+  local-dev:
+    external: true
+    name: local-dev
