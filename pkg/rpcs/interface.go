@@ -41,6 +41,15 @@ type Rpc interface {
 	PostAsync(ctx context.Context, contentType string, url string, header http.Header, reqBody io.WriterTo, callback RpcCallback)
 }
 
+type BytesBody struct {
+	V []byte
+}
+
+func (j BytesBody) WriteTo(w io.Writer) (n int64, err error) {
+	wn, err := w.Write(j.V)
+	return int64(wn), err
+}
+
 type JsonBody struct {
 	V any
 }

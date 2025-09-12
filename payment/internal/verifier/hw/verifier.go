@@ -13,6 +13,14 @@ type huawei struct {
 }
 
 func (r *huawei) Verify(ctx context.Context, receipt string) (*model.Purchase, error) {
+	//bodyMap := map[string]string{"purchaseToken": purchaseToken, "productId": productId}
+	//url := getOrderUrl(accountFlag)+ "/applications/purchases/tokens/verify"
+	//bodyBytes, err := SendRequest(url, bodyMap)
+	//if err != nil {
+	//	log.Printf("err is %s", err)
+	//}
+	//// TODO: display the response as string in console, you can replace it with your business logic.
+	//log.Printf("%s", bodyBytes)
 	//TODO implement me
 	panic("implement me")
 }

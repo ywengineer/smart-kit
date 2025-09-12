@@ -41,14 +41,14 @@ type verifyResp struct {
 //	REFUNDED - 已回收的资金将退还给买方.
 //	REFUNDING - 退款中.
 type paymentBody struct {
-	InvoiceId        int64  `json:"invoiceId"`        // 账单ID（检验入参）
-	InvoiceDate      string `json:"invoiceDate"`      // 账单创建时间
-	RefundDate       string `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
-	InvoiceStatus    string `json:"invoiceStatus"`    // 账单状态（核心校验字段）
-	DeveloperPayload string `json:"developerPayload"` // 自定义订单信息
-	AppId            int64  `json:"appId"`            // 应用ID（需与配置匹配）
-	OwnerCode        int64  `json:"ownerCode"`        // 应用所有者编码
-	PurchaseId       string `json:"purchaseId"`       // 唯一购买UUID
+	InvoiceId        int64    `json:"invoiceId"`        // 账单ID（检验入参）
+	InvoiceDate      string   `json:"invoiceDate"`      // 账单创建时间
+	RefundDate       string   `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
+	InvoiceStatus    string   `json:"invoiceStatus"`    // 账单状态（核心校验字段）
+	DeveloperPayload string   `json:"developerPayload"` // 自定义订单信息
+	AppId            int64    `json:"appId"`            // 应用ID（需与配置匹配）
+	OwnerCode        int64    `json:"ownerCode"`        // 应用所有者编码
+	PurchaseId       string   `json:"purchaseId"`       // 唯一购买UUID
 	PaymentInfo      struct { // 支付详情（CREATED 状态为空）
 		PaymentDate    string `json:"paymentDate"`    // 支付时间
 		MaskedPan      string `json:"maskedPan"`      // 掩码卡号（如 **1111）

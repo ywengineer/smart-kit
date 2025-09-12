@@ -125,7 +125,7 @@ func (tm *TokenManager) refreshToken() error {
 	if err != nil {
 		return errors.WithMessage(err, "Failed to get rustore token")
 	} else if statusCode != consts.StatusOK {
-		return errors.New(fmt.Sprintf("Failed to get rustore token with status: %d", statusCode))
+		return errors.New(fmt.Sprintf("Failed to get rustore token with status: %d, body = %s", statusCode, string(resp)))
 	}
 	var tokenResp tokenResponse
 	if err := sonic.Unmarshal(resp, &tokenResp); err != nil || !strings.EqualFold(tokenResp.Code, "OK") {
