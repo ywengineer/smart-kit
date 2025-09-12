@@ -12,8 +12,8 @@ docker-build-payment:
 	$(eval APP_NAME=smart-payment)
 	$(eval APP_EXAMPLE_DIR=example/payment)
 	@echo "build payment docker image with tag $(version). APP_NAME=$(APP_NAME) APP_EXAMPLE_DIR=$(APP_EXAMPLE_DIR)"
-	sudo docker build -t $(APP_NAME):$(version) -f Dockerfile.payment.dockerfile .
 	@rm -fr $(APP_EXAMPLE_DIR)
+	sudo docker build -t $(APP_NAME):$(version) -f Dockerfile.payment.dockerfile .
 	@mkdir -p $(APP_EXAMPLE_DIR)
 	@cp -f payment/*.yaml $(APP_EXAMPLE_DIR)/
 	@sed -i 's/APP_NAME/$(APP_NAME)/g' $(APP_EXAMPLE_DIR)/docker-compose.yaml
@@ -27,5 +27,5 @@ help:
 	@echo "可用命令:"
 	@echo "  make build-payment           					- 本地构建payment应用"
 	@echo "  make docker-build-payment PAY_VER=latest   	- 构建payment Docker镜像"
-	@echo "  make clean           			- 清理本地构建产物"
-	@echo "  make help            			- 显示帮助信息"
+	@echo "  make clean           							- 清理本地构建产物"
+	@echo "  make help            							- 显示帮助信息"
