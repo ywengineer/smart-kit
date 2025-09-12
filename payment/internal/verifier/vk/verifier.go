@@ -49,7 +49,8 @@ type paymentBody struct {
 	AppId            int64  `json:"appId"`            // 应用ID（需与配置匹配）
 	OwnerCode        int64  `json:"ownerCode"`        // 应用所有者编码
 	PurchaseId       string `json:"purchaseId"`       // 唯一购买UUID
-	PaymentInfo      struct { // 支付详情（CREATED 状态为空）
+
+	PaymentInfo struct { // 支付详情（CREATED 状态为空）
 		PaymentDate    string `json:"paymentDate"`    // 支付时间
 		MaskedPan      string `json:"maskedPan"`      // 掩码卡号（如 **1111）
 		PaymentSystem  string `json:"paymentSystem"`  // 支付系统（如 Visa）
@@ -57,6 +58,7 @@ type paymentBody struct {
 		PaymentWayCode string `json:"paymentWayCode"` // 支付方式编码
 		BankName       string `json:"bankName"`       // 发卡行名称
 	} `json:"paymentInfo"`
+
 	Order struct {
 		OrderId       string  `json:"orderId"`       // 订单UUID
 		OrderNumber   *string `json:"orderNumber"`   // 订单编号（可选）
