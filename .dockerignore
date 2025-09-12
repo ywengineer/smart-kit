@@ -1,0 +1,7 @@
+.git
+payment/.hz
+*.md
+proto.sh
+update.sh
+.idea
+out
