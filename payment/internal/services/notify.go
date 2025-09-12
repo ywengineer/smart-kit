@@ -27,12 +27,12 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 	sCtx := apps.GetContext(ctx)
 	// update notify times
 	cnt, err := gorm.G[model.Purchase](sCtx.Rdb().WithContext(ctx)).
-		Where("transaction_id = ?", data.TransactionId).
+		Where("transaction_id = ? and notified = 0", data.TransactionId).
 		Update(ctx, "notified_times", gorm.Expr("notified_times + 1"))
 	if err != nil {
 		return err
 	} else if cnt <= 0 {
-		return errors.New(fmt.Sprintf("[NotifyPay] order [%s] not found", data.TransactionId))
+		return nil // 已通知, 无需重复通知
 	}
 	// build notify data
 	notifyBody := msg.PayNotify{
@@ -66,7 +66,7 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 	now := time.Now().Local()
 	// update order data
 	if updated, err := gorm.G[model.Purchase](sCtx.Rdb().WithContext(ctx)).
-		Where("transaction_id = ?", notifyRet.GetOrderID()).
+		Where("transaction_id = ? AND notified = 0", notifyRet.GetOrderID()).
 		Select("RankPoints", "Credits", "Money", "Coin", "Notified", "FinishDate").
 		Updates(ctx, model.Purchase{
 			RankPoints: int(notifyRet.GetRankPoints()),
@@ -78,7 +78,7 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 		}); err != nil {
 		return err
 	} else if updated <= 0 {
-		return errors.New(fmt.Sprintf("[NotifyPay] order [%s] not found", notifyRet.String()))
+		return nil // 已通知, 无需重复通知
 	} else {
 		return nil
 	}

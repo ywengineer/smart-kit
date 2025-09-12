@@ -41,14 +41,14 @@ type verifyResp struct {
 //	REFUNDED - 已回收的资金将退还给买方.
 //	REFUNDING - 退款中.
 type paymentBody struct {
-	InvoiceId        int64    `json:"invoiceId"`        // 账单ID（检验入参）
-	InvoiceDate      string   `json:"invoiceDate"`      // 账单创建时间
-	RefundDate       string   `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
-	InvoiceStatus    string   `json:"invoiceStatus"`    // 账单状态（核心校验字段）
-	DeveloperPayload string   `json:"developerPayload"` // 自定义订单信息
-	AppId            int64    `json:"appId"`            // 应用ID（需与配置匹配）
-	OwnerCode        int64    `json:"ownerCode"`        // 应用所有者编码
-	PurchaseId       string   `json:"purchaseId"`       // 唯一购买UUID
+	InvoiceId        int64  `json:"invoiceId"`        // 账单ID（检验入参）
+	InvoiceDate      string `json:"invoiceDate"`      // 账单创建时间
+	RefundDate       string `json:"refundDate"`       // 退款时间（仅 REFUNDED 有值）
+	InvoiceStatus    string `json:"invoiceStatus"`    // 账单状态（核心校验字段）
+	DeveloperPayload string `json:"developerPayload"` // 自定义订单信息
+	AppId            int64  `json:"appId"`            // 应用ID（需与配置匹配）
+	OwnerCode        int64  `json:"ownerCode"`        // 应用所有者编码
+	PurchaseId       string `json:"purchaseId"`       // 唯一购买UUID
 	PaymentInfo      struct { // 支付详情（CREATED 状态为空）
 		PaymentDate    string `json:"paymentDate"`    // 支付时间
 		MaskedPan      string `json:"maskedPan"`      // 掩码卡号（如 **1111）
@@ -70,8 +70,8 @@ type paymentBody struct {
 	} `json:"order"` // 订单信息
 }
 
-// Rustore 支付检验器（整合令牌管理器）
-type Rustore struct {
+// rustore 支付检验器（整合令牌管理器）
+type rustore struct {
 	tokenManager *TokenManager
 	config       RustoreConfig
 }
@@ -88,7 +88,7 @@ func New(cp config.ChannelProperty) (inf.Verifier, error) {
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to initialize the token manager")
 	}
-	return &Rustore{
+	return &rustore{
 		tokenManager: tm,
 		config:       c,
 	}, nil
@@ -98,15 +98,15 @@ func New(cp config.ChannelProperty) (inf.Verifier, error) {
 // 返回值：
 // - *model.Purchase：支付成功且校验通过时返回核心数据
 // - error：校验失败（网络错误、接口错误、状态非法等）
-func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchase, error) {
+func (r *rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchase, error) {
 	// 获取有效 JWE 令牌
-	token, err := rustore.tokenManager.getToken()
+	token, err := r.tokenManager.getToken()
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to obtain the token")
 	}
 	//
 	var verifyURL string
-	if rustore.config.IsSandbox {
+	if r.config.IsSandbox {
 		verifyURL = sandboxVerifyURL + invoiceId
 	} else {
 		verifyURL = prodVerifyURL + invoiceId
@@ -130,7 +130,7 @@ func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Pu
 		return nil, inf.IncompletePurchase
 	}
 	// 校验应用ID（可选，确保请求对应正确应用）
-	if !rustore.config.IsValidApp(strconv.FormatInt(vr.Body.AppId, 10)) {
+	if !r.config.IsValidApp(strconv.FormatInt(vr.Body.AppId, 10)) {
 		return nil, inf.OtherAppPurchase
 	}
 	// 校验产品编码（可选，确保购买的是正确产品）
@@ -144,13 +144,13 @@ func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Pu
 	// 	return nil, fmt.Errorf("支付金额不匹配：实际 %d，期望 %d", paymentBody.Order.AmountCurrent, expectedAmount)
 	// }
 	// 所有校验通过，返回支付核心数据
-	p, err := rustore.convert(vr.Body)
+	p, err := r.convert(vr.Body)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to convert rustore payment 2 model.Purchase")
 	}
 	//
 	p.ReceiptResult, p.Receipt = string(resp), invoiceId
-	p.TestOrder = rustore.config.IsSandbox
+	p.TestOrder = r.config.IsSandbox
 	return p, nil
 }
 
@@ -164,7 +164,7 @@ type developerPayload struct {
 // need reset data after conver
 // - TestOrder
 // - FreeTrail
-func (rustore *Rustore) convert(data *paymentBody) (*model.Purchase, error) {
+func (r *rustore) convert(data *paymentBody) (*model.Purchase, error) {
 	var payload developerPayload
 	var err error
 	p := &model.Purchase{}
