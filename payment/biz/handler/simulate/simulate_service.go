@@ -76,7 +76,7 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	purchaseLog.Quantity = 1                                      // 购买商品的数量
 	purchaseLog.TransactionId = req.OrderId                       // 交易的唯一订单标识符。此标识符对应于 Google Payments 订单 ID。 如果订单为应用内购买结算沙盒中的测试订单，orderId 将为空。
 	purchaseLog.OriginalTransactionId = purchaseLog.TransactionId // 同transaction_id
-	purchaseLog.PurchaseDate = purchaseLog.CreatedAt              // 商品的购买时间（从新纪年（1970 年 1 月 1 日）开始计算的毫秒数）。
+	purchaseLog.PurchaseDate = purchaseLog.CreatedAt.Local()      // 商品的购买时间（从新纪年（1970 年 1 月 1 日）开始计算的毫秒数）。
 	purchaseLog.OriginalPurchaseDate = purchaseLog.PurchaseDate   // 对于恢复的transaction对象，该键对应了原始的交易日期
 	purchaseLog.OriginalApplicationVersion = "web simulate"       // 开发者指定的字符串，包含订单的补充信息。您可以在发起 getBuyIntent 请求时为此字段指定一个值。
 	purchaseLog.AppItemId = purchaseLog.TransactionId             // 用于对给定商品和用户对进行唯一标识的令牌。

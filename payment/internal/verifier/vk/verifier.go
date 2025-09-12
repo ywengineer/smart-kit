@@ -149,7 +149,7 @@ func (rustore *Rustore) Verify(ctx context.Context, invoiceId string) (*model.Pu
 		return nil, errors.WithMessage(err, "failed to convert rustore payment 2 model.Purchase")
 	}
 	//
-	p.ReceiptResult = string(resp)
+	p.ReceiptResult, p.Receipt = string(resp), invoiceId
 	p.TestOrder = rustore.config.IsSandbox
 	return p, nil
 }
@@ -171,17 +171,18 @@ func (rustore *Rustore) convert(data *paymentBody) (*model.Purchase, error) {
 	_ = sonic.Unmarshal(utilk.S2b(data.DeveloperPayload), &payload)
 	p.SystemType = payload.SystemType
 	// ------------------------------------------------------------------------------------------
-	p.TransactionId = strconv.FormatInt(data.InvoiceId, 64)
+	p.TransactionId = strconv.FormatInt(data.InvoiceId, 10)
 	p.TestOrder, p.FreeTrail = false, false
 	p.OriginalTransactionId = p.TransactionId                                    // 同transaction_id
 	p.PurchaseDate, err = time.Parse(time.RFC3339, data.PaymentInfo.PaymentDate) // 商品的购买时间（从新纪年（1970 年 1 月 1 日）开始计算的毫秒数）。
 	if err != nil {
 		return nil, err
 	}
+	p.PurchaseDate = p.PurchaseDate.Local()
 	p.OriginalPurchaseDate = p.PurchaseDate           // 对于恢复的transaction对象，该键对应了原始的交易日期
 	p.ExpireDate = nil                                // 普通消耗类型,没有过期时间
 	p.OriginalApplicationVersion = payload.AppVersion // 开发者指定的字符串，包含订单的补充信息。您可以在发起 getBuyIntent 请求时为此字段指定一个值。
-	p.AppItemId = data.Order.ItemCode                 // 用于对给定商品和用户对进行唯一标识的令牌。
+	p.AppItemId = p.TransactionId                     // 用于对给定商品和用户对进行唯一标识的令牌。
 	p.VersionExternalIdentifier = 0                   // 用来标识程序修订数。该键在sandbox环境下不存在
 	// ------------------------------------------------------------------------------------------
 	p.Quantity = 1                    // 购买商品的数量

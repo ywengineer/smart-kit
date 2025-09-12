@@ -44,7 +44,7 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 		ExpireTime:   &data.ExpireTime,
 	}
 	//
-	statusCode, resp, err := sCtx.Rpc().Post(ctx, rpcs.ContentTypeOctStream, serverInfo.GetApiMethodUrl("pay"), rpcs.ProtoBody{V: &notifyBody})
+	statusCode, resp, err := sCtx.Rpc().Post(ctx, rpcs.ContentTypeOctStream, serverInfo.GetApiMethodUrl("pay"), nil, rpcs.ProtoBody{V: &notifyBody})
 	if err != nil {
 		return err
 	} else if statusCode != http.StatusOK {
@@ -63,7 +63,7 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 	} else if len(notifyRet.GetOrderID()) == 0 {
 		return errors.New(fmt.Sprintf("[NotifyPay] result missing order [%s]", notifyRet.String()))
 	}
-	now := time.Now()
+	now := time.Now().Local()
 	// update order data
 	if updated, err := gorm.G[model.Purchase](sCtx.Rdb().WithContext(ctx)).
 		Where("transaction_id = ?", notifyRet.GetOrderID()).
