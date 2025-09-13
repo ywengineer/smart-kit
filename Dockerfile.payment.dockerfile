@@ -1,3 +1,4 @@
+ARG VERSION=master
 # 第一阶段：构建阶段
 FROM golang:1.24.7-alpine AS builder
 # 设置构建阶段的工作目录
@@ -5,10 +6,9 @@ WORKDIR /app
 # 配置国内Go模块代理，加速依赖下载
 ENV GOPROXY=https://goproxy.cn,direct
 # 复制源代码
-COPY . .
-RUN ls -al
+RUN git clone -b ${VERSION} --recurse-submodules https://gitee.com/ywengineer/smart-kit.git
 # 复制依赖文件并下载
-RUN cd payment && \
+RUN cd smart-kit/payment && \
     go mod download && \
     CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
@@ -21,7 +21,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 
 # 从构建阶段复制编译好的应用到/app目录
-COPY --from=builder /app/payment/main .
+COPY --from=builder /app/smart-kit/payment/main .
 # 创建日志目录并设置适当的权限
 RUN mkdir -p /app/logs && chmod 755 /app/logs
 # 暴露应用端口
