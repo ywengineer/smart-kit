@@ -2,12 +2,13 @@ package apps
 
 import (
 	"fmt"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
-	"time"
 )
 
 type Configuration struct {
@@ -29,6 +30,7 @@ type Configuration struct {
 	SignKey          string             `json:"sign_key" yaml:"sign-key" mapstructure:"sign-key"`
 	Profile          Profiling          `json:"profile" yaml:"profile" mapstructure:"profile"`
 	AccessLog        string             `json:"access_log" yaml:"access-log" mapstructure:"access-log"`
+	RateLimitEnabled bool               `json:"rate_limit_enabled" yaml:"rate-limit-enabled" mapstructure:"rate-limit-enabled"`
 }
 
 type Cors struct {

@@ -28,6 +28,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
 	"github.com/hertz-contrib/cors"
+	"github.com/hertz-contrib/limiter"
 	"github.com/hertz-contrib/logger/accesslog"
 	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
@@ -55,6 +56,7 @@ func NewHertzApp(appName string,
 	//
 	defaultPort := 8089
 	conf := &Configuration{
+		RateLimitEnabled: true,
 		Port:             defaultPort,
 		MaxRequestBodyKB: 50,
 		DistributeLock:   false,
@@ -167,6 +169,10 @@ func NewHertzApp(appName string,
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
+	//////////////////////////////////////////////////////////////////////////////////////////
+	if conf.RateLimitEnabled {
+		h.Use(limiter.AdaptiveLimit())
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if _cors := conf.Cors; _cors != nil {
 		h.Use(cors.New(cors.Config{
