@@ -19,7 +19,7 @@ import (
 )
 
 func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
-	serverInfo, ok := config.GetMeta().FindServer(data.GameID, data.ServerId)
+	serverInfo, ok := config.FindServer(data.GameID, data.ServerId)
 	// 如果通知地址不存在
 	if !ok || len(serverInfo.ApiUrl) == 0 {
 		return errors.New("[NotifyPay] [参数错误] 服务器不存在或邮件通知地址未配置！")

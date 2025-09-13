@@ -116,18 +116,18 @@ func (g *Metadata) refresh(ctx context.Context) {
 	})
 }
 
-func (g *Metadata) FindServer(gameId, serverId string) (r GameServerInfo, ok bool) {
-	r, ok = g.gameServerMap[utilk.Hash(gameId, serverId)]
+func FindServer(gameId, serverId string) (r GameServerInfo, ok bool) {
+	r, ok = mt.gameServerMap[utilk.Hash(gameId, serverId)]
 	return
 }
 
-func (g *Metadata) FindProduct(productId string, platformId int64) (r Product, ok bool) {
-	r, ok = g.productMap[utilk.Hash(productId, platformId)]
+func FindProduct(productId string, platformId int64) (r Product, ok bool) {
+	r, ok = mt.productMap[utilk.Hash(productId, platformId)]
 	return
 }
 
-func (g *Metadata) FindChannel(code string) (r Channel, ok bool) {
-	r, ok = g.channelMap[code]
+func FindChannel(code string) (r Channel, ok bool) {
+	r, ok = mt.channelMap[code]
 	return
 }
 

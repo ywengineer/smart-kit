@@ -35,20 +35,20 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusBadRequest, api.NewFailCodeResult(api.InvalidParameter))
 		return
 	}
-	serverInfo, ok := config.GetMeta().FindServer(req.GameId, req.ServerId)
+	serverInfo, ok := config.FindServer(req.GameId, req.ServerId)
 	// 如果通知地址不存在
 	if !ok || len(serverInfo.ApiUrl) == 0 {
 		c.JSON(consts.StatusBadRequest, api.NewFailResult("Game服务器参数异常", api.InvalidParameter))
 		return
 	}
 	// 支付渠道
-	channel, ok := config.GetMeta().FindChannel(req.PlatformId)
+	channel, ok := config.FindChannel(req.PlatformId)
 	if !ok {
 		c.JSON(consts.StatusBadRequest, api.NewFailResult("平台参数异常", api.InvalidChannel))
 		return
 	}
 	//
-	product, ok := config.GetMeta().FindProduct(req.ProductId, channel.Id)
+	product, ok := config.FindProduct(req.ProductId, channel.Id)
 	if !ok {
 		c.JSON(consts.StatusBadRequest, api.NewFailResult("未知或者不支持模拟订阅的产品ID:"+req.ProductId, api.InvalidProduct))
 		return

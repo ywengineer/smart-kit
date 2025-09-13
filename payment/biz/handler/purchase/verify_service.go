@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
@@ -29,20 +30,20 @@ import (
 func Verify(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req = &msg.PayReceipt{}
-	err = c.BindAndValidate(req)
+	err = c.BindByContentType(req)
 	if err != nil {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("bad request body", api.C0))
 		return
 	}
 	//
-	serverInfo, ok := config.GetMeta().FindServer(*req.GameId, *req.ServerId)
+	serverInfo, ok := config.FindServer(req.GetGameId(), req.GetServerId())
 	// 如果通知地址不存在
 	if !ok || len(serverInfo.ApiUrl) == 0 {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("bad game", api.C0))
 		return
 	}
 	// 支付渠道
-	channel, ok := config.GetMeta().FindChannel(*req.Channel)
+	channel, ok := config.FindChannel(req.GetChannel())
 	if !ok {
 		c.ProtoBuf(consts.StatusOK, api.NewProtoExceptionResult(errors.New("unknown payment channel"), api.C21010))
 		return
@@ -91,10 +92,14 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	// invalid purchase bundle
 	//if (!channel.getValidator().isValidBundle(purchase.getBundle_id())) throw new ErrorCodeException(api.C90002, "invalid bundle id");
 	//
-	product, ok := config.GetMeta().FindProduct(purchase.ProductId, channel.Id)
+	product, ok := config.FindProduct(purchase.ProductId, channel.Id)
+	if !ok {
+		c.ProtoBuf(consts.StatusOK, api.NewProtoFailResult("unknown product id:"+purchase.ProductId, api.C90001))
+		return
+	}
 	// lock purchase
 	sCtx := apps.GetContext(ctx)
-	lk, err := sCtx.LockMgr().Obtain(ctx, fmt.Sprintf("%s:%s:%s", req.GameId, req.ServerId, purchase.TransactionId), timex.Minute, &redislock.Options{
+	lk, err := sCtx.LockMgr().Obtain(ctx, fmt.Sprintf("%s:%s:%s", req.GetGameId(), req.GetServerId(), purchase.TransactionId), timex.Minute, &redislock.Options{
 		Metadata:      "Verify",
 		RetryStrategy: redislock.NoRetry(),
 	})
@@ -106,16 +111,14 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	// original receipt
 	purchase.Receipt = req.GetReceipt()
 	// locale
-	if req.Locale != nil {
-		purchase.Locale = *req.Locale
-	}
+	purchase.Locale = req.GetLocale()
 	// player create time
 	if req.CreateTime != nil {
-		ct := timex.FromUnix(*req.CreateTime).T()
+		ct := time.UnixMilli(req.GetCreateTime())
 		purchase.PlayerCreateTime = &ct
 	}
 	// 支付验证成功
-	err = services.OnPurchase(ctx, sCtx, *req.GameId, *req.ServerId, *req.Passport, *req.PlayerId, *req.PlayerName, purchase, channel, product)
+	err = services.OnPurchase(ctx, sCtx, req.GetGameId(), req.GetServerId(), req.GetPassport(), req.GetPlayerId(), req.GetPlayerName(), purchase, channel, product)
 	if err != nil {
 		hlog.CtxErrorf(ctx, "verify purchase error: %v, data: %s", err, req.String())
 		if errors.Is(err, services.ErrDuplicateOrder) {
@@ -128,7 +131,7 @@ func Verify(ctx context.Context, c *app.RequestContext) {
 	// 通知
 	gopool.Go(func() {
 		if err := queue.PublishPurchaseNotify(*purchase, asynq.MaxRetry(15)); err != nil {
-			hlog.Errorf("publish user purchase notify error: %v, data: %+v", err, req)
+			hlog.Errorf("publish user purchase notify error: %v, data: %s", err, req.String())
 		}
 	})
 	//

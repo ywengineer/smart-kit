@@ -64,7 +64,3 @@ func Watch(ctx context.Context, n nacos.Nacos, l Listener) error {
 func Get() Payment {
 	return p
 }
-
-func GetMeta() *Metadata {
-	return mt
-}
