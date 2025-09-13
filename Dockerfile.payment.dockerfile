@@ -12,7 +12,6 @@ RUN cd payment && \
     go mod download && \
     CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# 第二阶段：运行阶段
 FROM alpine:latest
 
 # 安装必要工具

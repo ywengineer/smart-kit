@@ -9,7 +9,6 @@ const (
 )
 
 type Profiling struct {
-	Enabled      bool        `json:"enabled" yaml:"enabled"`
-	AuthDownload bool        `json:"auth_download" yaml:"auth-download"`
-	Type         ProfileType `json:"type" yaml:"type"`
+	Enabled bool        `json:"enabled" yaml:"enabled"`
+	Type    ProfileType `json:"type" yaml:"type"`
 }

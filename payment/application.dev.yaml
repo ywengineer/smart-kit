@@ -1,7 +1,7 @@
 port: 8089
 base-path: payment
 max-request-body-kb: 50
-redis: "redis://redis-stack:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
+redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: true
 profile:
   enabled: true
@@ -12,7 +12,7 @@ access-log: default # disable if empty. see https://www.cloudwego.io/zh/docs/her
 # service registry info
 registry-info:
   service-name: smart-payment
-  addr: 172.21.90.65
+  addr: 127.0.0.1
   weight: 10
   tags:
     region: cn
@@ -29,7 +29,7 @@ rdb:
   name: "mysql" # mysql or postgres
   username: "root"
   password: "root"
-  host: "mysql"
+  host: "127.0.0.1"
   port: 3306
   database: "smart_payment"
   parameters: ""
@@ -47,7 +47,7 @@ jwt:
   identity-key: smart-id
 # Nacos server info
 nacos:
-  ip: nacos
+  ip: 127.0.0.1
   port: 8848
   context-path: /nacos
   timeout-ms: 10000

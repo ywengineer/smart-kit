@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -58,10 +59,17 @@ func NewHertzApp(appName string,
 		MaxRequestBodyKB: 50,
 		DistributeLock:   false,
 		LogLevel:         logk.Level(hlog.LevelDebug),
-		Profile:          Profiling{Type: Pprof, Enabled: true, AuthDownload: true},
+		Profile:          Profiling{Type: Pprof, Enabled: true},
 	}
+	//
+	env := os.Getenv("SMART_APP_ENV")
+	cfgFile := "application.yaml"
+	if env != "" {
+		cfgFile = fmt.Sprintf("application.%s.yaml", env)
+	}
+	hlog.Infof("load app configuration file: %s", cfgFile)
 	_loader := loaders.NewCompositeLoader(
-		loaders.NewLocalLoader("./application.yaml"),
+		loaders.NewLocalLoader("./"+cfgFile),
 		loaders.NewEnvLoader(),
 	)
 	if err := _loader.Load(conf); err != nil {
