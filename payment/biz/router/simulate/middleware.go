@@ -13,5 +13,5 @@ func rootMw() []app.HandlerFunc {
 }
 
 func _simulateMw() []app.HandlerFunc {
-	return []app.HandlerFunc{config.BasicAuth()}
+	return []app.HandlerFunc{config.CustomAuthorization()}
 }
