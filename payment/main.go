@@ -36,7 +36,7 @@ func main() {
 			}); err != nil {
 				hlog.CtxFatalf(rootCtx, "watch payment application config error: %v", err)
 			} else {
-				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get())
+				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get().Auth.Realm)
 			}
 			//
 			queue.InitQueue(rootCtx, ctx, config.Get().Queue, map[queue.TaskType]asynq.HandlerFunc{
