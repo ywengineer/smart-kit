@@ -13,7 +13,7 @@ docker-build-payment:
 	$(eval APP_EXAMPLE_DIR=example/payment)
 	@echo "build payment docker image with tag $(brunch). APP_NAME=$(APP_NAME) APP_EXAMPLE_DIR=$(APP_EXAMPLE_DIR)"
 	@sudo rm -fr $(APP_EXAMPLE_DIR)
-	sudo docker build --build-arg VERSION=$(brunch) -t $(APP_NAME):$(brunch) -f Dockerfile.payment.dockerfile .
+	sudo docker build --no-cache --build-arg VERSION=$(brunch) -t $(APP_NAME):$(brunch) -f Dockerfile.payment.dockerfile .
 	@mkdir -p $(APP_EXAMPLE_DIR)
 	@cp -f payment/*.yaml $(APP_EXAMPLE_DIR)/
 	@sed -i 's/APP_NAME/$(APP_NAME)/g' $(APP_EXAMPLE_DIR)/docker-compose.yaml
