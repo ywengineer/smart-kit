@@ -87,7 +87,7 @@ func NewRDB(driver Properties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 
 // NewMySQL create gorm.DB instance based on mysql database
 func NewMySQL(driver Properties) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local", driver.Username, driver.Password, driver.Host, driver.Port, driver.Database)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True", driver.Username, driver.Password, driver.Host, driver.Port, driver.Database)
 	if len(driver.Parameters) > 0 {
 		dsn += "&" + driver.Parameters
 	}
@@ -104,7 +104,7 @@ func NewMySQL(driver Properties) (*gorm.DB, error) {
 
 // NewPostgres create gorm.DB instance based on postgres database
 func NewPostgres(driver Properties) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s TimeZone=Asia/Shanghai",
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s ",
 		driver.Host, driver.Port, driver.Username, driver.Password, driver.Database)
 	if len(driver.Parameters) > 0 {
 		dsn += " " + driver.Parameters
