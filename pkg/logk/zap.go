@@ -10,7 +10,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func NewZapLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) hlog.FullLogger {
+func NewZapLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) *hertzzap.Logger {
 	// 提供压缩和删除
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   logFile,

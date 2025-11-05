@@ -30,6 +30,7 @@ import (
 	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/limiter"
 	"github.com/hertz-contrib/logger/accesslog"
+	hertztracingzap "github.com/hertz-contrib/obs-opentelemetry/logging/zap"
 	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
@@ -47,7 +48,8 @@ func NewHertzApp(appName string,
 	shutdown OnShutdown,
 	options ...Option,
 ) *server.Hertz {
-	hlog.SetLogger(logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug))
+	_logger := logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
+	hlog.SetLogger(_logger)
 	//
 	opt := &option{}
 	for _, o := range options {
@@ -169,9 +171,26 @@ func NewHertzApp(appName string,
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	h := server.Default(sOption...)
+	h.Use(requestid.New())
+	//////////////////////////////////////////////////////////////////////////////////////////
+	if len(conf.AccessLog) > 0 {
+		if strings.EqualFold(conf.AccessLog, "default") {
+			conf.AccessLog = "[${time}] | ${requestId} | ${status} | [r:${bytesReceived},s:${bytesSent}] | - ${latency} ${method} ${path}"
+		}
+		accesslog.Tags["requestId"] = func(output accesslog.Buffer, c *app.RequestContext, data *accesslog.Data, extraParam string) (int, error) {
+			return output.WriteString(requestid.Get(c))
+		}
+		h.Use(accesslog.New(accesslog.WithFormat("[AccessLog] " + conf.AccessLog)))
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if conf.RateLimitEnabled {
 		h.Use(limiter.AdaptiveLimit())
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////
+	if tracerConfig != nil {
+		hlog.Info("logger with tracing")
+		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(_logger)))
+		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if _cors := conf.Cors; _cors != nil {
@@ -184,19 +203,6 @@ func NewHertzApp(appName string,
 			MaxAge:           _cors.MaxAge,
 			AllowWildcard:    _cors.AllowWildcard,
 		}))
-	}
-	//////////////////////////////////////////////////////////////////////////////////////////
-	if tracerConfig != nil {
-		h.Use(hertztracing.ServerMiddleware(tracerConfig))
-	}
-	if len(conf.AccessLog) > 0 {
-		if strings.EqualFold(conf.AccessLog, "default") {
-			conf.AccessLog = "[${time}] | ${requestId} | ${status} | [r:${bytesReceived},s:${bytesSent}] | - ${latency} ${method} ${path}"
-		}
-		accesslog.Tags["requestId"] = func(output accesslog.Buffer, c *app.RequestContext, data *accesslog.Data, extraParam string) (int, error) {
-			return output.WriteString(requestid.Get(c))
-		}
-		h.Use(accesslog.New(accesslog.WithFormat("[AccessLog] " + conf.AccessLog)))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var rpc rpcs.Rpc
@@ -225,7 +231,6 @@ func NewHertzApp(appName string,
 		conf,
 	)
 	//
-	h.Use(requestid.New())
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
 		ctx.Next(context.WithValue(c, ContextKeySmart, smartCtx))
 	})

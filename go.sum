@@ -346,6 +346,8 @@ github.com/hertz-contrib/logger/slog v1.0.0 h1:nZVnsoLpSGzOyiXdfhAtFrLlsJc24yW/H
 github.com/hertz-contrib/logger/slog v1.0.0/go.mod h1:npMO4ORv4v1puT/8Y5q4FcR94Ui+f6gO49YDYnqlQ+0=
 github.com/hertz-contrib/logger/zap v1.1.0 h1:4efINiIDJrXEtAFeEdDJvc3Hye0VFxp+0X4BwaZgxNs=
 github.com/hertz-contrib/logger/zap v1.1.0/go.mod h1:D/rJJgsYn+SGaHVfVqWS3vHTbbc7ODAlJO+6smWgTeE=
+github.com/hertz-contrib/obs-opentelemetry/logging/zap v0.0.0-20250122050825-03daba98b545 h1:8hiPR1mcCtC8FpvftaEMWx8q624OnTym91okKnMKHPo=
+github.com/hertz-contrib/obs-opentelemetry/logging/zap v0.0.0-20250122050825-03daba98b545/go.mod h1:DKCbIhi3XLy+6Wx+xCuvJxLjEypCUuWvnqsGK2gt/NE=
 github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1 h1:YOv/UcSHjeAg1CwvcXi1zsNz5xFKf1iAKlEKAt7k31I=
 github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1/go.mod h1:u+EVWM4dDcudoXY4bCia0EyhaBOsPgRah+FvM75DM7s=
 github.com/hertz-contrib/pprof v0.1.2 h1:eC4jpg8ToSi+9YEOPIr3jki8e/ix3aFPtphCgJ36T6Q=
