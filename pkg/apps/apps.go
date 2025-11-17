@@ -230,7 +230,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		ctx.Next(context.WithValue(c, ContextKeySmart, smartCtx))
 	})
 	//
-	h.Use(opt.middlewares...)
+	h.Use(opt.middlewares(smartCtx)...)
 	//
 	h.NoRoute(func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(http.StatusNotFound, http.StatusText(http.StatusNotFound))

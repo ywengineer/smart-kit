@@ -11,14 +11,14 @@ type option struct {
 	mgrAuth        []app.HandlerFunc
 	startupHandle  OnStartup
 	shutdownHandle OnShutdown
-	middlewares    []app.HandlerFunc
+	middlewares    func(sc SmartContext) []app.HandlerFunc
 }
 
 type Option func(*option)
 
-func WithMiddlewares(middlewares ...app.HandlerFunc) Option {
+func WithMiddlewares(fun func(sc SmartContext) []app.HandlerFunc) Option {
 	return func(o *option) {
-		o.middlewares = append(o.middlewares, middlewares...)
+		o.middlewares = fun
 	}
 }
 
