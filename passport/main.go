@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+
 	model2 "gitee.com/ywengineer/smart-kit/passport/internal/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -14,12 +15,12 @@ import (
 func main() {
 	if h := apps.NewHertzApp("smart-passport",
 		apps.NewDefaultContext,
-		func(ctx apps.SmartContext) {
+		apps.WithStartupHandle(func(ctx apps.SmartContext) {
 			sqlRunner(ctx.Rdb())
-		},
-		func(ctx context.Context) {
+		}),
+		apps.WithShutdownHandle(func(ctx context.Context) {
 			// ignore
-		},
+		}),
 		apps.WithModels(
 			&model2.Passport{},
 			&model2.PassportPunish{},

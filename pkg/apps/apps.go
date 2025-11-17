@@ -42,12 +42,7 @@ import (
 type OnStartup func(ctx SmartContext)
 type OnShutdown route.CtxCallback
 
-func NewHertzApp(appName string,
-	genContext GenContext,
-	startup OnStartup,
-	shutdown OnShutdown,
-	options ...Option,
-) *server.Hertz {
+func NewHertzApp(appName string, genContext GenContext, options ...Option) *server.Hertz {
 	_logger := logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
 	hlog.SetLogger(_logger)
 	//
@@ -234,6 +229,9 @@ func NewHertzApp(appName string,
 	h.Use(func(c context.Context, ctx *app.RequestContext) {
 		ctx.Next(context.WithValue(c, ContextKeySmart, smartCtx))
 	})
+	//
+	h.Use(opt.middlewares...)
+	//
 	h.NoRoute(func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	})
@@ -246,9 +244,9 @@ func NewHertzApp(appName string,
 		if nnc != nil {
 			nnc.CloseClient()
 		}
-	}, route.CtxCallback(shutdown))
+	}, route.CtxCallback(opt.shutdownHandle))
 	//
-	startup(smartCtx)
+	opt.startupHandle(smartCtx)
 	//
 	initProfile(conf, h.Group("/mgr", opt.mgrAuth...), smartCtx)
 	//

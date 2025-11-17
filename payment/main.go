@@ -29,7 +29,7 @@ func main() {
 	//
 	if h := apps.NewHertzApp("smart-payment",
 		apps.NewDefaultContext,
-		func(ctx apps.SmartContext) {
+		apps.WithStartupHandle(func(ctx apps.SmartContext) {
 			//--------------------------------------------------------------------------------------------------
 			if err := config.Watch(rootCtx, ctx.GetNacosConfig(), func(c config.Payment) {
 
@@ -48,17 +48,15 @@ func main() {
 			//--------------------------------------------------------------------------------------------------
 			sqlRunner(ctx.Rdb())
 			//--------------------------------------------------------------------------------------------------
-		},
-		func(ctx context.Context) {
+		}),
+		apps.WithShutdownHandle(func(ctx context.Context) {
 			c.Stop()
 			queue.Shutdown()
 			cn()
-		},
+		}),
 		apps.WithMgrAuth(config.BasicAuth()),
 		apps.WithGormPlugins(shardingOrder()),
-		apps.WithModels(
-			&model.Purchase{},
-		),
+		apps.WithModels(&model.Purchase{}),
 	); h != nil {
 		c.Start()
 		register(h)
