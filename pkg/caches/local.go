@@ -42,10 +42,7 @@ func (l *localCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 		if le != nil {
 			return nil, le
 		}
-		if le = l.PutWithTtl(key, v, ttl); le != nil {
-			return nil, le
-		}
-		return v, nil
+		return v, l.PutWithTtl(key, v, ttl)
 	})
 	return t, err
 }
