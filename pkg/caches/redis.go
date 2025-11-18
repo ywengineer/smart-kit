@@ -40,7 +40,7 @@ func (r *redisCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 	if err == nil {
 		return t, nil
 	}
-	t, err, _ = r.l.Do(key, func() (any, error) {
+	if tv, err, _ := r.l.Do(key, func() (any, error) {
 		v, ttl, le := loader()
 		if le != nil {
 			return nil, le
@@ -50,8 +50,11 @@ func (r *redisCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 			return nil, le
 		}
 		return v, nil
-	})
-	return t, err
+	}); err != nil {
+		return t, err
+	} else {
+		return tv.(T), err
+	}
 }
 
 func (r *redisCache[T]) Get(key string) (T, error) {

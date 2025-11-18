@@ -37,14 +37,17 @@ func (l *localCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 	if ok {
 		return t, nil
 	}
-	t, err, _ := l.l.Do(key, func() (any, error) {
+	if tv, err, _ := l.l.Do(key, func() (any, error) {
 		v, ttl, le := loader()
 		if le != nil {
 			return nil, le
 		}
 		return v, l.PutWithTtl(key, v, ttl)
-	})
-	return t, err
+	}); err != nil {
+		return t, err
+	} else {
+		return tv.(T), err
+	}
 }
 
 func (l *localCache[T]) Get(key string) (T, error) {
