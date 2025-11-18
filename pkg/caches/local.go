@@ -1,46 +1,64 @@
 package caches
 
 import (
-	"sync"
+	"errors"
+	"time"
 
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/dgraph-io/ristretto/v2"
 )
 
-var cache *ristretto.Cache[string, []byte]
-var s sync.Once
-
-func init() {
-	s.Do(func() {
-		var err error
-		cache, err = NewCache[[]byte](1 << 30)
-		if err != nil {
-			panic(err)
-		}
-	})
+type localCache[T any] struct {
+	c *ristretto.Cache[string, T]
 }
 
-func NewCache[T any](capacity int64) (*ristretto.Cache[string, T], error) {
+func NewLocalCache[T any](capacity int64) Cache[T] {
 	c, err := ristretto.NewCache(&ristretto.Config[string, T]{
 		NumCounters: 1e7,      // number of keys to track frequency of (10M).
 		MaxCost:     capacity, // maximum cost of cache (1GB).
 		BufferItems: 64,       // size of Get buffers.
 	})
 	if err != nil {
-		return nil, err
+		logk.Fatalf("local cache init fail: %v", err)
+		return nil
 	} else {
 		go func() {
 			defer c.Close()
 			<-utilk.WatchQuitSignal()
 		}()
 	}
-	return c, nil
+	return &localCache[T]{c: c}
 }
 
-func Get(key string) ([]byte, bool) {
-	return cache.Get(key)
+func (l *localCache[T]) Get(key string) (T, error) {
+	t, ok := l.c.Get(key)
+	if !ok {
+		return t, ErrNotFound
+	}
+	return t, nil
 }
 
-func Put(key string, value []byte, cost int64) bool {
-	return cache.Set(key, value, cost)
+func (l *localCache[T]) Put(key string, value T) error {
+	if l.c.Set(key, value, 1) == false {
+		return errors.New("failed to put key in local cache")
+	}
+	return nil
+}
+
+func (l *localCache[T]) PutWithTtl(key string, value T, ttl time.Duration) error {
+	if l.c.SetWithTTL(key, value, 1, ttl) == false {
+		return errors.New("failed to put key with ttl in local cache")
+	}
+	return nil
+}
+
+func (l *localCache[T]) Invalidate(key string) error {
+	l.c.Del(key)
+	return nil
+}
+
+func (l *localCache[T]) InvalidatePrefix(prefix string) error {
+	l.c.Clear()
+	return nil
 }
