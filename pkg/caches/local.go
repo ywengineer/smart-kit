@@ -7,10 +7,12 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/dgraph-io/ristretto/v2"
+	"golang.org/x/sync/singleflight"
 )
 
 type localCache[T any] struct {
 	c *ristretto.Cache[string, T]
+	l *singleflight.Group
 }
 
 func NewLocalCache[T any](capacity int64) Cache[T] {
@@ -28,7 +30,24 @@ func NewLocalCache[T any](capacity int64) Cache[T] {
 			<-utilk.WatchQuitSignal()
 		}()
 	}
-	return &localCache[T]{c: c}
+	return &localCache[T]{c: c, l: &singleflight.Group{}}
+}
+func (l *localCache[T]) GetWithLoader(key string, loader func() (T, time.Duration, error)) (T, error) {
+	t, ok := l.c.Get(key)
+	if ok {
+		return t, nil
+	}
+	t, err, _ := l.l.Do(key, func() (any, error) {
+		v, ttl, le := loader()
+		if le != nil {
+			return nil, le
+		}
+		if le = l.PutWithTtl(key, v, ttl); le != nil {
+			return nil, le
+		}
+		return v, nil
+	})
+	return t, err
 }
 
 func (l *localCache[T]) Get(key string) (T, error) {
