@@ -46,7 +46,10 @@ func (r *redisCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 			return nil, le
 		}
 		// put to cache
-		return v, r.PutWithTtl(key, v, ttl)
+		if le = r.PutWithTtl(key, v, ttl); le != nil {
+			return nil, le
+		}
+		return v, nil
 	})
 	return t, err
 }
@@ -67,6 +70,10 @@ func (r *redisCache[T]) Get(key string) (T, error) {
 	}
 	if err := sonic.UnmarshalString(c, &value); err != nil {
 		return value, err
+	}
+	//
+	if r.m != nil {
+		_ = r.m.PutWithTtl(key, value, 0)
 	}
 	return value, nil
 }
