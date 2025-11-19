@@ -37,7 +37,7 @@ type pr struct {
 }
 
 // NewPromise 创建一个新的 Promise，提交任务到 gopool
-func NewPromise(task func() (interface{}, error)) Promise {
+func NewPromise[T any](task func() (T, error)) Promise {
 	ctx, cancel := context.WithCancel(context.Background())
 	p := &promise{
 		state:  pending,
