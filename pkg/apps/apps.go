@@ -27,6 +27,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/tracer/stats"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/cloudwego/hertz/pkg/route"
+	"github.com/hertz-contrib/binding/go_playground"
 	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/limiter"
 	"github.com/hertz-contrib/logger/accesslog"
@@ -112,6 +113,8 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	validateConfig := binding.NewValidateConfig()
 	validateConfig.MustRegValidateFunc("every", validator.Every)
+	gvd := go_playground.NewValidator()
+	gvd.SetValidateTag("gvd") // the default validate tag is 'binding'
 	//////////////////////////////////////////////////////////////////////////////////////////
 	sOption := []config.Option{
 		server.WithBindConfig(bindConfig),
@@ -120,6 +123,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		server.WithHandleMethodNotAllowed(true),
 		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB * 1024), // KB
 		server.WithValidateConfig(validateConfig),
+		server.WithCustomValidator(gvd),
 		server.WithTraceLevel(stats.Level(conf.TraceLevel)),
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
