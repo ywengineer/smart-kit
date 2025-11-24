@@ -47,7 +47,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	_logger := logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
 	hlog.SetLogger(_logger)
 	//
-	opt := &option{}
+	opt := &option{validators: make(map[string]func(args ...interface{}) error)}
 	for _, o := range options {
 		o(opt)
 	}
