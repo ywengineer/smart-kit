@@ -113,6 +113,10 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	validateConfig := binding.NewValidateConfig()
 	validateConfig.MustRegValidateFunc("every", validator.Every)
+	//
+	for k, v := range opt.validators {
+		validateConfig.MustRegValidateFunc(k, v)
+	}
 	gvd := go_playground.NewValidator()
 	gvd.SetValidateTag("gvd") // the default validate tag is 'binding'
 	//////////////////////////////////////////////////////////////////////////////////////////

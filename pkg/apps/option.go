@@ -12,6 +12,7 @@ type option struct {
 	startupHandle  OnStartup
 	shutdownHandle OnShutdown
 	middlewares    func(sc SmartContext) []app.HandlerFunc
+	validators     map[string]func(args ...interface{}) error
 }
 
 type Option func(*option)
@@ -49,5 +50,13 @@ func WithModels(models ...interface{}) Option {
 func WithMgrAuth(auth ...app.HandlerFunc) Option {
 	return func(o *option) {
 		o.mgrAuth = append(o.mgrAuth, auth...)
+	}
+}
+
+func WithValidators(validators map[string]func(args ...interface{}) error) Option {
+	return func(o *option) {
+		for k, v := range validators {
+			o.validators[k] = v
+		}
 	}
 }
