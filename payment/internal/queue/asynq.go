@@ -41,8 +41,8 @@ func InitQueue(ctx context.Context, sCtx apps.SmartContext, cfg config.Queue, ha
 
 func Shutdown() {
 	so.Do(func() {
-		hlog.Infof("close queue client: %v", cli.Close())
 		srv.Stop()
 		srv.Shutdown()
+		_ = cli.Close()
 	})
 }
