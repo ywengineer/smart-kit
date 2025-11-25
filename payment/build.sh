@@ -3,4 +3,4 @@ RUN_NAME=payment
 mkdir -p output/bin
 cp script/* output 2>/dev/null
 chmod +x output/bootstrap.sh
-go build -o output/bin/${RUN_NAME}
+CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o output/bin/${RUN_NAME}

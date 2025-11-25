@@ -3,6 +3,7 @@
 *.so
 _obj
 _test
+main
 *.[568vq]
 [568vq].out
 *.cgo1.go

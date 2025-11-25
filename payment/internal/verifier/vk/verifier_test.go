@@ -21,12 +21,12 @@ func TestVerify(t *testing.T) {
 		ClientID:     keyId, // 从控制台获取
 		ClientSecret: pKey,  // 从控制台获取（严格保密）
 		Sandbox:      true,  // 测试用 true，生产用 false
-		Apps:         []string{},
+		Apps:         []string{"2063556499"},
 	}
 	r, err := New(cf)
 	assert.Nil(t, err)
 	//
-	tk, err := r.Verify(t.Context(), "123456")
+	tk, err := r.Verify(t.Context(), "10000015096")
 	assert.Nil(t, err)
 	t.Logf("Result: %+v", tk)
 }

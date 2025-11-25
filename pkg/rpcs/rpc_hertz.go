@@ -38,7 +38,7 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 	var cli *client.Client
 	info.MaxRetry = utilk.Max(1, info.MaxRetry)
 	info.MaxConnPerHost = utilk.Max(runtime.GOMAXPROCS(0)+1, info.MaxConnPerHost)
-	info.Delay = utilk.Max(info.Delay, time.Millisecond*50)
+	info.Delay = utilk.Max(info.Delay, time.Millisecond*1000)
 	info.ReadTimeout = utilk.Max(info.ReadTimeout, time.Millisecond*100)
 	if cli, err = client.NewClient(
 		client.WithName(info.ClientName),
