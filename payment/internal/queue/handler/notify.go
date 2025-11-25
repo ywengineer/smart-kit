@@ -28,5 +28,9 @@ func HandlePurchaseNotify(ctx context.Context, t *asynq.Task) error {
 	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	return services.Notify(ctx, payload)
+	if err := services.Notify(ctx, payload); err != nil {
+		hlog.Errorf("[HandlePurchaseNotify] notify failed, payload = %s, err = %v", string(t.Payload()), err)
+		return err
+	}
+	return nil
 }
