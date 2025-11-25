@@ -8,6 +8,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/payment/pkg/api"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"gorm.io/gorm"
 )
 
 var ErrDuplicateOrder = errors.New(api.DuplicateOrder)
@@ -27,7 +28,8 @@ func OnPurchase(ctx context.Context, sCtx apps.SmartContext, gameId, serverId, p
 		WithContext(ctx).
 		Select("id", "expire_date").
 		First(&old, "transaction_id = ?", purchaseLog.TransactionId)
-	if ret.Error != nil {
+	// db error
+	if ret.Error != nil && !errors.Is(ret.Error, gorm.ErrRecordNotFound) {
 		return ret.Error
 	}
 	// 如果是订阅且已处理, 不再进行后续处理
