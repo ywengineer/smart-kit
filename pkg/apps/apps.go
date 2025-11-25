@@ -174,10 +174,13 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if len(conf.AccessLog) > 0 {
 		if strings.EqualFold(conf.AccessLog, "default") {
-			conf.AccessLog = "[${time}] | ${requestId} | ${status} | [r:${bytesReceived},s:${bytesSent}] | - ${latency} ${method} ${path}"
+			conf.AccessLog = "[${time}] | ${requestId} | ${status} | [r:${bytesReceived},s:${bytesSent}] | - ${latency} ${method} ${contentType} ${path}"
 		}
 		accesslog.Tags["requestId"] = func(output accesslog.Buffer, c *app.RequestContext, data *accesslog.Data, extraParam string) (int, error) {
 			return output.WriteString(requestid.Get(c))
+		}
+		accesslog.Tags["contentType"] = func(output accesslog.Buffer, c *app.RequestContext, data *accesslog.Data, extraParam string) (int, error) {
+			return output.WriteString(string(c.ContentType()))
 		}
 		h.Use(accesslog.New(accesslog.WithFormat("[AccessLog] " + conf.AccessLog)))
 	}
