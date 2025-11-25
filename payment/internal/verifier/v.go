@@ -9,20 +9,19 @@ import (
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/vk"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/xm"
 	"gitee.com/ywengineer/smart-kit/pkg/caches"
-	"github.com/dgraph-io/ristretto/v2"
 )
 
 type Factory func(cp config.ChannelProperty) (inf.Verifier, error)
 
 var factories = make(map[string]Factory)
 
-var verifierCache *ristretto.Cache[string, inf.Verifier]
+var verifierCache caches.Cache[inf.Verifier]
 var s sync.Once
 
 func init() {
 	s.Do(func() {
 		var err error
-		if verifierCache, err = caches.NewCache[inf.Verifier](1000); err != nil {
+		if verifierCache = caches.NewLocalCache[inf.Verifier](1000); verifierCache == nil {
 			panic(err)
 		}
 		//
@@ -41,12 +40,15 @@ func RegisterFactory(name string, factory Factory) {
 
 func FindVerifier(c config.Channel) (inf.Verifier, error) {
 	if cp, ok := config.Get().Channel[c.Code]; ok {
-		if v, ok := verifierCache.Get(cp.Validator); ok {
+		if v, err := verifierCache.Get(cp.Validator); err == nil {
 			return v, nil
 		} else if factory, ok := factories[cp.Validator]; ok {
-			if v, err := factory(cp); err == nil {
-				verifierCache.Set(cp.Validator, v, 1)
-				return v, nil
+			if v, err = factory(cp); err == nil {
+				if err = verifierCache.Put(cp.Validator, v); err == nil {
+					return v, nil
+				} else {
+					return nil, err
+				}
 			} else {
 				return nil, err
 			}
