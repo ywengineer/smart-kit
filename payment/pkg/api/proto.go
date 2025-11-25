@@ -32,19 +32,19 @@ const (
 )
 
 func NewProtoOkResult(message string) *proto.ApiResult {
-	return NewProtoResult(c01, message, C0)
+	return NewProtoResult(C01, message, C0)
 }
 
 func NewProtoExceptionResult(err error, errCode ProtoErrCode) *proto.ApiResult {
-	return NewProtoResult(c02, err.Error(), errCode)
+	return NewProtoResult(C02, err.Error(), errCode)
 }
 
 func NewProtoFailCodeResult(errCode ProtoErrCode) *proto.ApiResult {
-	return NewProtoResult(c03, "", errCode)
+	return NewProtoResult(C03, "", errCode)
 }
 
 func NewProtoFailResult(message string, errCode ProtoErrCode) *proto.ApiResult {
-	return NewProtoResult(c03, message, errCode)
+	return NewProtoResult(C03, message, errCode)
 }
 
 func NewProtoResult(code Code, message string, errCode ProtoErrCode) *proto.ApiResult {

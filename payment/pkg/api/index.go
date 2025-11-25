@@ -7,9 +7,9 @@ import (
 type Code string
 
 const (
-	c01 = "c01" // 正常处理成功
-	c02 = "c02" // 服务器异常
-	c03 = "c03" // 处理失败(错误消息)
+	C01 = "c01" // 正常处理成功
+	C02 = "c02" // 服务器异常
+	C03 = "c03" // 处理失败(错误消息)
 )
 
 type ErrCode string
@@ -25,19 +25,19 @@ const (
 )
 
 func NewOkResult(message string) *common.ApiResult {
-	return NewResult(c01, message, None)
+	return NewResult(C01, message, None)
 }
 
 func NewExceptionResult(err error, errCode ErrCode) *common.ApiResult {
-	return NewResult(c02, err.Error(), errCode)
+	return NewResult(C02, err.Error(), errCode)
 }
 
 func NewFailCodeResult(errCode ErrCode) *common.ApiResult {
-	return NewResult(c03, "", errCode)
+	return NewResult(C03, "", errCode)
 }
 
 func NewFailResult(message string, errCode ErrCode) *common.ApiResult {
-	return NewResult(c03, message, errCode)
+	return NewResult(C03, message, errCode)
 }
 
 func NewResult(code Code, message string, errCode ErrCode) *common.ApiResult {

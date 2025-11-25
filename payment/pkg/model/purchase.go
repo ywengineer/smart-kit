@@ -43,5 +43,8 @@ func (p Purchase) GetExpiredTime() int64 {
 	return p.ExpireDate.Unix()
 }
 func (p Purchase) Expired() bool {
-	return p.GetExpiredTime() <= time.Now().Unix()
+	if p.ExpireDate == nil {
+		return false
+	}
+	return p.ExpireDate.Unix() <= time.Now().Unix()
 }

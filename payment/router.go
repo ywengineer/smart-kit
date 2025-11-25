@@ -3,9 +3,17 @@
 package main
 
 import (
+	"context"
+	"errors"
+
 	handler "gitee.com/ywengineer/smart-kit/payment/biz/handler"
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
+	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
+	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"gorm.io/gorm"
 )
 
 // customizeRegister registers customize routers.
@@ -17,4 +25,27 @@ func customizedRegister(r *server.Hertz) {
 	mgrQueueG := mgrG.Group("/queue")
 	mgrQueueG.GET("/test", handler.TestQueue)
 	mgrQueueG.GET("/test-fail", handler.TestFailQueue)
+	//
+	orderG := mgrG.Group("/order")
+	orderG.GET("/get/:orderId", func(c context.Context, ctx *app.RequestContext) {
+		orderId := ctx.Param("orderId")
+		if len(orderId) > 0 {
+			sCtx := apps.GetContext(c)
+			var purchaseLog model.Purchase
+			if err := sCtx.Rdb().WithContext(c).
+				First(&purchaseLog, "transaction_id = ?", orderId).
+				Error; errors.Is(err, gorm.ErrRecordNotFound) {
+				ctx.JSON(consts.StatusOK, "order not found")
+				return
+			} else if err != nil {
+				ctx.JSON(consts.StatusOK, "internal server error: "+err.Error())
+				return
+			} else {
+				ctx.JSON(consts.StatusOK, &purchaseLog)
+				return
+			}
+		} else {
+			ctx.JSON(consts.StatusOK, "invalid order id: '"+orderId+"'")
+		}
+	})
 }
