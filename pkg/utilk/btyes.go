@@ -71,3 +71,11 @@ func S2b(s string) (b []byte) {
 	(*sliceHeader)(unsafe.Pointer(&b)).Cap = len(s)
 	return
 }
+
+func Get[T any](arr []T, index int) T {
+	if index < 0 || index >= len(arr) {
+		var zero T
+		return zero
+	}
+	return arr[index]
+}

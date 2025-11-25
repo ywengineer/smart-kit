@@ -167,10 +167,14 @@ type developerPayload struct {
 // - TestOrder
 // - FreeTrail
 func (r *rustore) convert(data *paymentBody) (*model.Purchase, error) {
-	var payload developerPayload
 	var err error
 	p := &model.Purchase{}
-	_ = sonic.Unmarshal(utilk.S2b(data.DeveloperPayload), &payload)
+	parts := strings.Split(data.DeveloperPayload, "-")
+	payload := developerPayload{
+		SystemType: utilk.Get(parts, 0),
+		AppVersion: utilk.Get(parts, 1),
+		BundleId:   utilk.Get(parts, 2),
+	}
 	p.SystemType = payload.SystemType
 	// ------------------------------------------------------------------------------------------
 	p.TransactionId = strconv.FormatInt(data.InvoiceId, 10)
