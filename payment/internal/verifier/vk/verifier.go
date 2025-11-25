@@ -118,9 +118,9 @@ func (r *rustore) Verify(ctx context.Context, invoiceId string) (*model.Purchase
 		"Public-Token": []string{token},
 	})
 	if err != nil {
-		return nil, errors.WithMessage(err, "Failed to get rustore purchase with error")
+		return nil, errors.WithMessage(err, "Failed to get rustore purchase with error. token = "+token)
 	} else if statusCode != consts.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Failed to get rustore purchase with status: %d, resp = %s", statusCode, string(resp)))
+		return nil, errors.New(fmt.Sprintf("Failed to get rustore purchase detail. token = %s, status: %d, resp = %s", token, statusCode, string(resp)))
 	}
 	//
 	var vr verifyResp
