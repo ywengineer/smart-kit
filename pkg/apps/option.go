@@ -14,9 +14,16 @@ type option struct {
 	middlewares    func(sc SmartContext) []app.HandlerFunc
 	validators     map[string]func(args ...interface{}) error
 	beforeMigrate  func(sc *gorm.DB) error
+	useSlog        bool
 }
 
 type Option func(*option)
+
+func UseSlog() Option {
+	return func(o *option) {
+		o.useSlog = true
+	}
+}
 
 func WithBeforeMigrate(fun func(sc *gorm.DB) error) Option {
 	return func(o *option) {

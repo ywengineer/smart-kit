@@ -10,6 +10,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -133,15 +134,13 @@ func initRbdConnPool(gdb *gorm.DB, driver Properties) (*gorm.DB, error) {
 }
 
 func defaultConfig(debug bool) *gorm.Config {
-	if debug {
-		return &gorm.Config{
-			PrepareStmt:            true,
-			SkipDefaultTransaction: true,
-			Logger:                 logger.Default.LogMode(logger.Info),
-		}
-	}
 	return &gorm.Config{
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
+		Logger: logger.NewSlogLogger(logk.GetDefaultSLogger(), logger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			IgnoreRecordNotFoundError: false,
+			Colorful:                  true,
+		}).LogMode(lo.If(debug, logger.Info).Else(logger.Warn)),
 	}
 }

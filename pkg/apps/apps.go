@@ -43,13 +43,19 @@ type OnStartup func(ctx SmartContext)
 type OnShutdown route.CtxCallback
 
 func NewHertzApp(appName string, genContext GenContext, options ...Option) *server.Hertz {
-	_logger := logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
-	hlog.SetLogger(_logger)
 	//
 	opt := &option{validators: make(map[string]func(args ...interface{}) error)}
 	for _, o := range options {
 		o(opt)
 	}
+	//
+	var _logger hlog.FullLogger
+	if opt.useSlog {
+		_logger = logk.NewSLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
+	} else {
+		_logger = logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
+	}
+	logk.SetLogger(_logger)
 	//
 	defaultPort := 8089
 	conf := &Configuration{
@@ -74,7 +80,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	if err := _loader.Load(conf); err != nil {
 		hlog.Fatalf("failed to load application.yaml: %v", err)
 	}
-	hlog.SetLevel(hlog.Level(conf.LogLevel))
+	logk.SetLogLevel(hlog.Level(conf.LogLevel))
 	//
 	if (conf.RegistryInfo != nil || conf.DiscoveryEnable) && conf.Nacos == nil {
 		hlog.Fatalf("enable service registry or discovery. but not found nacos configuration")
@@ -197,7 +203,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
 		hlog.Info("logger with tracing")
-		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(_logger)))
+		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log", 20, 10, 7, hlog.LevelDebug))))
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////

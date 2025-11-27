@@ -2,14 +2,21 @@ package logk
 
 import (
 	"context"
+
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
-var defLogger = NewZapLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
+var defLogger hlog.FullLogger = NewZapLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
+
+func SetLogger(l hlog.FullLogger) {
+	defLogger = l
+	hlog.SetLogger(defLogger)
+}
 
 // SetLogLevel must greater than debug level
 func SetLogLevel(lv hlog.Level) {
 	defLogger.SetLevel(lv)
+	hlog.SetLevel(lv)
 }
 
 func DefaultLogger() hlog.FullLogger {
