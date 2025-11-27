@@ -30,6 +30,7 @@ type Properties struct {
 	Pool       DbPoolProperties `json:"pool" yaml:"pool"`
 	Cache      string           `json:"cache" yaml:"cache"`
 	DebugMode  bool             `json:"debug_mode" yaml:"debug-mode"`
+	Extensions []string         `json:"extensions" yaml:"extensions"` // for postgres
 }
 
 type DbPoolProperties struct {

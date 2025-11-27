@@ -108,7 +108,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		return nil
 	}
 	if opt.beforeMigrate != nil {
-		if err = opt.beforeMigrate(db); err != nil {
+		if err = opt.beforeMigrate(db, conf.RDB.Extensions...); err != nil {
 			hlog.Fatalf("failed to before migrate: %v", err)
 			return nil
 		}
