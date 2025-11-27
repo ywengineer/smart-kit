@@ -8,6 +8,7 @@ import (
 
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
@@ -137,10 +138,11 @@ func defaultConfig(debug bool) *gorm.Config {
 	return &gorm.Config{
 		PrepareStmt:            true,
 		SkipDefaultTransaction: true,
-		Logger: logger.NewSlogLogger(logk.GetDefaultSLogger(), logger.Config{
-			SlowThreshold:             200 * time.Millisecond,
-			IgnoreRecordNotFoundError: false,
-			Colorful:                  true,
-		}).LogMode(lo.If(debug, logger.Info).Else(logger.Warn)),
+		Logger: lo.If(debug, logger.Default.LogMode(logger.Info)).
+			Else(logger.NewSlogLogger(logk.NewSLogger("./logs/orm.log", 10, 10, 7, hlog.LevelWarn).Logger(), logger.Config{
+				SlowThreshold:             200 * time.Millisecond,
+				IgnoreRecordNotFoundError: false,
+				Colorful:                  true,
+			})),
 	}
 }
