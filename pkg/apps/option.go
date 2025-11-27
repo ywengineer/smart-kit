@@ -13,9 +13,16 @@ type option struct {
 	shutdownHandle OnShutdown
 	middlewares    func(sc SmartContext) []app.HandlerFunc
 	validators     map[string]func(args ...interface{}) error
+	beforeMigrate  func(sc *gorm.DB) error
 }
 
 type Option func(*option)
+
+func WithBeforeMigrate(fun func(sc *gorm.DB) error) Option {
+	return func(o *option) {
+		o.beforeMigrate = fun
+	}
+}
 
 func WithMiddlewares(fun func(sc SmartContext) []app.HandlerFunc) Option {
 	return func(o *option) {

@@ -101,6 +101,12 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		hlog.Fatalf("failed to create rdb instance: %v", err)
 		return nil
 	}
+	if opt.beforeMigrate != nil {
+		if err = opt.beforeMigrate(db); err != nil {
+			hlog.Fatalf("failed to before migrate: %v", err)
+			return nil
+		}
+	}
 	if err = db.AutoMigrate(opt.models...); err != nil {
 		hlog.Fatalf("failed to start orm migrate: %v", err)
 		return nil
