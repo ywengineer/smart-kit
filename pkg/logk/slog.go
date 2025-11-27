@@ -1,11 +1,13 @@
 package logk
 
 import (
+	"log/slog"
+	"os"
+	"time"
+
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	hertzslog "github.com/hertz-contrib/logger/slog"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"log/slog"
-	"time"
+	"go.uber.org/zap/zapcore"
 )
 
 func _max[T int | int32 | int64 | uint | time.Duration](a, b T) T {
@@ -15,7 +17,7 @@ func _max[T int | int32 | int64 | uint | time.Duration](a, b T) T {
 	return b
 }
 
-var defSlog = NewSLogger("./logs/default_slog.log", 10, 10, 7, hlog.LevelDebug)
+var defSlog = NewSLogger("./logs/default_slog.log")
 
 func GetDefaultSLogger() *slog.Logger {
 	return defSlog.Logger()
@@ -25,19 +27,29 @@ func SetSLoggerLevel(level hlog.Level) {
 	defSlog.SetLevel(level)
 }
 
-func NewSLogger(logFile string, maxFileMB, maxBackups, maxDays int, level hlog.Level) *hertzslog.Logger {
-	// 提供压缩和删除
-	lumberjackLogger := &lumberjack.Logger{
-		Filename:   logFile,
-		MaxSize:    _max(20, maxFileMB), // 一个文件最大可达 20M。
-		MaxBackups: _max(5, maxBackups), // 最多同时保存 5 个文件。
-		MaxAge:     _max(1, maxDays),    // 一个文件最多可以保存 10 天。
-		Compress:   true,                // 用 gzip 压缩。
+func NewSLogger(logFile string, opts ...Option) *hertzslog.Logger {
+	o := &option{
+		file:       logFile,
+		maxFileMB:  20,
+		maxBackups: 20,
+		maxDays:    7,
+		level:      DebugLevel,
+		stdout:     true,
+	}
+	for _, opt := range opts {
+		opt(o)
 	}
 	//
-	l := hertzslog.NewLogger(
-		hertzslog.WithOutput(lumberjackLogger),
-	)
-	l.SetLevel(level)
+	var l *hertzslog.Logger
+	if o.stdout {
+		l = hertzslog.NewLogger(
+			hertzslog.WithOutput(zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(newRollingLogger(o)))),
+		)
+	} else {
+		l = hertzslog.NewLogger(
+			hertzslog.WithOutput(zapcore.AddSync(newRollingLogger(o))),
+		)
+	}
+	l.SetLevel(hlog.Level(o.level))
 	return l
 }

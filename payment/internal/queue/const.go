@@ -30,7 +30,7 @@ func (name QName) String() string         { return fmt.Sprintf("Queue(%q)", stri
 func (name QName) Type() asynq.OptionType { return asynq.QueueOpt }
 func (name QName) Value() interface{}     { return string(name) }
 
-var ErrNotInit = errors.New("queue is not initialized yet, please init queue use queue.InitQueue")
+var ErrNotInit = errors.New("queue is not initialized yet, please init queue use queue.Setup")
 
 type PurchaseNotifyPayload struct {
 	GameID        string `json:"game_id"`

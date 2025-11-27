@@ -6,7 +6,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
-var defLogger hlog.FullLogger = NewZapLogger("./logs/default.log", 10, 10, 7, hlog.LevelDebug)
+var defLogger hlog.FullLogger = NewZapLogger("./logs/default.log")
 
 func SetLogger(l hlog.FullLogger) {
 	defLogger = l

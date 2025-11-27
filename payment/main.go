@@ -39,7 +39,7 @@ func main() {
 				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get().Auth.Realm)
 			}
 			//
-			queue.InitQueue(rootCtx, ctx, config.Get().Queue, map[queue.TaskType]asynq.HandlerFunc{
+			queue.Setup(rootCtx, ctx, config.Get().Queue, map[queue.TaskType]asynq.HandlerFunc{
 				queue.PurchaseNotify: handler.HandlePurchaseNotify,
 				queue.Test:           handler.Test,
 			})

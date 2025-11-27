@@ -7,6 +7,12 @@ import (
 
 type Level hlog.Level
 
+const InfoLevel = Level(hlog.LevelInfo)
+const DebugLevel = Level(hlog.LevelDebug)
+const WarnLevel = Level(hlog.LevelWarn)
+const ErrorLevel = Level(hlog.LevelError)
+const FatalLevel = Level(hlog.LevelFatal)
+
 func (l *Level) String() string {
 	switch hlog.Level(*l) {
 	case hlog.LevelTrace:

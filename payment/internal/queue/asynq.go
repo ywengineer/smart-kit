@@ -17,7 +17,7 @@ var so sync.Once
 var cli *asynq.Client
 var srv *asynq.Server
 
-func InitQueue(ctx context.Context, sCtx apps.SmartContext, cfg config.Queue, handlers map[TaskType]asynq.HandlerFunc) {
+func Setup(ctx context.Context, sCtx apps.SmartContext, cfg config.Queue, handlers map[TaskType]asynq.HandlerFunc) {
 	o.Do(func() {
 		ctx := context.WithValue(ctx, apps.ContextKeySmart, sCtx)
 		cli = asynq.NewClientFromRedisClient(sCtx.Redis())
@@ -28,7 +28,7 @@ func InitQueue(ctx context.Context, sCtx apps.SmartContext, cfg config.Queue, ha
 				BaseContext: func() context.Context {
 					return ctx
 				},
-				Logger: logk.NewSLogger("./logs/queue.log", 10, 10, 7, hlog.LevelInfo),
+				Logger: logk.NewSLogger("./logs/queue.log", logk.WithLevel(logk.InfoLevel)),
 			})
 		// mux maps a type to a handler
 		mux := asynq.NewServeMux()

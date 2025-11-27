@@ -51,9 +51,9 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//
 	var _logger hlog.FullLogger
 	if opt.useSlog {
-		_logger = logk.NewSLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
+		_logger = logk.NewSLogger("./logs/" + appName + ".log")
 	} else {
-		_logger = logk.NewZapLogger("./logs/"+appName+".log", 20, 10, 7, hlog.LevelDebug)
+		_logger = logk.NewZapLogger("./logs/" + appName + ".log")
 	}
 	logk.SetLogger(_logger)
 	//
@@ -203,7 +203,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
 		hlog.Info("logger with tracing")
-		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log", 20, 10, 7, hlog.LevelDebug))))
+		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log"))))
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
