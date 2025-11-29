@@ -1,7 +1,7 @@
 port: 8089
 rate-limit-enabled: true
 base-path: payment
-max-request-body-kb: 50
+max-request-body: 5MB
 redis: "redis://redis-stack:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: true
 profile:

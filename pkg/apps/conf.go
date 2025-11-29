@@ -17,7 +17,7 @@ type Configuration struct {
 	RDB              rdbs.Properties    `json:"rdb" yaml:"rdb" mapstructure:"rdb"`
 	Redis            string             `yaml:"redis" json:"redis" mapstructure:"redis" env:"SERVICE_REDIS"` // redis://user:password@host:port/?db=0&node=host:port&node=host:port
 	DistributeLock   bool               `json:"distribute_lock" yaml:"distribute-lock" mapstructure:"distribute-lock"`
-	MaxRequestBodyKB int                `json:"max_request_body_kb,omitempty" yaml:"max-request-body-kb,omitempty" mapstructure:"max-request-body-kb,omitempty"`
+	MaxRequestBody   string             `json:"max_request_body,omitempty" yaml:"max-request-body,omitempty" mapstructure:"max-request-body,omitempty"`
 	Cors             *Cors              `json:"cors,omitempty" yaml:"cors,omitempty" mapstructure:"cors,omitempty"`
 	Jwt              *JwtConfig         `json:"jwt,omitempty" yaml:"jwt,omitempty" mapstructure:"jwt,omitempty"`
 	LogLevel         logk.Level         `json:"log_level" yaml:"log-level" mapstructure:"log-level"`

@@ -61,7 +61,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	conf := &Configuration{
 		RateLimitEnabled: true,
 		Port:             defaultPort,
-		MaxRequestBodyKB: 50,
+		MaxRequestBody:   "5MB",
 		DistributeLock:   false,
 		LogLevel:         logk.Level(hlog.LevelDebug),
 		Profile:          Profiling{Type: Pprof, Enabled: true},
@@ -72,21 +72,27 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	if env != "" {
 		cfgFile = fmt.Sprintf("application.%s.yaml", env)
 	}
-	hlog.Infof("load app configuration file: %s", cfgFile)
+	logk.Infof("load app configuration file: %s", cfgFile)
 	_loader := loaders.NewCompositeLoader(
 		loaders.NewLocalLoader("./"+cfgFile),
 		loaders.NewEnvLoader(),
 	)
 	if err := _loader.Load(conf); err != nil {
-		hlog.Fatalf("failed to load application.yaml: %v", err)
+		logk.Fatalf("failed to load application.yaml: %v", err)
 	}
 	logk.SetLogLevel(hlog.Level(conf.LogLevel))
 	//
 	if (conf.RegistryInfo != nil || conf.DiscoveryEnable) && conf.Nacos == nil {
-		hlog.Fatalf("enable service registry or discovery. but not found nacos configuration")
+		logk.Fatalf("enable service registry or discovery. but not found nacos configuration")
 		return nil
 	}
 	conf.Port = utilk.Min(utilk.Max(conf.Port, 1), 65535)
+	// parse max request body
+	maxRequestBody, err := utilk.ParseSize(conf.MaxRequestBody)
+	if err != nil {
+		logk.Fatalf("failed to parse max request body: %v", err)
+		return nil
+	}
 	// redis
 	var redisClient redis.UniversalClient
 	var lockMgr locks.Manager
@@ -96,7 +102,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	if !conf.DistributeLock {
 		lockMgr = locks.NewSystemLockManager()
 	} else if redisClient == nil {
-		hlog.Fatalf("can not create distribute lock, because of redis client is nil")
+		logk.Fatalf("can not create distribute lock, because of redis client is nil")
 		return nil
 	} else {
 		lockMgr = locks.NewRedisLockManager(redislock.New(redisClient))
@@ -104,17 +110,17 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	// rational database
 	db, err := rdbs.NewRDB(conf.RDB, opt.plugins...)
 	if err != nil {
-		hlog.Fatalf("failed to create rdb instance: %v", err)
+		logk.Fatalf("failed to create rdb instance: %v", err)
 		return nil
 	}
 	if opt.beforeMigrate != nil {
 		if err = opt.beforeMigrate(db, conf.RDB.Extensions...); err != nil {
-			hlog.Fatalf("failed to before migrate: %v", err)
+			logk.Fatalf("failed to before migrate: %v", err)
 			return nil
 		}
 	}
 	if err = db.AutoMigrate(opt.models...); err != nil {
-		hlog.Fatalf("failed to start orm migrate: %v", err)
+		logk.Fatalf("failed to start orm migrate: %v", err)
 		return nil
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +140,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		server.WithHostPorts(fmt.Sprintf(":%d", conf.Port)),
 		server.WithBasePath(conf.BasePath),
 		server.WithHandleMethodNotAllowed(true),
-		server.WithMaxRequestBodySize(conf.MaxRequestBodyKB * 1024), // KB
+		server.WithMaxRequestBodySize(int(maxRequestBody)),
 		server.WithValidateConfig(validateConfig),
 		server.WithTraceLevel(stats.Level(conf.TraceLevel)),
 	}
@@ -144,7 +150,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		conf.Nacos.Cluster = utilk.DefaultIfEmpty(conf.Nacos.Cluster, "DEFAULT")
 		conf.Nacos.Group = utilk.DefaultIfEmpty(conf.Nacos.Group, "DEFAULT_GROUP")
 		if nnc, err = nacos.NewNamingClientWithConfig(*conf.Nacos, conf.LogLevel.String()); err != nil {
-			hlog.Fatalf("failed to create nacos client: %v", err)
+			logk.Fatalf("failed to create nacos client: %v", err)
 			return nil
 		}
 	}
@@ -202,7 +208,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
-		hlog.Info("logger with tracing")
+		logk.Info("logger with tracing")
 		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log"))))
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
@@ -232,7 +238,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		rpc, err = rpcs.NewHertzRpc(nil, rpcClientInfo)
 	}
 	if err != nil {
-		hlog.Fatalf("failed to create rpc: %v", err)
+		logk.Fatalf("failed to create rpc: %v", err)
 		return nil
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -260,7 +266,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		ctx.String(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 	})
 	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
-		hlog.Info("release resource on shutdown")
+		logk.Info("release resource on shutdown")
 		_ = redisClient.Close()
 		if nnc != nil {
 			nnc.CloseClient()
@@ -277,7 +283,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 func initProfile(conf *Configuration, g *route.RouterGroup, _ SmartContext) {
 	//
 	if conf.Profile.Type == None || !conf.Profile.Enabled {
-		hlog.Infof("app profiling is not enabled")
+		logk.Infof("app profiling is not enabled")
 	} else {
 		if conf.Profile.Type == Pprof {
 			pprof.RouteRegister(g)

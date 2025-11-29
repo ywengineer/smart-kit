@@ -1,6 +1,6 @@
 port: 8088
 base-path: passport
-max-request-body-kb: 50
+max-request-body: 5MB
 redis: "redis://127.0.0.1:6379/?db=0" # redis://user:password@host:port/?db=0&node=host:port&node=host:port
 distribute-lock: false
 profile:
