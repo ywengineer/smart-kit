@@ -31,6 +31,7 @@ type Configuration struct {
 	Profile          Profiling          `json:"profile" yaml:"profile" mapstructure:"profile"`
 	AccessLog        string             `json:"access_log" yaml:"access-log" mapstructure:"access-log"`
 	RateLimitEnabled bool               `json:"rate_limit_enabled" yaml:"rate-limit-enabled" mapstructure:"rate-limit-enabled"`
+	StaticFileEnable bool               `json:"static_file_enable,omitempty" yaml:"static-file-enable,omitempty'" mapstructure:"static-file-enable,omitempty"` // 是否开启静态文件服务
 }
 
 type Cors struct {

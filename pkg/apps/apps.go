@@ -37,6 +37,7 @@ import (
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/redis/go-redis/v9"
+	"github.com/samber/lo"
 )
 
 type OnStartup func(ctx SmartContext)
@@ -65,6 +66,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		DistributeLock:   false,
 		LogLevel:         logk.Level(hlog.LevelDebug),
 		Profile:          Profiling{Type: Pprof, Enabled: true},
+		StaticFileEnable: true,
 	}
 	//
 	env := os.Getenv("SMART_APP_ENV")
@@ -257,6 +259,16 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//
 	if opt.middlewares != nil {
 		h.Use(opt.middlewares(smartCtx)...)
+	}
+	//
+	if conf.StaticFileEnable {
+		logk.Infof("serving static files from ./, base path: %s/static", conf.BasePath)
+		h.StaticFS("/static", &app.FS{
+			Root:        "./",
+			IndexNames:  []string{"index.html"},
+			Compress:    true,
+			PathRewrite: app.NewPathSlashesStripper(lo.If(len(conf.BasePath) > 0, 1).Else(0)),
+		})
 	}
 	//
 	h.NoRoute(func(c context.Context, ctx *app.RequestContext) {
