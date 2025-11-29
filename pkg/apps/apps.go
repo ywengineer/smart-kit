@@ -66,7 +66,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		DistributeLock:   false,
 		LogLevel:         logk.Level(hlog.LevelDebug),
 		Profile:          Profiling{Type: Pprof, Enabled: true},
-		StaticFileEnable: true,
+		StaticFileEnable: lo.ToPtr(true),
 	}
 	//
 	env := os.Getenv("SMART_APP_ENV")
@@ -261,7 +261,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 		h.Use(opt.middlewares(smartCtx)...)
 	}
 	//
-	if conf.StaticFileEnable {
+	if conf.StaticFileEnable != nil && *conf.StaticFileEnable {
 		logk.Infof("serving static files from ./, base path: %s/static", conf.BasePath)
 		h.StaticFS("/static", &app.FS{
 			Root:        "./",
