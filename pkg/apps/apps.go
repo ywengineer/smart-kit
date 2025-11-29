@@ -264,7 +264,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	if conf.StaticFileEnable != nil && *conf.StaticFileEnable {
 		logk.Infof("serving static files from ./, base path: %s/static", conf.BasePath)
 		h.StaticFS("/static", &app.FS{
-			Root:        "./",
+			Root:        lo.If(len(conf.StaticFilePath) > 0, conf.StaticFilePath).Else("./"),
 			IndexNames:  []string{"index.html"},
 			Compress:    true,
 			PathRewrite: app.NewPathSlashesStripper(lo.If(len(conf.BasePath) > 0, 1).Else(0)),

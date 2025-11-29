@@ -32,6 +32,7 @@ type Configuration struct {
 	AccessLog        string             `json:"access_log" yaml:"access-log" mapstructure:"access-log"`
 	RateLimitEnabled bool               `json:"rate_limit_enabled" yaml:"rate-limit-enabled" mapstructure:"rate-limit-enabled"`
 	StaticFileEnable *bool              `json:"static_file_enable,omitempty" yaml:"static-file-enable,omitempty" mapstructure:"static-file-enable,omitempty"` // 是否开启静态文件服务
+	StaticFilePath   string             `json:"static_file_path" yaml:"static-file-path" mapstructure:"static-file-path"`                                     // 静态文件路径, 默认为 ./
 }
 
 type Cors struct {
