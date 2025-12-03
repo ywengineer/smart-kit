@@ -290,7 +290,9 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 			}
 		})
 	//
-	opt.startupHandle(smartCtx)
+	if opt.startupHandle != nil {
+		opt.startupHandle(smartCtx)
+	}
 	//
 	initProfile(conf, h.Group("/mgr", opt.mgrAuth...), smartCtx)
 	//
