@@ -36,12 +36,11 @@ import (
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
-	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 )
 
 type OnStartup func(ctx SmartContext)
-type OnShutdown route.CtxCallback
+type OnShutdown func(ctx context.Context, sc SmartContext)
 
 func NewHertzApp(appName string, genContext GenContext, options ...Option) *server.Hertz {
 	//
@@ -277,13 +276,19 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	h.NoMethod(func(c context.Context, ctx *app.RequestContext) {
 		ctx.String(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed))
 	})
-	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
-		logk.Info("release resource on shutdown")
-		_ = redisClient.Close()
-		if nnc != nil {
-			nnc.CloseClient()
-		}
-	}, route.CtxCallback(opt.shutdownHandle))
+	h.OnShutdown = append(h.OnShutdown,
+		func(ctx context.Context) {
+			if opt.shutdownHandle != nil {
+				opt.shutdownHandle(ctx, smartCtx)
+			}
+		},
+		func(ctx context.Context) {
+			logk.Info("release resource on shutdown")
+			_ = redisClient.Close()
+			if nnc != nil {
+				nnc.CloseClient()
+			}
+		})
 	//
 	opt.startupHandle(smartCtx)
 	//

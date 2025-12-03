@@ -23,10 +23,12 @@ require (
 	github.com/hertz-contrib/logger/accesslog v0.0.0-20241107070745-e4ce8c54dd97
 	github.com/hertz-contrib/logger/slog v1.0.0
 	github.com/hertz-contrib/logger/zap v1.1.0
+	github.com/hertz-contrib/obs-opentelemetry/logging/zap v0.0.0-20250122050825-03daba98b545
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1
 	github.com/hertz-contrib/pprof v0.1.2
 	github.com/hertz-contrib/registry/nacos/v2 v2.0.0-20250319055937-8a220332e808
 	github.com/hertz-contrib/requestid v1.1.0
+	github.com/hertz-contrib/swagger v0.1.1
 	github.com/nacos-group/nacos-sdk-go/v2 v2.3.3
 	github.com/pilagod/gorm-cursor-paginator/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
@@ -34,8 +36,10 @@ require (
 	github.com/samber/lo v1.51.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.1
+	github.com/swaggo/swag v1.16.6
 	go.mongodb.org/mongo-driver/v2 v2.3.0
 	go.uber.org/zap v1.27.0
+	golang.org/x/sync v0.16.0
 	google.golang.org/api v0.248.0
 	google.golang.org/protobuf v1.36.8
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -91,16 +95,12 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.9 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.15.4 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -111,9 +111,6 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
-	github.com/hertz-contrib/binding v0.1.0 // indirect
-	github.com/hertz-contrib/obs-opentelemetry/logging/zap v0.0.0-20250122050825-03daba98b545 // indirect
-	github.com/hertz-contrib/swagger v0.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
@@ -125,7 +122,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/lithammer/shortuuid/v4 v4.2.0 // indirect
 	github.com/lmittmann/tint v1.1.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -146,7 +142,6 @@ require (
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/swaggo/swag v1.16.6 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
@@ -172,7 +167,6 @@ require (
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.12.0 // indirect

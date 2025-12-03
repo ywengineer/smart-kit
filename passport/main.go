@@ -18,7 +18,7 @@ func main() {
 		apps.WithStartupHandle(func(ctx apps.SmartContext) {
 			sqlRunner(ctx.Rdb())
 		}),
-		apps.WithShutdownHandle(func(ctx context.Context) {
+		apps.WithShutdownHandle(func(ctx context.Context, sc apps.SmartContext) {
 			// ignore
 		}),
 		apps.WithModels(

@@ -49,7 +49,7 @@ func main() {
 			sqlRunner(ctx.Rdb())
 			//--------------------------------------------------------------------------------------------------
 		}),
-		apps.WithShutdownHandle(func(ctx context.Context) {
+		apps.WithShutdownHandle(func(ctx context.Context, sc apps.SmartContext) {
 			c.Stop()
 			queue.Shutdown()
 			cn()
