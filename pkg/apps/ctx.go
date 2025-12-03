@@ -103,16 +103,22 @@ func (d *defaultContext) GetPassportLockKey(passportId uint) string {
 }
 
 func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext {
-	return &defaultContext{
-		rdb:     rdb,
-		redis:   redis,
-		lm:      lm,
-		_jwt:    jwt,
-		jwtMw:   jwt.MiddlewareFunc(),
+	dc := &defaultContext{
+		rdb:   rdb,
+		redis: redis,
+		lm:    lm,
+		_jwt:  jwt,
+		jwtMw: func(c context.Context, ctx *app.RequestContext) {
+			ctx.Next(c)
+		},
 		mClient: rpcClient,
 		conf:    conf,
 		kvstore: make(map[string]interface{}),
 	}
+	if jwt != nil {
+		dc.jwtMw = jwt.MiddlewareFunc()
+	}
+	return dc
 }
 
 func (d *defaultContext) TokenInterceptor() app.HandlerFunc {
