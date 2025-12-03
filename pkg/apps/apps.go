@@ -36,6 +36,7 @@ import (
 	nacos_hertz "github.com/hertz-contrib/registry/nacos/v2"
 	"github.com/hertz-contrib/requestid"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 )
 
