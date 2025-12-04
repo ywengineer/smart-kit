@@ -29,12 +29,12 @@ func main() {
 	//
 	if h := apps.NewHertzApp("smart-payment",
 		apps.NewDefaultContext,
-		apps.WithStartupHandle(func(ctx apps.SmartContext) {
+		apps.WithStartupHandle(func(ctx apps.SmartContext) error {
 			//--------------------------------------------------------------------------------------------------
 			if err := config.Watch(rootCtx, ctx.GetNacosConfig(), func(c config.Payment) {
 
 			}); err != nil {
-				hlog.CtxFatalf(rootCtx, "watch payment application config error: %v", err)
+				return err
 			} else {
 				hlog.CtxInfof(rootCtx, "watch payment application config succeed, %+v", config.Get().Auth.Realm)
 			}
@@ -48,6 +48,7 @@ func main() {
 			//--------------------------------------------------------------------------------------------------
 			sqlRunner(ctx.Rdb())
 			//--------------------------------------------------------------------------------------------------
+			return nil
 		}),
 		apps.WithShutdownHandle(func(ctx context.Context, sc apps.SmartContext) {
 			c.Stop()

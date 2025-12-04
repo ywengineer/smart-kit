@@ -15,8 +15,9 @@ import (
 func main() {
 	if h := apps.NewHertzApp("smart-passport",
 		apps.NewDefaultContext,
-		apps.WithStartupHandle(func(ctx apps.SmartContext) {
+		apps.WithStartupHandle(func(ctx apps.SmartContext) error {
 			sqlRunner(ctx.Rdb())
+			return nil
 		}),
 		apps.WithShutdownHandle(func(ctx context.Context, sc apps.SmartContext) {
 			// ignore

@@ -40,7 +40,7 @@ import (
 	"github.com/samber/lo"
 )
 
-type OnStartup func(ctx SmartContext)
+type OnStartup func(ctx SmartContext) error
 type OnShutdown func(ctx context.Context, sc SmartContext)
 
 func NewHertzApp(appName string, genContext GenContext, options ...Option) *server.Hertz {
@@ -302,7 +302,10 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	ProvideValue(smartCtx.LockMgr())
 	//
 	if opt.startupHandle != nil {
-		opt.startupHandle(smartCtx)
+		if err = opt.startupHandle(smartCtx); err != nil {
+			logk.Fatalf("failed to startup handle: %v", err)
+			return nil
+		}
 	}
 	//
 	initProfile(conf, h.Group("/mgr", opt.mgrAuth...), smartCtx)
