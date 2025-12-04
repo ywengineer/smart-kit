@@ -282,6 +282,9 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 			if opt.shutdownHandle != nil {
 				opt.shutdownHandle(ctx, smartCtx)
 			}
+			if report := container.Shutdown(); report != nil {
+				logk.Errorf("failed to shutdown container: %v", report.Error())
+			}
 		},
 		func(ctx context.Context) {
 			logk.Info("release resource on shutdown")
@@ -289,7 +292,14 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 			if nnc != nil {
 				nnc.CloseClient()
 			}
-		})
+		},
+	)
+	//
+	ProvideValue(smartCtx)
+	ProvideValue(conf)
+	ProvideValue(smartCtx.Rdb())
+	ProvideValue(smartCtx.Redis())
+	ProvideValue(smartCtx.LockMgr())
 	//
 	if opt.startupHandle != nil {
 		opt.startupHandle(smartCtx)

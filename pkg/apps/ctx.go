@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/locks"
-	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
@@ -32,8 +31,6 @@ type SmartContext interface {
 	GetAuth(authKey string) (oauths.AuthFacade, error)
 	VerifySignature(data map[string]string, sign []byte) bool
 	GetNacosConfig() nacos.Nacos
-	Get(key string) (interface{}, bool)
-	Set(key string, value interface{})
 }
 
 func GetContext(c context.Context) SmartContext {
@@ -52,19 +49,6 @@ type defaultContext struct {
 	jwtMw   app.HandlerFunc
 	mClient rpcs.Rpc
 	conf    *Configuration
-	kvstore map[string]interface{}
-}
-
-func (d *defaultContext) Set(key string, value interface{}) {
-	if _, ok := d.kvstore[key]; ok {
-		logk.Warnf("key %s already exists in default smart context", key)
-	}
-	d.kvstore[key] = value
-}
-
-func (d *defaultContext) Get(key string) (v interface{}, ok bool) {
-	v, ok = d.kvstore[key]
-	return v, ok
 }
 
 func (d *defaultContext) GetNacosConfig() nacos.Nacos {
@@ -113,7 +97,6 @@ func NewDefaultContext(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manag
 		},
 		mClient: rpcClient,
 		conf:    conf,
-		kvstore: make(map[string]interface{}),
 	}
 	if jwt != nil {
 		dc.jwtMw = jwt.MiddlewareFunc()
