@@ -2,11 +2,13 @@ package caches
 
 import (
 	"errors"
+	"reflect"
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/dgraph-io/ristretto/v2"
+	"github.com/gookit/goutil/reflects"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -32,10 +34,10 @@ func NewLocalCache[T any](capacity int64) Cache[T] {
 	}
 	return &localCache[T]{c: c, l: &singleflight.Group{}}
 }
-func (l *localCache[T]) GetWithLoader(key string, loader func() (T, time.Duration, error)) (T, error) {
+func (l *localCache[T]) GetWithLoader(key string, dest interface{}, loader func() (T, time.Duration, error)) error {
 	t, ok := l.c.Get(key)
 	if ok {
-		return t, nil
+		return reflects.SetValue(reflect.ValueOf(dest), t)
 	}
 	if tv, err, _ := l.l.Do(key, func() (any, error) {
 		v, ttl, le := loader()
@@ -44,18 +46,18 @@ func (l *localCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 		}
 		return v, l.PutWithTtl(key, v, ttl)
 	}); err != nil {
-		return t, err
+		return err
 	} else {
-		return tv.(T), err
+		return reflects.SetValue(reflect.ValueOf(dest), tv)
 	}
 }
 
-func (l *localCache[T]) Get(key string) (T, error) {
+func (l *localCache[T]) Get(key string, dest interface{}) error {
 	t, ok := l.c.Get(key)
 	if !ok {
-		return t, ErrNotFound
+		return ErrNotFound
 	}
-	return t, nil
+	return reflects.SetValue(reflect.ValueOf(dest), t)
 }
 
 func (l *localCache[T]) Put(key string, value T) error {

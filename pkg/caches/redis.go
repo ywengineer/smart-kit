@@ -3,11 +3,13 @@ package caches
 import (
 	"context"
 	"errors"
+	"reflect"
 	"strings"
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/bytedance/sonic"
+	"github.com/gookit/goutil/reflects"
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 	"golang.org/x/sync/singleflight"
@@ -35,10 +37,9 @@ func NewRedisCache[T any](client redis.UniversalClient, opts ...Option[T]) Cache
 	return c
 }
 
-func (r *redisCache[T]) GetWithLoader(key string, loader func() (T, time.Duration, error)) (T, error) {
-	t, err := r.Get(key)
-	if err == nil {
-		return t, nil
+func (r *redisCache[T]) GetWithLoader(key string, dest interface{}, loader func() (T, time.Duration, error)) error {
+	if err := r.Get(key, dest); err == nil {
+		return nil
 	}
 	if tv, err, _ := r.l.Do(key, func() (any, error) {
 		v, ttl, le := loader()
@@ -51,34 +52,32 @@ func (r *redisCache[T]) GetWithLoader(key string, loader func() (T, time.Duratio
 		}
 		return v, nil
 	}); err != nil {
-		return t, err
+		return err
 	} else {
-		return tv.(T), err
+		return reflects.SetValue(reflect.ValueOf(dest), tv)
 	}
 }
 
-func (r *redisCache[T]) Get(key string) (T, error) {
+func (r *redisCache[T]) Get(key string, dest interface{}) error {
 	// get from memory cache
 	if r.m != nil {
-		t, err := r.m.Get(key)
-		if err == nil {
-			return t, nil
+		if err := r.m.Get(key, dest); err == nil {
+			return nil
 		}
 	}
 	// get from redis
 	c, err := r.client.Get(context.Background(), key).Result()
-	var value T
 	if errors.Is(err, redis.Nil) {
-		return value, ErrNotFound
+		return ErrNotFound
 	}
-	if err := sonic.UnmarshalString(c, &value); err != nil {
-		return value, err
+	if err = sonic.UnmarshalString(c, dest); err != nil {
+		return err
 	}
-	//
+	// put to memory cache
 	if r.m != nil {
-		_ = r.m.PutWithTtl(key, value, 0)
+		_ = r.m.PutWithTtl(key, dest.(T), 0)
 	}
-	return value, nil
+	return nil
 }
 
 func (r *redisCache[T]) Put(key string, value T) error {
