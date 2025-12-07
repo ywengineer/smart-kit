@@ -324,4 +324,6 @@ func initProfile(conf *Configuration, g *route.RouterGroup, _ SmartContext) {
 			pprof.FgprofRouteRegister(g)
 		}
 	}
+	//
+	DiMonitor(g, container)
 }
