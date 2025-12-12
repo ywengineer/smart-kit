@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/loaders"
 	"gitee.com/ywengineer/smart-kit/pkg/locks"
@@ -228,12 +227,8 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
 	var rpc rpcs.Rpc
-	var rpcClientInfo = rpcs.RpcClientInfo{
-		ClientName:     conf.RegistryInfo.String(),
-		MaxRetry:       1,
-		Delay:          time.Millisecond * 10,
-		MaxConnPerHost: 256,
-	}
+	rpcClientInfo := conf.RpcClientInfo
+	rpcClientInfo.ClientName = lo.If(rpcClientInfo.ClientName == "", conf.RegistryInfo.String()).Else(rpcClientInfo.ClientName)
 	if conf.DiscoveryEnable {
 		rpc, err = rpcs.NewHertzRpc(nacos_hertz.NewNacosResolver(nnc, nacos_hertz.WithResolverCluster(conf.Nacos.Cluster), nacos_hertz.WithResolverGroup(conf.Nacos.Group)), rpcClientInfo)
 	} else {
