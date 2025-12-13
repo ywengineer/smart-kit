@@ -10,11 +10,23 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"gitee.com/ywengineer/smart-kit/pkg/signs"
+	types "gitee.com/ywengineer/smart-kit/pkg/typek"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/gookit/goutil/envutil"
 	"github.com/hertz-contrib/jwt"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
+
+var _env types.Env
+
+func init() {
+	_env = types.Env(envutil.Getenv("APP_ENV", types.Production.String()))
+}
+
+func RunningIn(env types.Env) bool {
+	return env == _env
+}
 
 type GenContext func(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext
 
