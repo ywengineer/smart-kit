@@ -280,10 +280,12 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 			if report := container.Shutdown(); report != nil {
 				logk.Errorf("failed to shutdown container: %v", report.Error())
 			}
-		},
-		func(ctx context.Context) {
 			logk.Info("release resource on shutdown")
-			_ = redisClient.Close()
+			if redisClient != nil {
+				if err := redisClient.Close(); err != nil {
+					logk.Errorf("failed to close redis: %v", err)
+				}
+			}
 			if nnc != nil {
 				nnc.CloseClient()
 			}
