@@ -57,9 +57,9 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 	}
 	cli.Use(func(next client.Endpoint) client.Endpoint {
 		return func(ctx context.Context, req *protocol.Request, resp *protocol.Response) (err error) {
-			ts := time.Now().Unix()
+			ts := time.Now()
 			n := next(ctx, req, resp)
-			hlog.Debugf("[RPC][%s] [cost %dms] invoke [host=%s] [target=%s] [status=%d]", info.ClientName, time.Now().Unix()-ts, req.Host(), req.RequestURI(), resp.StatusCode())
+			hlog.Debugf("[RPC][%s] [cost %s] invoke [host=%s] [target=%s] [status=%d]", info.ClientName, time.Since(ts), req.Host(), req.RequestURI(), resp.StatusCode())
 			return n
 		}
 	})
