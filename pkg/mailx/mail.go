@@ -1,4 +1,4 @@
-package mails
+package mailx
 
 import (
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
@@ -13,18 +13,18 @@ type MailClient struct {
 
 func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
 	var rec []string
-	if utility.ValidMail(from) == false {
+	if utilk.ValidMail(from) == false {
 		logk.Error("missing mail's sender")
 		return
 	}
-	if utility.ValidMail(to) == false {
+	if utilk.ValidMail(to) == false {
 		logk.Error("missing mail's to")
 		return
 	}
 	rec = append(rec, to)
 	//
 	if len(cc) > 0 {
-		if utility.ValidMail(cc) == false {
+		if utilk.ValidMail(cc) == false {
 			logk.Error("unknown mail's cc. %s", zap.String("cc", cc))
 			return
 		}
@@ -33,7 +33,7 @@ func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, body
 
 	//
 	if len(bcc) > 0 {
-		if utility.ValidMail(bcc) == false {
+		if utilk.ValidMail(bcc) == false {
 			logk.Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
 			return
 		}
@@ -93,19 +93,19 @@ func SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
 
 func DirectSendMail(host string, port int, username, password string,
 	from, to, cc, bcc string, subject, bodyType, bodyString string) {
-	if utility.ValidMail(from) == false {
+	if utilk.ValidMail(from) == false {
 		logk.Error("missing mail's sender")
 		return
 	}
-	if utility.ValidMail(to) == false {
+	if utilk.ValidMail(to) == false {
 		logk.Error("missing mail's to")
 		return
 	}
-	if len(cc) > 0 && utility.ValidMail(cc) == false {
+	if len(cc) > 0 && utilk.ValidMail(cc) == false {
 		logk.Error("unknown mail's cc. %s", zap.String("cc", cc))
 		return
 	}
-	if len(bcc) > 0 && utility.ValidMail(bcc) == false {
+	if len(bcc) > 0 && utilk.ValidMail(bcc) == false {
 		logk.Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
 		return
 	}
