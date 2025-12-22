@@ -1,41 +1,39 @@
 package mailx
 
 import (
+	"errors"
+
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )
 
-type MailClient struct {
+type gomailClient struct {
 	client gomail.SendCloser
 }
 
-func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
+func (mc *gomailClient) Send(from, to, cc, bcc, subject, bodyType, bodyString string) error {
 	var rec []string
 	if utilk.ValidMail(from) == false {
-		logk.Error("missing mail's sender")
-		return
+		return errors.New("missing mail's sender")
 	}
 	if utilk.ValidMail(to) == false {
-		logk.Error("missing mail's to")
-		return
+		return errors.New("missing mail's to")
 	}
 	rec = append(rec, to)
 	//
 	if len(cc) > 0 {
 		if utilk.ValidMail(cc) == false {
-			logk.Error("unknown mail's cc. %s", zap.String("cc", cc))
-			return
+			return errors.New("unknown mail's cc. %s" + cc)
 		}
-		rec = append(rec, to)
+		rec = append(rec, cc)
 	}
 
 	//
 	if len(bcc) > 0 {
 		if utilk.ValidMail(bcc) == false {
-			logk.Error("unknown mail's bcc. %s", zap.String("bcc", bcc))
-			return
+			return errors.New("unknown mail's bcc. %s" + bcc)
 		}
 		rec = append(rec, bcc)
 	}
@@ -53,42 +51,19 @@ func (mc *MailClient) SendMail(from, to, cc, bcc string, subject, bodyType, body
 	m.SetBody(bodyType, bodyString)
 	// Send the email to Bob, Cora and Dan.
 	if err := mc.client.Send(from, rec, m); err != nil {
-		logk.Error("send mail failed, %v", zap.Error(err))
+		return err
 	}
+	return nil
 }
 
-//var client gomail.SendCloser
-
-func NewMailSender(host string, port int, username, password string) (*MailClient, error) {
+// NewGoMailSender creates a new mail sender.
+func NewGoMailSender(host string, port int, username, password string) (Mailer, error) {
 	d := gomail.NewDialer(host, port, username, password)
 	if c, err := d.Dial(); err != nil {
 		return nil, err
 	} else {
-		return &MailClient{client: c}, nil
+		return &gomailClient{client: c}, nil
 	}
-}
-
-var client *MailClient
-
-func Dial(host string, port int, username, password string) {
-	if client != nil {
-		logk.Error("global mail client already exists.")
-		return
-	}
-	//
-	if c, e := NewMailSender(host, port, username, password); e != nil {
-		logk.Fatal("create global mail client failed. %v", zap.Error(e))
-	} else {
-		client = c
-	}
-}
-
-func SendMail(from, to, cc, bcc string, subject, bodyType, bodyString string) {
-	if client == nil {
-		logk.Error("global mail client has not been created.")
-		return
-	}
-	client.SendMail(from, to, cc, bcc, subject, bodyType, bodyString)
 }
 
 func DirectSendMail(host string, port int, username, password string,
