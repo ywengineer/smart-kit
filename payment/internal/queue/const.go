@@ -41,6 +41,7 @@ type PurchaseNotifyPayload struct {
 	Channel       string `json:"channel"`
 	PurchaseTime  int64  `json:"purchase_time"`
 	ExpireTime    int64  `json:"expire_time"`
+	GiftBoxId     int64  `json:"gift_box_id"`
 }
 
 type TestAsynqQueue struct {
@@ -63,6 +64,7 @@ func PublishPurchaseNotify(purchase model.Purchase, options ...asynq.Option) err
 		Channel:       purchase.Channel,
 		PurchaseTime:  purchase.PurchaseDate.Unix(),
 		ExpireTime:    purchase.GetExpiredTime(),
+		GiftBoxId:     purchase.GiftBox,
 	}, options...)
 }
 

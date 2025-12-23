@@ -34,6 +34,8 @@ type Purchase struct {
 	Credits    int64 `json:"credits" redis:"credits"`         // 点券剩余量
 	Money      int64 `json:"money" redis:"money"`             // 钻石剩余量
 	Coin       int64 `json:"coin" redis:"coin"`               // 当前金币
+	//
+	GiftBox int64 `json:"gift_box" redis:"gift_box"`
 }
 
 func (p Purchase) GetExpiredTime() int64 {

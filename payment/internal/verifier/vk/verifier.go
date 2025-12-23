@@ -160,6 +160,7 @@ type developerPayload struct {
 	SystemType string `json:"systemType"`
 	AppVersion string `json:"appVersion"`
 	BundleId   string `json:"bundleId"`
+	GiftBoxId  int64  `json:"giftBoxId"`
 }
 
 // convert rustore payment 2 model.Purchase
@@ -170,10 +171,12 @@ func (r *rustore) convert(data *paymentBody) (*model.Purchase, error) {
 	var err error
 	p := &model.Purchase{}
 	parts := strings.Split(data.DeveloperPayload, "-")
+	boxId, _ := strconv.ParseInt(parts[len(parts)-1], 10, 64)
 	payload := developerPayload{
 		SystemType: utilk.Get(parts, 0),
 		AppVersion: utilk.Get(parts, 1),
 		BundleId:   utilk.Get(parts, 2),
+		GiftBoxId:  boxId,
 	}
 	p.SystemType = payload.SystemType
 	// ------------------------------------------------------------------------------------------
@@ -195,5 +198,6 @@ func (r *rustore) convert(data *paymentBody) (*model.Purchase, error) {
 	p.Status = 0                      // 订单的购买状态。可能的值为 0（已购买）、1（已取消）或者 2（已退款）
 	p.ProductId = data.Order.ItemCode // 商品的商品 ID。每种商品都有一个商品 ID，您必须通过 Google Play Developer Console 在应用的商品列表中指定此 ID。
 	p.BundleId = payload.BundleId     //  Android程序的bundle标识
+	p.GiftBox = payload.GiftBoxId
 	return p, nil
 }

@@ -47,6 +47,7 @@ message PayNotify {
   required string platformCode = 4; // 商品所在平台编码
   required int64 expireTime = 5; // 过期时间
   required int64 purchaseTime = 6; // 支付/订阅时间
+  optional int32 giftBoxId = 7;       // 礼包ID
 
   message Ret {
     required string orderID = 1; // 订单ID

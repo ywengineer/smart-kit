@@ -124,4 +124,5 @@ func encodeAccessToken(t string) string {
 type developerPayload struct {
 	SystemType string `json:"systemType"`
 	AppVersion string `json:"appVersion"`
+	GiftBoxId  int64  `json:"giftBoxId"`
 }

@@ -8,6 +8,9 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+	"net/http"
+	"time"
+
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/internal/verifier/inf"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
@@ -16,8 +19,6 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/pkg/errors"
-	"net/http"
-	"time"
 )
 
 type huawei struct {
@@ -119,6 +120,7 @@ func (r *huawei) convert(data *IapPurchaseDetails) (*model.Purchase, error) {
 	p.Status = 0                  // 订单的购买状态。可能的值为 0（已购买）、1（已取消）或者 2（已退款）
 	p.ProductId = data.ProductId  // 商品的商品 ID。每种商品都有一个商品 ID，您必须通过 Google Play Developer Console 在应用的商品列表中指定此 ID。
 	p.BundleId = data.PackageName //  Android程序的bundle标识
+	p.GiftBox = payload.GiftBoxId
 	return p, nil
 }
 
