@@ -23,8 +23,12 @@ else
 fi
 
 for i in $(pwd)/idl/*.thrift ; do
-  echo "开始更新服务定义: hz update --idl $i"
-  hz update --snake_tag --idl "$i" --mod $mod
+  if [[ $i == *"common"* ]]; then
+    echo "* skip generate api: $i"
+  else
+    echo "开始更新服务定义: hz update --idl $i"
+    hz update --snake_tag --idl "$i" --mod $mod
+  fi
 done
 
 if [ $? -eq 0 ]; then

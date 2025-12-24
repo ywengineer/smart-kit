@@ -9,6 +9,7 @@ import (
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/queue"
 	"gitee.com/ywengineer/smart-kit/pkg/apps"
+	"github.com/samber/lo"
 
 	"gitee.com/ywengineer/smart-kit/payment/internal/config"
 	"gitee.com/ywengineer/smart-kit/payment/pkg/model"
@@ -42,6 +43,7 @@ func Notify(ctx context.Context, data queue.PurchaseNotifyPayload) error {
 		PlatformCode: &data.Channel,
 		PurchaseTime: &data.PurchaseTime,
 		ExpireTime:   &data.ExpireTime,
+		GiftBoxId:    lo.ToPtr(int32(data.GiftBoxId)),
 	}
 	//
 	statusCode, resp, err := sCtx.Rpc().Post(ctx, rpcs.ContentTypeOctStream, serverInfo.GetApiMethodUrl("pay"), nil, rpcs.ProtoBody{V: &notifyBody})

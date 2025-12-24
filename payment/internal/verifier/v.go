@@ -39,22 +39,35 @@ func RegisterFactory(name string, factory Factory) {
 }
 
 func FindVerifier(c config.Channel) (inf.Verifier, error) {
-	if cp, ok := config.Get().Channel[c.Code]; ok {
-		if v, err := verifierCache.Get(cp.Validator); err == nil {
-			return v, nil
-		} else if factory, ok := factories[cp.Validator]; ok {
-			if v, err = factory(cp); err == nil {
-				if err = verifierCache.Put(cp.Validator, v); err == nil {
-					return v, nil
-				} else {
-					return nil, err
-				}
-			} else {
-				return nil, err
-			}
-		} else {
-			return nil, inf.ErrNoValidator
-		}
+	// 从配置中获取通道属性
+	cp, exists := config.Get().Channel[c.Code]
+	if !exists {
+		return nil, inf.ErrNoChannel
 	}
-	return nil, inf.ErrNoChannel
+
+	// 尝试从缓存中获取验证器
+	var v inf.Verifier
+	err := verifierCache.Get(cp.Validator, &v)
+	if err == nil {
+		return v, nil
+	}
+
+	// 获取对应的工厂函数
+	factory, exists := factories[cp.Validator]
+	if !exists {
+		return nil, inf.ErrNoValidator
+	}
+
+	// 使用工厂函数创建验证器
+	v, err = factory(cp)
+	if err != nil {
+		return nil, err
+	}
+
+	// 缓存验证器
+	if err := verifierCache.Put(cp.Validator, v); err != nil {
+		return nil, err
+	}
+
+	return v, nil
 }

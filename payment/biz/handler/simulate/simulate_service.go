@@ -83,7 +83,8 @@ func Simulate(ctx context.Context, c *app.RequestContext) {
 	purchaseLog.VersionExternalIdentifier = -1                    //  用来标识程序修订数。该键在sandbox环境下不存在
 	purchaseLog.BundleId = "simulate_bundle_id"                   //  程序的bundle标识
 	purchaseLog.Notified = false                                  // 是否已通知
-	purchaseLog.ReceiptResult = "模拟充值"
+	purchaseLog.ReceiptResult = "Simulate Success"                // 充值结果
+	purchaseLog.GiftBox = int64(req.GetGiftBoxId())               // 礼包ID
 	err = services.OnPurchase(ctx, sCtx, req.GameId, req.ServerId, req.Passport, req.PlayerId, req.PlayerName, &purchaseLog, channel, product)
 	if err != nil {
 		hlog.CtxErrorf(ctx, "simulate purchase error: %v, data: %+v", err, req)

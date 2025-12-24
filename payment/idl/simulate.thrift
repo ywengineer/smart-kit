@@ -11,6 +11,7 @@ struct SimulateReq {
     6: string PlatformId (api.body="platformId,required");
     7: string ProductId (api.body="productId,required");
     8: string OrderId (api.body="orderId,required");
+    9: optional i32 GiftBoxId;
 }
 
 service SimulateService {
