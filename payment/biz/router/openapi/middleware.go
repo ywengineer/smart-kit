@@ -15,3 +15,13 @@ func _healthMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _apiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _compareMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

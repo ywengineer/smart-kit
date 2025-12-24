@@ -27,11 +27,11 @@ rpc-client-info:
   read-timeout: 1s
 # rational database connect property
 rdb:
-  name: "postgres" # mysql or postgres
+  name: "mysql" # mysql or postgres
   username: "root"
-  password: "iis"
+  password: "root"
   host: "127.0.0.1"
-  port: 5432
+  port: 3306
   database: "smart_payment"
   parameters: ""
   debug-mode: true

@@ -5,7 +5,6 @@ package purchase
 import (
 	"context"
 	"fmt"
-	"gitee.com/ywengineer/smart-kit/payment/biz/model/common"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -585,7 +584,7 @@ func (p *VerifyReq) String() string {
 }
 
 type VerifyService interface {
-	Verify(ctx context.Context, req *VerifyReq) (r *common.ApiResult, err error)
+	Verify(ctx context.Context, req *VerifyReq) (r bool, err error)
 }
 
 type VerifyServiceClient struct {
@@ -614,7 +613,7 @@ func (p *VerifyServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *VerifyServiceClient) Verify(ctx context.Context, req *VerifyReq) (r *common.ApiResult, err error) {
+func (p *VerifyServiceClient) Verify(ctx context.Context, req *VerifyReq) (r bool, err error) {
 	var _args VerifyServiceVerifyArgs
 	_args.Req = req
 	var _result VerifyServiceVerifyResult
@@ -684,7 +683,7 @@ func (p *verifyServiceProcessorVerify) Process(ctx context.Context, seqId int32,
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := VerifyServiceVerifyResult{}
-	var retval *common.ApiResult
+	var retval bool
 	if retval, err2 = p.handler.Verify(ctx, args.Req); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Verify: "+err2.Error())
 		oprot.WriteMessageBegin("Verify", thrift.EXCEPTION, seqId)
@@ -693,7 +692,7 @@ func (p *verifyServiceProcessorVerify) Process(ctx context.Context, seqId int32,
 		oprot.Flush(ctx)
 		return true, err2
 	} else {
-		result.Success = retval
+		result.Success = &retval
 	}
 	if err2 = oprot.WriteMessageBegin("Verify", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -860,7 +859,7 @@ func (p *VerifyServiceVerifyArgs) String() string {
 }
 
 type VerifyServiceVerifyResult struct {
-	Success *common.ApiResult `thrift:"success,0,optional"`
+	Success *bool `thrift:"success,0,optional"`
 }
 
 func NewVerifyServiceVerifyResult() *VerifyServiceVerifyResult {
@@ -870,13 +869,13 @@ func NewVerifyServiceVerifyResult() *VerifyServiceVerifyResult {
 func (p *VerifyServiceVerifyResult) InitDefault() {
 }
 
-var VerifyServiceVerifyResult_Success_DEFAULT *common.ApiResult
+var VerifyServiceVerifyResult_Success_DEFAULT bool
 
-func (p *VerifyServiceVerifyResult) GetSuccess() (v *common.ApiResult) {
+func (p *VerifyServiceVerifyResult) GetSuccess() (v bool) {
 	if !p.IsSetSuccess() {
 		return VerifyServiceVerifyResult_Success_DEFAULT
 	}
-	return p.Success
+	return *p.Success
 }
 
 var fieldIDToName_VerifyServiceVerifyResult = map[int16]string{
@@ -907,7 +906,7 @@ func (p *VerifyServiceVerifyResult) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 0:
-			if fieldTypeId == thrift.STRUCT {
+			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField0(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -944,9 +943,12 @@ ReadStructEndError:
 }
 
 func (p *VerifyServiceVerifyResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := common.NewApiResult()
-	if err := _field.Read(iprot); err != nil {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
 		return err
+	} else {
+		_field = &v
 	}
 	p.Success = _field
 	return nil
@@ -982,10 +984,10 @@ WriteStructEndError:
 
 func (p *VerifyServiceVerifyResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+		if err = oprot.WriteFieldBegin("success", thrift.BOOL, 0); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := p.Success.Write(oprot); err != nil {
+		if err := oprot.WriteBool(*p.Success); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

@@ -1,7 +1,5 @@
 namespace go simulate
 
-include "common.thrift"
-
 struct SimulateReq {
     1: string Passport (api.body="passport,required");
     2: string PlayerId (api.body="playerId,required");
@@ -15,5 +13,5 @@ struct SimulateReq {
 }
 
 service SimulateService {
-    common.ApiResult Simulate(1:SimulateReq req) (api.post="/simulate")
+    bool Simulate(1:SimulateReq req) (api.post="/simulate")
 }

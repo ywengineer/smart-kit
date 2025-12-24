@@ -20,7 +20,7 @@ docker-build-payment:
 	@sed -i 's/VERSION/$(brunch)/g' $(APP_EXAMPLE_DIR)/docker-compose.yaml
 
 docker-build-payment-local:
-	$(eval APP_NAME=smart-payment)
+	$(eval APP_NAME ?= smart-payment)
 	$(eval APP_EXAMPLE_DIR=example/payment)
 	@echo "build payment docker image with tag $(brunch). APP_NAME=$(APP_NAME) APP_EXAMPLE_DIR=$(APP_EXAMPLE_DIR)"
 	@sudo rm -fr $(APP_EXAMPLE_DIR)

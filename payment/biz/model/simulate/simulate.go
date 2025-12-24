@@ -5,7 +5,6 @@ package simulate
 import (
 	"context"
 	"fmt"
-	"gitee.com/ywengineer/smart-kit/payment/biz/model/common"
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -529,7 +528,7 @@ func (p *SimulateReq) String() string {
 }
 
 type SimulateService interface {
-	Simulate(ctx context.Context, req *SimulateReq) (r *common.ApiResult, err error)
+	Simulate(ctx context.Context, req *SimulateReq) (r bool, err error)
 }
 
 type SimulateServiceClient struct {
@@ -558,7 +557,7 @@ func (p *SimulateServiceClient) Client_() thrift.TClient {
 	return p.c
 }
 
-func (p *SimulateServiceClient) Simulate(ctx context.Context, req *SimulateReq) (r *common.ApiResult, err error) {
+func (p *SimulateServiceClient) Simulate(ctx context.Context, req *SimulateReq) (r bool, err error) {
 	var _args SimulateServiceSimulateArgs
 	_args.Req = req
 	var _result SimulateServiceSimulateResult
@@ -628,7 +627,7 @@ func (p *simulateServiceProcessorSimulate) Process(ctx context.Context, seqId in
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := SimulateServiceSimulateResult{}
-	var retval *common.ApiResult
+	var retval bool
 	if retval, err2 = p.handler.Simulate(ctx, args.Req); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing Simulate: "+err2.Error())
 		oprot.WriteMessageBegin("Simulate", thrift.EXCEPTION, seqId)
@@ -637,7 +636,7 @@ func (p *simulateServiceProcessorSimulate) Process(ctx context.Context, seqId in
 		oprot.Flush(ctx)
 		return true, err2
 	} else {
-		result.Success = retval
+		result.Success = &retval
 	}
 	if err2 = oprot.WriteMessageBegin("Simulate", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -804,7 +803,7 @@ func (p *SimulateServiceSimulateArgs) String() string {
 }
 
 type SimulateServiceSimulateResult struct {
-	Success *common.ApiResult `thrift:"success,0,optional"`
+	Success *bool `thrift:"success,0,optional"`
 }
 
 func NewSimulateServiceSimulateResult() *SimulateServiceSimulateResult {
@@ -814,13 +813,13 @@ func NewSimulateServiceSimulateResult() *SimulateServiceSimulateResult {
 func (p *SimulateServiceSimulateResult) InitDefault() {
 }
 
-var SimulateServiceSimulateResult_Success_DEFAULT *common.ApiResult
+var SimulateServiceSimulateResult_Success_DEFAULT bool
 
-func (p *SimulateServiceSimulateResult) GetSuccess() (v *common.ApiResult) {
+func (p *SimulateServiceSimulateResult) GetSuccess() (v bool) {
 	if !p.IsSetSuccess() {
 		return SimulateServiceSimulateResult_Success_DEFAULT
 	}
-	return p.Success
+	return *p.Success
 }
 
 var fieldIDToName_SimulateServiceSimulateResult = map[int16]string{
@@ -851,7 +850,7 @@ func (p *SimulateServiceSimulateResult) Read(iprot thrift.TProtocol) (err error)
 
 		switch fieldId {
 		case 0:
-			if fieldTypeId == thrift.STRUCT {
+			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField0(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -888,9 +887,12 @@ ReadStructEndError:
 }
 
 func (p *SimulateServiceSimulateResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := common.NewApiResult()
-	if err := _field.Read(iprot); err != nil {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
 		return err
+	} else {
+		_field = &v
 	}
 	p.Success = _field
 	return nil
@@ -926,10 +928,10 @@ WriteStructEndError:
 
 func (p *SimulateServiceSimulateResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+		if err = oprot.WriteFieldBegin("success", thrift.BOOL, 0); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := p.Success.Write(oprot); err != nil {
+		if err := oprot.WriteBool(*p.Success); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {

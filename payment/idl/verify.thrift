@@ -1,7 +1,5 @@
 namespace go purchase
 
-include "common.thrift"
-
 // go.tag 中添加 Protobuf tag：wire_type=varint，tag=1，可选，名称 id
 // 1: required i32 id (go.tag = 'protobuf:"varint,1,opt,name=id"')
 // 类型映射正确：Thrift 类型与 Protobuf 类型的 wire_type 需正确对应（如 i32 → varint，string → bytes），参考下表：
@@ -27,5 +25,5 @@ struct VerifyReq {
 }
 
 service VerifyService {
-    common.ApiResult Verify(1:VerifyReq req) (api.post="/verify")
+     bool Verify(1:VerifyReq req) (api.post="/verify")
 }

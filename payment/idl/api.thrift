@@ -16,5 +16,17 @@ struct HealthResp {
 }
 
 service HealthService {
-    HealthResp Health() (api.get="/health")
+    HealthResp Health() (api.get="/api/health")
+}
+
+struct CompareReq {
+    1: list<string> invoices (api.vd="$ != nil && len($) > 0")
+}
+
+struct CompareResp {
+    1: list<string> invoices;
+}
+
+service CompareService {
+    CompareResp Compare(1:CompareReq req) (api.post="/api/compare")
 }
