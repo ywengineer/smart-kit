@@ -6,7 +6,8 @@ APP_NAME ?= app
 APP_EXAMPLE_DIR = ""
 
 build-payment:
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $(BUILD_OUTPUT)/payment ./payment/
+	cd payment && ./build.sh
+	#CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $(BUILD_OUTPUT)/payment ./payment/
 
 docker-build-payment:
 	$(eval APP_NAME=smart-payment)

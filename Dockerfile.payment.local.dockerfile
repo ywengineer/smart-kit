@@ -9,7 +9,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 #
 WORKDIR /app
 #
-COPY ./out/payment .
+COPY ./payment/output/bin/payment .
 #
 RUN mkdir -p /app/logs && chmod 755 /app/logs && chmod +x ./payment
 # expose application port
