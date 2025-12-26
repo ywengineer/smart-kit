@@ -27,6 +27,7 @@ type RpcClientInfo struct {
 	Delay          time.Duration `json:"retry-delay" yaml:"retry-delay"`
 	MaxConnPerHost int           `json:"max_conn_per_host" yaml:"max-conn-per-host"`
 	ReadTimeout    time.Duration `json:"read_timeout" yaml:"read-timeout"`
+	Proxy          string        `json:"proxy" yaml:"proxy"`
 }
 
 type RpcCallback func(statusCode int, body []byte, err error)

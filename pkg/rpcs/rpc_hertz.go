@@ -64,6 +64,10 @@ func NewHertzRpc(resolver discovery.Resolver, info RpcClientInfo) (rpc Rpc, err 
 		}
 	})
 	//
+	if info.Proxy != "" {
+		cli.SetProxy(protocol.ProxyURI(protocol.ParseURI(info.Proxy)))
+	}
+	//
 	return (&hertzRPC{cli: cli, cluster: config.WithSD(resolver != nil)}).init(), nil
 }
 
