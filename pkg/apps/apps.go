@@ -210,7 +210,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	//////////////////////////////////////////////////////////////////////////////////////////
 	if tracerConfig != nil {
 		logk.Info("logger with tracing")
-		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log"))))
+		hlog.SetLogger(hertztracingzap.NewLogger(hertztracingzap.WithLogger(logk.NewZapLogger("./logs/tracing.log", logk.WithLevel(conf.LogLevel)))))
 		h.Use(hertztracing.ServerMiddleware(tracerConfig))
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////
