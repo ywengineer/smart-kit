@@ -15,27 +15,29 @@ endef
 check-sd:
 	$(call check_cmd, sd)
 
-build-payment:
+payment:
 	cd payment && ./build.sh
 	#CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $(BUILD_OUTPUT)/payment ./payment/
 
-docker-build-payment: check-sd
+docker-payment: check-sd
 	$(eval APP_NAME ?= smart-payment)
 	$(eval APP_EXAMPLE_DIR=example/payment)
 	@echo "build payment docker image with tag $(brunch). APP_NAME=$(APP_NAME) APP_EXAMPLE_DIR=$(APP_EXAMPLE_DIR)"
 	@sudo rm -fr $(APP_EXAMPLE_DIR)
 	sudo docker build --no-cache --build-arg VERSION=$(brunch) -t $(APP_NAME):$(brunch) -f Dockerfile.payment.dockerfile .
+	sudo docker push $(APP_NAME):$(brunch)
 	@mkdir -p $(APP_EXAMPLE_DIR)
 	@cp -f payment/*.yaml $(APP_EXAMPLE_DIR)/
 	@sd "APP_NAME" "$(APP_NAME)" $(APP_EXAMPLE_DIR)/docker-compose.yaml
 	@sd "VERSION"  "$(brunch)"   $(APP_EXAMPLE_DIR)/docker-compose.yaml
 
-docker-build-payment-local: check-sd
+docker-payment-local: check-sd
 	$(eval APP_NAME ?= smart-payment)
 	$(eval APP_EXAMPLE_DIR=example/payment)
 	@echo "build payment docker image with tag $(brunch). APP_NAME=$(APP_NAME) APP_EXAMPLE_DIR=$(APP_EXAMPLE_DIR)"
 	@sudo rm -fr $(APP_EXAMPLE_DIR)
 	sudo docker build --no-cache --build-arg VERSION=$(brunch) -t $(APP_NAME):$(brunch) -f Dockerfile.payment.local.dockerfile .
+	sudo docker push $(APP_NAME):$(brunch)
 	@mkdir -p $(APP_EXAMPLE_DIR)
 	@cp -f payment/*.yaml $(APP_EXAMPLE_DIR)/
 	@sd "APP_NAME" "$(APP_NAME)" $(APP_EXAMPLE_DIR)/docker-compose.yaml
@@ -54,9 +56,9 @@ install-sd:
 
 help:
 	@echo "可用命令:"
-	@echo "  make build-payment           							- 本地构建payment应用"
-	@echo "  make docker-build-payment brunch=latest   				- 构建payment Docker镜像"
-	@echo "  make docker-build-payment-local brunch=v0.1.1   		- 使用本地构建 payment 制作 Docker镜像"
-	@echo "  make clean           									- 清理本地构建产物"
-	@echo "  make install-sd           								- 安装sd工具"
-	@echo "  make help            									- 显示帮助信息"
+	@echo "  make payment           							- 本地构建payment应用"
+	@echo "  make docker-payment brunch=latest   				- 构建payment Docker镜像"
+	@echo "  make docker-payment-local brunch=v0.1.1   			- 使用本地构建 payment 制作 Docker镜像"
+	@echo "  make clean           								- 清理本地构建产物"
+	@echo "  make install-sd           							- 安装sd工具"
+	@echo "  make help            								- 显示帮助信息"
