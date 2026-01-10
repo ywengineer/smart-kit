@@ -10,7 +10,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/oauths"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"gitee.com/ywengineer/smart-kit/pkg/signs"
-	types "gitee.com/ywengineer/smart-kit/pkg/typek"
+	types "gitee.com/ywengineer/smart-kit/pkg/types"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gookit/goutil/envutil"
 	"github.com/hertz-contrib/jwt"
@@ -26,6 +26,10 @@ func init() {
 
 func RunningIn(env types.Env) bool {
 	return env == _env
+}
+
+func Env() types.Env {
+	return _env
 }
 
 type GenContext func(rdb *gorm.DB, redis redis.UniversalClient, lm locks.Manager, jwt *jwt.HertzJWTMiddleware, rpcClient rpcs.Rpc, conf *Configuration) SmartContext
