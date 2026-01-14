@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"gitee.com/ywengineer/smart-kit/pkg/redisx"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"github.com/go-gorm/caches/v4"
 	"github.com/pkg/errors"
@@ -65,7 +66,7 @@ func NewRDB(driver Properties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 			}
 		} else if strings.HasPrefix(driver.Cache, "redis://") {
 			cachePlugin = &caches.Caches{Conf: &caches.Config{
-				Cacher: &redisCacher{rdb: utilk.NewRedis(driver.Cache)},
+				Cacher: &redisCacher{rdb: redisx.NewRedis(driver.Cache)},
 			}}
 		} else {
 			logk.DefaultLogger().Error("rdb not support this cache: " + driver.Cache)
