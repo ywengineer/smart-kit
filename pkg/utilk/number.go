@@ -3,12 +3,13 @@ package utilk
 import (
 	"encoding/json"
 	"errors"
-	"gitee.com/ywengineer/smart-kit/pkg/logk"
-	"go.uber.org/zap"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"gitee.com/ywengineer/smart-kit/pkg/logk"
+	"go.uber.org/zap"
 )
 
 func Int2String(n interface{}) (string, error) {
@@ -73,9 +74,8 @@ func QueryPositiveInt(query url.Values, key string) int {
 	if len(v) > 0 {
 		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
 			return n
-		} else {
-			logk.Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
 		}
+		logk.Warn("get int value from url Query", zap.String("key", key), zap.String("value", v))
 	}
 	return 0
 }

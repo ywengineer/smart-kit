@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+
 	"github.com/samber/lo"
 )
 
@@ -24,7 +25,6 @@ func Every(args ...interface{}) error {
 			}
 		}
 		return nil
-	} else {
-		return errors.New("only support []string or map[string]string")
 	}
+	return errors.New("only support []string or map[string]string")
 }
