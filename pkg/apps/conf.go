@@ -15,7 +15,7 @@ type Configuration struct {
 	Port             int                `json:"port" yaml:"port" mapstructure:"port" env:"SERVICE_PORT"`
 	BasePath         string             `json:"base_path" yaml:"base-path" mapstructure:"base-path" env:"SERVICE_BASE_PATH"`
 	RDB              rdbs.Properties    `json:"rdb" yaml:"rdb" mapstructure:"rdb"`
-	Redis            string             `yaml:"redis" json:"redis" mapstructure:"redis" env:"SERVICE_REDIS"` // redis://user:password@host:port/?db=0&node=host:port&node=host:port
+	Redis            string             `yaml:"redis" json:"redis" mapstructure:"redis" env:"SERVICE_REDIS"` // redis[s]://user:password@host:port/?db=0&node=host:port&node=host:port
 	DistributeLock   bool               `json:"distribute_lock" yaml:"distribute-lock" mapstructure:"distribute-lock"`
 	MaxRequestBody   string             `json:"max_request_body,omitempty" yaml:"max-request-body,omitempty" mapstructure:"max-request-body,omitempty"`
 	Cors             *Cors              `json:"cors,omitempty" yaml:"cors,omitempty" mapstructure:"cors,omitempty"`

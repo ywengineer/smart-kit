@@ -13,6 +13,7 @@ import (
 	"gitee.com/ywengineer/smart-kit/pkg/nacos"
 	"gitee.com/ywengineer/smart-kit/pkg/nets"
 	"gitee.com/ywengineer/smart-kit/pkg/rdbs"
+	"gitee.com/ywengineer/smart-kit/pkg/redisx"
 	"gitee.com/ywengineer/smart-kit/pkg/rpcs"
 	"gitee.com/ywengineer/smart-kit/pkg/utilk"
 	"gitee.com/ywengineer/smart-kit/pkg/validator"
@@ -98,7 +99,7 @@ func NewHertzApp(appName string, genContext GenContext, options ...Option) *serv
 	var redisClient redis.UniversalClient
 	var lockMgr locks.Manager
 	if len(conf.Redis) > 0 {
-		redisClient = utilk.NewRedis(conf.Redis)
+		redisClient = redisx.NewRedis(conf.Redis)
 	}
 	if !conf.DistributeLock {
 		lockMgr = locks.NewSystemLockManager()
