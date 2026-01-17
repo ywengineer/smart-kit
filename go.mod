@@ -36,6 +36,7 @@ require (
 	github.com/nacos-group/nacos-sdk-go/v2 v2.3.5
 	github.com/pilagod/gorm-cursor-paginator/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/samber/do/v2 v2.0.0
 	github.com/samber/lo v1.52.0
