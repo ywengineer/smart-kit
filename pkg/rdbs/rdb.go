@@ -64,7 +64,7 @@ func NewRDB(driver Properties, plugins ...gorm.Plugin) (*gorm.DB, error) {
 			} else {
 				logk.DefaultLogger().Error("rdb cache inactivate, because of create failed: " + driver.Cache)
 			}
-		} else if strings.HasPrefix(driver.Cache, "redis://") {
+		} else if strings.HasPrefix(driver.Cache, "redis") {
 			cachePlugin = &caches.Caches{Conf: &caches.Config{
 				Cacher: &redisCacher{rdb: redisx.NewRedis(driver.Cache)},
 			}}
