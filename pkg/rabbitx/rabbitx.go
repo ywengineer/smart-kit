@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -34,6 +35,7 @@ type RabbitX struct {
 
 	consumers          []*xConsumer
 	consumerProcessors map[string]Processor
+	consumerSeq        uint64
 }
 
 // NewRabbitX 创建RabbitMQ客户端实例
@@ -222,11 +224,12 @@ func (r *RabbitX) ConsumeMsg(processors map[string]Processor) error {
 	}
 	r.consumers = make([]*xConsumer, 0, len(processors))
 	cmd := os.Args[0]
+	cmd = lo.Ternary(len(cmd) < 10, cmd, "rabbitx")
 	for _, consumer := range r.cfg.Consumers {
 		//
 		var ch *amqp.Channel
 		var err error
-		consumerName := uniqueConsumerTag(cmd + "-" + consumer.Queue)
+		consumerName := r.uniqueConsumerTag(cmd + "-" + consumer.Queue)
 		if ch, err = r.newChannel(consumerName); err != nil {
 			logk.Errorf("❌ Consumer [%s] failed to create channel: %v", consumerName, err)
 			continue
@@ -314,4 +317,10 @@ func (r *RabbitX) ensureExchanges(ch *amqp.Channel, exchanges []ExchangeConfig) 
 		}
 	}
 	return nil
+}
+
+func (r *RabbitX) uniqueConsumerTag(commandName string) string {
+	tagInfix := "consumer"
+	tagSuffix := strconv.FormatUint(atomic.AddUint64(&r.consumerSeq, 1), 10)
+	return commandName + "-" + tagInfix + "-" + tagSuffix
 }

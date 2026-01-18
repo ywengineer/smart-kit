@@ -3,7 +3,6 @@ package rabbitx
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync/atomic"
 
 	"gitee.com/ywengineer/smart-kit/pkg/logk"
@@ -22,20 +21,19 @@ func (p ProcessorFunc) Process(ctx context.Context, msg *amqp.Delivery) error {
 	return p(ctx, msg)
 }
 
-var consumerSeq uint64 = 0
-
 type xConsumer struct {
 	name   string
 	conf   *ConsumerConfig
 	ch     *amqp.Channel
 	runner Processor
+	seq    uint64
 }
 
 func (c *xConsumer) run() *xConsumer {
 	c.conf.Size = utilk.Min(utilk.Max(1, c.conf.Size), 10)
 	//
 	for range c.conf.Size {
-		cName := fmt.Sprintf("%s-%d", c.name, nextSeq())
+		cName := fmt.Sprintf("%s-%d", c.name, c.nextSeq())
 		if q, err := c.ch.Consume( // start consume if processor exist
 			c.conf.Queue,     // queue
 			cName,            // consumer
@@ -69,16 +67,10 @@ func (c *xConsumer) consume(q <-chan amqp.Delivery, consumer string, processor P
 	logk.Infof("✅ Consumer [%s] has been stopped", consumer)
 }
 
+func (c *xConsumer) nextSeq() uint64 {
+	return atomic.AddUint64(&c.seq, 1)
+}
+
 func (c *xConsumer) Close() error {
 	return c.ch.Close()
-}
-
-func uniqueConsumerTag(commandName string) string {
-	tagInfix := "consumer"
-	tagSuffix := strconv.FormatUint(nextSeq(), 10)
-	return commandName + "-" + tagInfix + "-" + tagSuffix
-}
-
-func nextSeq() uint64 {
-	return atomic.AddUint64(&consumerSeq, 1)
 }
